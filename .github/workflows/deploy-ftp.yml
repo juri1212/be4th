@@ -3,16 +3,16 @@ on:
     branches:
       - main
 
-name: 🚀 Deploy website on push
+name: Deploy website
 jobs:
   web-deploy:
-    name: 🎉 Deploy
+    name: Deploy
     runs-on: ubuntu-latest
     steps:
-    - name: 🚚 Get latest code
+    - name: Checkout repository
       uses: actions/checkout@v6
 
-    - name: 📂 Sync files
+    - name: Deploy to FTP server
       uses: SamKirkland/FTP-Deploy-Action@v4.4.0
       with:
         server: ${{ vars.FTP_SERVER }}
@@ -20,4 +20,4 @@ jobs:
         password: ${{ secrets.FTP_PASS }}
         protocol: ftp
         port: 21 # todo replace with your web hosts ftps port
-        local-dir: ./placeholder # todo replace with your local build directory
+        local-dir: ./placeholder/ # todo replace with your local build directory

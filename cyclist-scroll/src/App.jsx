@@ -58,8 +58,8 @@ function App() {
       {/* Main content area */}
       <main className="main-content">
         <section className="content-section hero-section">
-          <h1>Scroll Down</h1>
-          <p className="subtitle">Watch the cyclist cruise through the hills</p>
+          <h1>Ride your map</h1>
+          <p className="subtitle">From Dutch lowlands to legendary Alpine roads</p>
           <div className="scroll-arrow">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 5v14M19 12l-7 7-7-7" />
@@ -69,38 +69,38 @@ function App() {
 
         {[
           {
-            title: 'Through the Valley',
-            text: 'The road winds gently through lush green valleys, past quaint buildings and towering trees. Every turn reveals a new vista of rolling hills stretching to the horizon.',
+            title: 'Netherlands → Bocholt',
+            text: 'Start on the open lanes west of Bocholt: straight horizons, canals, windmills, brick villages, and a tailwind that feels almost suspiciously generous.',
             accent: '#2d6a4f',
           },
           {
-            title: 'Climbing the Hills',
-            text: 'The terrain rises steadily as the route follows the contours of the landscape. Distant mountains frame the sky in shades of blue and grey.',
+            title: 'Stuttgart’s rolling climbs',
+            text: 'The flatlands give way to wooded slopes and vineyards around Stuttgart. The roads tighten, the city peeks through, and every ridge earns its view.',
             accent: '#457b9d',
           },
           {
-            title: 'City Outskirts',
-            text: 'Buildings begin to appear along the roadside — their warm windows glowing in the afternoon light. Lamp posts line the street, casting long shadows.',
+            title: 'Mont Ventoux',
+            text: 'Then comes Provence’s giant: forest on the lower slopes, exposed limestone near the summit, and the unmistakable silhouette of the weather station above.',
             accent: '#e63946',
           },
           {
-            title: 'The Open Road',
-            text: 'Beyond the city, the road opens up. Nothing but pavement, painted lines, and the sound of wheels on asphalt. Freedom in motion.',
+            title: 'Alpe d’Huez',
+            text: 'Finish high in the Alps, tracing the famous switchbacks beneath sharp peaks. Each bend is a small promise that the next one is closer to the top.',
             accent: '#f4a261',
           },
           {
-            title: 'Sunset Ridge',
-            text: 'As the sun dips lower, the sky transforms into a canvas of warm hues. The final stretch of road glimmers with golden light reflected off the surface.',
+            title: 'Across every landscape',
+            text: 'The scenery changes, but the rhythm stays the same: road, breath, wheels, horizon.',
             accent: '#e76f51',
           },
           {
-            title: 'The Descent',
-            text: 'Gravity becomes a companion on the downhill run. Wind rushes past as the bicycle picks up speed, carving through the curves with effortless momentum.',
+            title: 'The descent',
+            text: 'After the climbing comes the reward—smooth corners, cold air, and the quiet hum of tires carrying you home.',
             accent: '#264653',
           },
           {
-            title: 'Finishing Strong',
-            text: 'The journey nears its end, but the memories of every hill climbed and valley crossed remain. Each revolution of the pedals was a step forward, a rhythm of persistence.',
+            title: 'Finishing strong',
+            text: 'Your favourite roads live in the legs long after the ride ends: local loops, city climbs, and the mountains that keep calling you back.',
             accent: '#2a9d8f',
           },
         ].map((section, i) => (

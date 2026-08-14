@@ -56,11 +56,11 @@ body {
 
 .cyclist-wrapper {
   position: absolute;
-  bottom: 33%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -72.5%);
   z-index: 10;
   pointer-events: none;
+  transition: top 0.12s linear;
 }
 
 .scroll-indicator {

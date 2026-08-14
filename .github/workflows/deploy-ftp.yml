@@ -31,6 +31,6 @@ jobs:
         server: ${{ vars.FTP_SERVER }}
         username: ${{ vars.FTP_USER }}
         password: ${{ secrets.FTP_PASS }}
-        protocol: ftps
-        port: 990 # todo replace with your web hosts ftps port
+        protocol: ftp
+        port: 21 # todo replace with your web hosts ftps port
         local-dir: ./cyclist-scroll/dist/

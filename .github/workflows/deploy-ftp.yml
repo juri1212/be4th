@@ -12,6 +12,19 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v6
 
+    - name: Set up Node.js
+      uses: actions/setup-node@v7
+      with:
+        node-version: 24
+
+    - name: Install dependencies
+      run: npm install
+      working-directory: ./cyclist-scroll/
+
+    - name: Build project
+      run: npm run build
+      working-directory: ./cyclist-scroll/
+
     - name: Deploy to FTP server
       uses: SamKirkland/FTP-Deploy-Action@v4.4.0
       with:
@@ -20,4 +33,4 @@ jobs:
         password: ${{ secrets.FTP_PASS }}
         protocol: ftp
         port: 21 # todo replace with your web hosts ftps port
-        local-dir: ./placeholder/ # todo replace with your local build directory
+        local-dir: ./cyclist-scroll/dist/ # todo replace with your local build directory

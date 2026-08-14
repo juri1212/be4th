@@ -1,0 +1,66 @@
+.cyclist-svg {
+  width: 100%;
+  height: auto;
+  max-width: 160px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+}
+
+.wheel {
+  animation: spin-wheel 0.8s linear infinite;
+}
+
+.back-wheel {
+  transform-origin: 55px 145px;
+}
+
+.front-wheel {
+  transform-origin: 145px 145px;
+}
+
+@keyframes spin-wheel {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.pedal-group {
+  animation: pedal 0.8s linear infinite;
+}
+
+@keyframes pedal {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rider {
+  animation: rider-bob 0.4s ease-in-out infinite alternate;
+}
+
+@keyframes rider-bob {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-1px);
+  }
+}
+
+.chain {
+  animation: chain-move 0.3s linear infinite;
+}
+
+@keyframes chain-move {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -4;
+  }
+}

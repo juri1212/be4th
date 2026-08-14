@@ -1,0 +1,232 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap');
+
+:root {
+  --sidebar-width: 20%;
+  --bg-primary: #0d1117;
+  --bg-card: #161b22;
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --border-subtle: rgba(255, 255, 255, 0.06);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.app {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ========== CYCLIST SIDEBAR ========== */
+
+.cyclist-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  background: #0a0f14;
+  border-right: 1px solid var(--border-subtle);
+}
+
+.cycling-scene {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.cyclist-wrapper {
+  position: absolute;
+  bottom: 33%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.scroll-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-subtle);
+  background: rgba(10, 15, 20, 0.9);
+}
+
+.scroll-track {
+  flex: 1;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.scroll-thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(to right, #e63946, #f4a261);
+  border-radius: 3px;
+  transition: width 0.15s ease-out;
+}
+
+.scroll-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  min-width: 32px;
+  text-align: right;
+  letter-spacing: 0.02em;
+}
+
+/* ========== MAIN CONTENT ========== */
+
+.main-content {
+  margin-left: var(--sidebar-width);
+  flex: 1;
+  padding: 0;
+}
+
+.content-section {
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 80px 60px;
+  position: relative;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.content-section h2 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(2rem, 3.5vw, 3.2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 20px;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.content-section p {
+  font-size: clamp(1rem, 1.3vw, 1.15rem);
+  color: var(--text-secondary);
+  max-width: 540px;
+  line-height: 1.8;
+  font-weight: 300;
+}
+
+.section-accent {
+  width: 4px;
+  height: 40px;
+  border-radius: 4px;
+  margin-bottom: 24px;
+  opacity: 0.8;
+}
+
+.section-decoration {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 40px;
+}
+
+.deco-line {
+  width: 40px;
+  height: 2px;
+  border-radius: 2px;
+  opacity: 0.4;
+}
+
+.deco-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  opacity: 0.5;
+}
+
+/* Hero sections */
+.hero-section {
+  align-items: center;
+  text-align: center;
+  min-height: 100vh;
+}
+
+.hero-section h1 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(2.8rem, 5vw, 4.5rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-bottom: 16px;
+}
+
+.hero-section .subtitle {
+  font-size: clamp(1rem, 1.5vw, 1.2rem);
+  color: var(--text-secondary);
+  font-weight: 300;
+  letter-spacing: 0.02em;
+}
+
+.scroll-arrow {
+  margin-top: 48px;
+  animation: bounce-arrow 2s ease-in-out infinite;
+  color: var(--text-secondary);
+  opacity: 0.5;
+}
+
+@keyframes bounce-arrow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(10px);
+  }
+}
+
+/* ========== RESPONSIVE ========== */
+
+@media (max-width: 1024px) {
+  :root {
+    --sidebar-width: 25%;
+  }
+
+  .content-section {
+    padding: 60px 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 30%;
+  }
+
+  .content-section {
+    padding: 40px 24px;
+  }
+
+  .content-section h2 {
+    font-size: 1.6rem;
+  }
+}

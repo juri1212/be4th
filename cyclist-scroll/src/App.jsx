@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Cyclist from './components/Cyclist';
 import Terrain from './components/Terrain';
+import { getRoadPosition, ROAD_VIEW_WIDTH, ROAD_WIDTH } from './components/roadGeometry';
 import './App.css';
 
 function roadCenterAt(progress) {
@@ -32,13 +33,22 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const cyclistWorldX = scrollProgress * (ROAD_WIDTH - ROAD_VIEW_WIDTH) + ROAD_VIEW_WIDTH / 2;
+  const cyclistRoadPosition = getRoadPosition(cyclistWorldX);
+
   return (
     <div className="app" ref={containerRef}>
       {/* Fixed cycling sidebar */}
       <aside className="cyclist-sidebar">
         <div className="cycling-scene">
           <Terrain scrollProgress={scrollProgress} />
-          <div className="cyclist-wrapper" style={{ top: `${roadCenter}%` }}>
+          <div
+            className="cyclist-wrapper"
+            style={{
+              top: `${(cyclistRoadPosition.y / 400) * 100}%`,
+              '--road-angle': `${cyclistRoadPosition.angle}deg`,
+            }}
+          >
             <Cyclist />
           </div>
         </div>

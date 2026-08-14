@@ -1,48 +1,213 @@
 .cyclist-svg {
   width: 100%;
   height: auto;
-  max-width: 178px;
-  overflow: visible;
-  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.22));
+  display: block;
+  max-width: 160px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
 }
 
-.tire { fill: none; stroke: #181b20; stroke-width: 3.2; }
-.rim { fill: none; stroke: #b7c0c8; stroke-width: 1.1; }
-.spoke { stroke: #9ca7b0; stroke-width: .55; opacity: .8; }
-.hub { fill: #2e3740; }
-.frame { fill: none; stroke: #e63946; stroke-width: 3.25; stroke-linejoin: round; stroke-linecap: round; }
-.fork { fill: none; stroke: #c1121f; stroke-width: 2.55; stroke-linecap: round; }
-.seat-post, .handlebars { fill: none; stroke: #303840; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-.chain-stay { fill: none; stroke: #a61b29; stroke-width: 2.2; stroke-linecap: round; }
-.chainring { fill: #10151a; stroke: #a8b0b8; stroke-width: 1.2; }
-.crank, .pedals { fill: none; stroke: #b9c3cb; stroke-width: 1.7; stroke-linecap: round; }
-.chain { fill: none; stroke: #aeb8bf; stroke-width: .85; stroke-dasharray: 2 1.5; }
+.tire {
+  fill: none;
+  stroke: #181b20;
+  stroke-width: 3.2;
+}
 
-.wheel { animation: spin-wheel .46s linear infinite; }
-.back-wheel { transform-origin: 52px 145px; }
-.front-wheel { transform-origin: 148px 145px; }
-@keyframes spin-wheel { to { transform: rotate(360deg); } }
+.rim {
+  fill: none;
+  stroke: #b7c0c8;
+  stroke-width: 1.1;
+}
 
-.pedal-group { animation: pedal .46s linear infinite; }
-@keyframes pedal { to { transform: rotate(360deg); } }
+.spoke {
+  stroke: #9ca7b0;
+  stroke-width: .55;
+  opacity: .8;
+}
 
-.jersey { fill: none; stroke: #173a5e; stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
-.face { fill: #f2a36e; }
-.helmet { fill: #4f8eaf; }
-.glasses { stroke: #102235; stroke-width: 2; stroke-linecap: round; }
-.arm { fill: none; stroke: #f2a36e; stroke-width: 3.5; stroke-linecap: round; }
-.arm-back { stroke: #df8f62; stroke-width: 3; }
-.leg { fill: none; stroke: #111d2b; stroke-width: 5.5; stroke-linecap: round; stroke-linejoin: round; }
-.leg-front { animation: leg-drive .46s ease-in-out infinite alternate; transform-origin: 83px 91px; }
-.leg-back { animation: leg-drive .46s ease-in-out infinite alternate-reverse; transform-origin: 83px 91px; }
-@keyframes leg-drive { to { transform: rotate(13deg); } }
+.hub {
+  fill: #2e3740;
+}
 
-.rider { animation: rider-drive .23s ease-in-out infinite alternate; }
-@keyframes rider-drive { to { transform: translate(1px, -1px); } }
+.frame {
+  fill: none;
+  stroke: #e63946;
+  stroke-width: 3.25;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
 
-.speed-lines path { fill: none; stroke: #c5d3de; stroke-width: 1.5; stroke-linecap: round; opacity: .65; animation: speed-streak .38s linear infinite; }
-@keyframes speed-streak { from { transform: translateX(0); opacity: .1; } 30% { opacity: .7; } to { transform: translateX(-16px); opacity: 0; } }
+.fork {
+  fill: none;
+  stroke: #c1121f;
+  stroke-width: 2.55;
+  stroke-linecap: round;
+}
+
+.seat-post,
+.handlebars {
+  fill: none;
+  stroke: #303840;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.chain-stay {
+  fill: none;
+  stroke: #a61b29;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+
+.chainring {
+  fill: #10151a;
+  stroke: #a8b0b8;
+  stroke-width: 1.2;
+}
+
+.crank,
+.pedals {
+  fill: none;
+  stroke: #b9c3cb;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+}
+
+.chain {
+  fill: none;
+  stroke: #aeb8bf;
+  stroke-width: .85;
+  stroke-dasharray: 2 1.5;
+}
+
+.wheel {
+  animation: spin-wheel .46s linear infinite;
+}
+
+.back-wheel {
+  transform-origin: 52px 145px;
+}
+
+.front-wheel {
+  transform-origin: 148px 145px;
+}
+
+@keyframes spin-wheel {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.pedal-group {
+  animation: pedal .46s linear infinite;
+}
+
+@keyframes pedal {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.jersey {
+  fill: none;
+  stroke: #173a5e;
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.face {
+  fill: #f2a36e;
+}
+
+.helmet {
+  fill: #4f8eaf;
+}
+
+.glasses {
+  stroke: #102235;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.arm {
+  fill: none;
+  stroke: #f2a36e;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+}
+
+.arm-back {
+  stroke: #df8f62;
+  stroke-width: 3;
+}
+
+.leg {
+  fill: none;
+  stroke: #111d2b;
+  stroke-width: 5.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.leg-front {
+  animation: leg-drive .46s ease-in-out infinite alternate;
+  transform-origin: 83px 91px;
+}
+
+.leg-back {
+  animation: leg-drive .46s ease-in-out infinite alternate-reverse;
+  transform-origin: 83px 91px;
+}
+
+@keyframes leg-drive {
+  to {
+    transform: rotate(13deg);
+  }
+}
+
+.rider {
+  animation: rider-drive .23s ease-in-out infinite alternate;
+}
+
+@keyframes rider-drive {
+  to {
+    transform: translate(1px, -1px);
+  }
+}
+
+.speed-lines path {
+  fill: none;
+  stroke: #c5d3de;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  opacity: .65;
+  animation: speed-streak .38s linear infinite;
+}
+
+@keyframes speed-streak {
+  from {
+    transform: translateX(0);
+    opacity: .1;
+  }
+
+  30% {
+    opacity: .7;
+  }
+
+  to {
+    transform: translateX(-16px);
+    opacity: 0;
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .wheel, .pedal-group, .leg, .rider, .speed-lines path { animation: none; }
+
+  .wheel,
+  .pedal-group,
+  .leg,
+  .rider,
+  .speed-lines path {
+    animation: none;
+  }
 }

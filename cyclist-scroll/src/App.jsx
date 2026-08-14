@@ -4,22 +4,9 @@ import Terrain from './components/Terrain';
 import { getRoadPosition, ROAD_VIEW_WIDTH, ROAD_WIDTH } from './components/roadGeometry';
 import './App.css';
 
-function roadCenterAt(progress) {
-  const totalWidth = 8000;
-  const viewWidth = 400;
-  const segments = 120;
-  const segment = (progress * (totalWidth - viewWidth) + viewWidth / 2) / (totalWidth / segments);
-  const roadOffset = Math.sin(segment * 0.4) * 40
-    + Math.sin(segment * 0.15) * 30
-    + Math.cos(segment * 0.7) * 20;
-
-  return ((245 + roadOffset) / 400) * 100;
-}
-
 function App() {
   const [scrollProgress, setScrollProgress] = useState(0);
   const containerRef = useRef(null);
-  const roadCenter = roadCenterAt(scrollProgress);
 
   useEffect(() => {
     const handleScroll = () => {

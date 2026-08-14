@@ -1,3 +1,4 @@
+import { ROAD_SEGMENTS, ROAD_VIEW_WIDTH, ROAD_WIDTH } from './roadGeometry';
 import './Terrain.css';
 
 function seededRandom(seed) {
@@ -19,22 +20,6 @@ function makeLandscapePath(width, segments, base = 250) {
     else path += ` Q ${x - step / 2} ${(base - 52 + roadOffset(i - 1) + y) / 2 - 8} ${x} ${y}`;
   }
   return `${path} L ${width} 400 L 0 400 Z`;
-}
-
-function makeRoadPath(width, segments) {
-  const step = width / segments;
-  let path = '';
-  for (let i = 0; i <= segments; i++) {
-    const x = i * step;
-    const y = 225 + roadOffset(i);
-    path += i ? ` Q ${x - step / 2} ${(225 + roadOffset(i - 1) + y) / 2 - 8} ${x} ${y}` : `M ${x} ${y}`;
-  }
-  for (let i = segments; i >= 0; i--) {
-    const x = i * step;
-    const y = 258 + roadOffset(i);
-    path += i === segments ? ` L ${x} ${y}` : ` Q ${x + step / 2} ${(258 + roadOffset(i + 1) + y) / 2 + 8} ${x} ${y}`;
-  }
-  return `${path} Z`;
 }
 
 function makeRoadEdge(width, segments, lower = false) {
@@ -109,49 +94,232 @@ function PlaceLabel({ x, y, title, subtitle, tone = 'dark' }) {
 }
 
 export default function Terrain({ scrollProgress }) {
-  const totalWidth = 8000;
-  const viewWidth = 400;
-  const segments = 120;
-  const translateX = -scrollProgress * (totalWidth - viewWidth);
-  const mountainTranslateX = translateX * 0.22;
-  const road = makeRoadPath(totalWidth, segments);
-  const roadTop = makeRoadEdge(totalWidth, segments);
-  const roadBottom = makeRoadEdge(totalWidth, segments, true);
-  const dashes = Array.from({ length: segments / 2 }, (_, index) => {
-    const i = index * 2;
-    const x = i * (totalWidth / segments) + 9;
-    return <rect key={i} x={x} y={240 + roadOffset(i)} width="27" height="2" rx="1" fill="#f5ca69" opacity=".9" />;
-  });
-  const clouds = Array.from({ length: 18 }, (_, i) => <Cloud key={i} x={i * 460 + 90} y={35 + (i % 4) * 18} scale={0.55 + seededRandom(i) * .55} />);
-  const trees = Array.from({ length: 42 }, (_, i) => <Tree key={i} x={i * 188 + 35} y={220 + roadOffset(i * 3) - 5} scale={.5 + seededRandom(i + 9) * .42} dark={i % 3 === 0} />);
+  const totalWidth = ROAD_WIDTH;
+  const viewWidth = ROAD_VIEW_WIDTH;
+  const segments = ROAD_SEGMENTS;
 
-  return <div className="terrain-container"><svg className="terrain-svg" viewBox={`0 0 ${viewWidth} 400`} preserveAspectRatio="xMidYMid slice">
-    <defs>
-      <linearGradient id="skyGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#5b9fc0" /><stop offset="58%" stopColor="#bee2df" /><stop offset="100%" stopColor="#e7e7c6" /></linearGradient>
-      <linearGradient id="grassGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#9dc580" /><stop offset="100%" stopColor="#4c8b5f" /></linearGradient>
-      <linearGradient id="roadGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#515455" /><stop offset="100%" stopColor="#2c3031" /></linearGradient>
-      <pattern id="fieldLines" width="72" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(-8)"><path d="M0 4 H72 M0 14 H72" stroke="#d9c66c" strokeWidth="3" opacity=".58" /></pattern>
-    </defs>
-    <rect width={viewWidth} height="400" fill="url(#skyGradient)" />
-    <circle cx="342" cy="48" r="25" fill="#ffe099" opacity=".9" /><circle cx="342" cy="48" r="37" fill="#ffe099" opacity=".16" />
-    <g style={{ transform: `translateX(${mountainTranslateX}px)` }}><path d="M0 218 Q520 125 1110 205 T2150 162 T3200 215 T4250 90 T5200 190 T6400 72 T8000 182 L8000 400 L0 400Z" fill="#547c81" opacity=".28" />{clouds}</g>
-    <g style={{ transform: `translateX(${translateX}px)` }}>
-      <path d={makeLandscapePath(totalWidth, segments)} fill="url(#grassGradient)" opacity=".66" />
-      {/* Dutch-German lowlands: flat fields, windmills and brick villages */}
-      <path d="M0 205 H2780 V400 H0Z" fill="#81ad67" /><path d="M0 205 H2780 V400 H0Z" fill="url(#fieldLines)" opacity=".7" />
-      <path d="M0 245 C440 220 740 258 1160 239 S2010 230 2780 248" fill="none" stroke="#8dcbd2" strokeWidth="11" opacity=".9" />
-      <Windmill x={370} y={219} /><Windmill x={1450} y={211} /><DutchHouse x={660} y={229} /><DutchHouse x={710} y={229} color="#d9a45b" /><DutchHouse x={2110} y={229} color="#bf5d50" />
-      <PlaceLabel x={430} y={88} title="NETHERLANDS" subtitle="flat lanes & wind" /><PlaceLabel x={2010} y={83} title="BOCHOLT" subtitle="Münsterland fields" />
-      {/* Stuttgart: wooded, vineyard-like slopes and city silhouette */}
-      <path d="M2700 250 Q2950 138 3220 196 Q3490 104 3760 192 Q4020 129 4380 244 L4380 400 H2700Z" fill="#56825d" />
-      {[0, 1, 2, 3].map(i => <path key={i} d={`M ${2800 + i * 350} 242 Q ${2920 + i * 350} ${155 - i * 8} ${3080 + i * 350} 224`} fill="none" stroke="#9ab759" strokeWidth="8" opacity=".82" />)}
-      <Stuttgart x={3500} y={206} /><PlaceLabel x={3540} y={79} title="STUTTGART" subtitle="vineyards & climbs" />
-      {/* Mont Ventoux: exposed limestone summit */}
-      <Ventoux x={5180} y={222} /><PlaceLabel x={5200} y={58} title="MONT VENTOUX" subtitle="the Giant of Provence" tone="light" />
-      {/* Alpe d'Huez: snow, high Alps and stacked switchbacks */}
-      <AlpeDHuez x={6900} y={220} /><PlaceLabel x={6960} y={58} title="ALPE D'HUEZ" subtitle="21 legendary bends" tone="light" />
-      <path d={road} fill="url(#roadGradient)" /><path d={roadTop} fill="none" stroke="#f7f4e9" strokeWidth="1.5" opacity=".75" /><path d={roadBottom} fill="none" stroke="#f7f4e9" strokeWidth="1.5" opacity=".75" />
-      {dashes}{trees}
-    </g>
-  </svg></div>;
+  const translateX = -scrollProgress * (totalWidth - viewWidth);
+  const mountainTranslateX = translateX * 0.3;
+  const hillBgTranslateX = translateX * 0.6;
+
+  const hillPath = generateHillPath(0, totalWidth, segments);
+
+  // Generate road center dashes
+  const dashElements = [];
+  const segWidth = totalWidth / segments;
+  for (let i = 0; i < segments; i++) {
+    const x = i * segWidth;
+    const offset = Math.sin(i * 0.4) * 40 + Math.sin(i * 0.15) * 30 + Math.cos(i * 0.7) * 20;
+    const y = 245 + offset;
+    if (i % 2 === 0) {
+      dashElements.push(
+        <rect
+          key={`dash-${i}`}
+          x={x}
+          y={y - 1.5}
+          width={segWidth * 0.6}
+          height="3"
+          fill="#ffd166"
+          opacity="0.9"
+          rx="1"
+          transform={`rotate(${Math.atan2(
+            (Math.sin((i + 1) * 0.4) * 40 + Math.sin((i + 1) * 0.15) * 30 + Math.cos((i + 1) * 0.7) * 20) -
+            offset, segWidth
+          ) * (180 / Math.PI)}, ${x}, ${y})`}
+        />
+      );
+    }
+  }
+
+  // Generate trees along the road
+  const treeElements = [];
+  const bushElements = [];
+  const lampElements = [];
+  for (let i = 0; i < segments; i += 3) {
+    const x = i * segWidth + segWidth / 2;
+    const offset = Math.sin(i * 0.4) * 40 + Math.sin(i * 0.15) * 30 + Math.cos(i * 0.7) * 20;
+    const roadTopY = 225 + offset;
+    if (i % 6 === 0) {
+      treeElements.push(
+        <Tree key={`tree-${i}`} x={x + 10} y={roadTopY - 15} scale={0.7 + seededRandom(i * 7) * 0.4} />
+      );
+    }
+    if (i % 9 === 0) {
+      bushElements.push(
+        <Bush key={`bush-${i}`} x={x - 5} y={roadTopY - 3} />
+      );
+    }
+    if (i % 12 === 0) {
+      lampElements.push(
+        <LampPost key={`lamp-${i}`} x={x + 20} y={roadTopY} />
+      );
+    }
+  }
+
+  // Generate buildings in the background
+  const buildingElements = [];
+  const buildingColors = ['#264653', '#2a9d8f', '#457b9d', '#6d6875', '#b5838d'];
+  for (let i = 0; i < 40; i++) {
+    const x = i * 200 + 50;
+    const offset = Math.sin((i * 3) * 0.4) * 40 + Math.sin((i * 3) * 0.15) * 30 + Math.cos((i * 3) * 0.7) * 20;
+    const roadTopY = 225 + offset;
+    const bh = 40 + seededRandom(i * 13) * 60;
+    const bw = 25 + seededRandom(i * 29) * 25;
+    buildingElements.push(
+      <Building
+        key={`bldg-${i}`}
+        x={x}
+        y={roadTopY - 20}
+        seed={i}
+        width={bw}
+        height={bh}
+        color={buildingColors[i % buildingColors.length]}
+      />
+    );
+  }
+
+  // Clouds
+  const cloudElements = [];
+  for (let i = 0; i < 25; i++) {
+    cloudElements.push(
+      <Cloud
+        key={`cloud-${i}`}
+        x={i * 350 + 50}
+        y={20 + Math.sin(i) * 25}
+        scale={0.6 + seededRandom(i * 23) * 0.6}
+      />
+    );
+  }
+
+  return (
+    <div className="terrain-container">
+      <svg
+        className="terrain-svg"
+        viewBox={`0 0 ${viewWidth} 400`}
+        preserveAspectRatio="xMidYMid slice"
+      >
+        <defs>
+          <linearGradient id="skyGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#89c2d9" />
+            <stop offset="40%" stopColor="#a9d6e5" />
+            <stop offset="100%" stopColor="#caf0f8" />
+          </linearGradient>
+          <linearGradient id="grassGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#95d5b2" />
+            <stop offset="100%" stopColor="#52b788" />
+          </linearGradient>
+          <linearGradient id="roadGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#555" />
+            <stop offset="100%" stopColor="#3a3a3a" />
+          </linearGradient>
+          <linearGradient id="buildingShadow" x1="1" y1="0" x2="0" y2="0">
+            <stop offset="0%" stopColor="rgba(0,0,0,0.15)" />
+            <stop offset="100%" stopColor="rgba(0,0,0,0)" />
+          </linearGradient>
+        </defs>
+
+        {/* Sky */}
+        <rect x="0" y="0" width={viewWidth} height="400" fill="url(#skyGradient)" />
+
+        {/* Sun */}
+        <circle cx="350" cy="45" r="25" fill="#ffd166" opacity="0.9" />
+        <circle cx="350" cy="45" r="30" fill="#ffd166" opacity="0.2" />
+
+        {/* Clouds layer - slow parallax */}
+        <g style={{ transform: `translateX(${mountainTranslateX}px)` }}>
+          {cloudElements}
+        </g>
+
+        {/* Distant mountains */}
+        <g style={{ transform: `translateX(${mountainTranslateX}px)` }}>
+          <MountainRange startX={0} totalWidth={totalWidth * 0.5} />
+        </g>
+
+        {/* Mid-ground hills */}
+        <g style={{ transform: `translateX(${hillBgTranslateX}px)` }}>
+          <path
+            d={generateHillPath(0, totalWidth * 0.8, 80)}
+            fill="#b7e4c7"
+            opacity="0.5"
+          />
+        </g>
+
+        {/* Main terrain group - scrolls with content */}
+        <g style={{ transform: `translateX(${translateX}px)` }}>
+          {/* Buildings behind the road */}
+          {buildingElements}
+
+          {/* Main hill/grass */}
+          <path d={hillPath} fill="url(#grassGradient)" />
+
+          {/* Road surface */}
+          {(() => {
+            // Build road as filled area between top and bottom paths
+            // Simpler approach: just draw a road band
+            let road = `M 0 ${230}`;
+            for (let i = 0; i <= segments; i++) {
+              const x = i * segWidth;
+              const offset = Math.sin(i * 0.4) * 40 + Math.sin(i * 0.15) * 30 + Math.cos(i * 0.7) * 20;
+              const topY = 228 + offset;
+              if (i === 0) road += ` L ${x} ${topY}`;
+              else {
+                const cpx = x - segWidth / 2;
+                const prevOff = Math.sin((i - 1) * 0.4) * 40 + Math.sin((i - 1) * 0.15) * 30 + Math.cos((i - 1) * 0.7) * 20;
+                road += ` Q ${cpx} ${(228 + prevOff + topY) / 2 - 10} ${x} ${topY}`;
+              }
+            }
+            // Go right along bottom
+            for (let i = segments; i >= 0; i--) {
+              const x = i * segWidth;
+              const offset = Math.sin(i * 0.4) * 40 + Math.sin(i * 0.15) * 30 + Math.cos(i * 0.7) * 20;
+              const botY = 262 + offset;
+              if (i === segments) road += ` L ${x} ${botY}`;
+              else {
+                const cpx = x + segWidth / 2;
+                const nextOff = Math.sin((i + 1) * 0.4) * 40 + Math.sin((i + 1) * 0.15) * 30 + Math.cos((i + 1) * 0.7) * 20;
+                road += ` Q ${cpx} ${(262 + nextOff + botY) / 2 + 10} ${x} ${botY}`;
+              }
+            }
+            road += ' Z';
+            return <path d={road} fill="url(#roadGradient)" />;
+          })()}
+
+          {/* Road edge lines */}
+          {(() => {
+            let topEdge = '';
+            let bottomEdge = '';
+            for (let i = 0; i <= segments; i++) {
+              const x = i * segWidth;
+              const offset = Math.sin(i * 0.4) * 40 + Math.sin(i * 0.15) * 30 + Math.cos(i * 0.7) * 20;
+              const tY = 228 + offset;
+              const bY = 262 + offset;
+              if (i === 0) {
+                topEdge = `M ${x} ${tY}`;
+                bottomEdge = `M ${x} ${bY}`;
+              } else {
+                const cpx = x - segWidth / 2;
+                const prevOff = Math.sin((i - 1) * 0.4) * 40 + Math.sin((i - 1) * 0.15) * 30 + Math.cos((i - 1) * 0.7) * 20;
+                topEdge += ` Q ${cpx} ${(228 + prevOff + tY) / 2 - 10} ${x} ${tY}`;
+                bottomEdge += ` Q ${cpx} ${(262 + prevOff + bY) / 2 - 10} ${x} ${bY}`;
+              }
+            }
+            return (
+              <>
+                <path d={topEdge} fill="none" stroke="white" strokeWidth="1.5" opacity="0.7" />
+                <path d={bottomEdge} fill="none" stroke="white" strokeWidth="1.5" opacity="0.7" />
+              </>
+            );
+          })()}
+
+          {/* Center line dashes */}
+          {dashElements}
+
+          {/* Scenery */}
+          {treeElements}
+          {bushElements}
+          {lampElements}
+        </g>
+      </svg>
+    </div>
+  );
 }

@@ -1,120 +1,143 @@
-import { useState, useEffect, useRef } from 'react';
-import Cyclist from './components/Cyclist';
-import Terrain from './components/Terrain';
-import { getRoadPosition, ROAD_VIEW_WIDTH, ROAD_WIDTH } from './components/roadGeometry';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import RidePanel from './components/RidePanel';
+import { clamp } from './ride/math';
+import { FINISH_X } from './ride/route';
+import { STAGES, TOTALS } from './ride/stages';
 import './App.css';
 
+// The rider rolls a few metres past the line on the final chapter.
+const ANCHORS = [0, ...STAGES.map((stage) => stage.anchor), FINISH_X + 240];
+const STACKED_LAYOUT = '(max-width: 900px)';
+
+const formatNumber = (value, digits = 0) =>
+  value.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+
+function stageStats({ distance, gain, loss, maxGrade, minGrade }) {
+  const descending = loss > gain * 2;
+  return [
+    ['Distance', formatNumber(distance, 1), 'km'],
+    descending ? ['Descending', formatNumber(loss), 'm'] : ['Climbing', formatNumber(gain), 'm'],
+    descending ? ['Max grade', `−${formatNumber(Math.abs(minGrade), 1)}`, '%'] : ['Max grade', formatNumber(maxGrade, 1), '%'],
+  ];
+}
+
+function Stats({ items }) {
+  return (
+    <dl className="stats">
+      {items.map(([label, value, unit]) => (
+        <div key={label}>
+          <dt>{label}</dt>
+          <dd>
+            {value}
+            <span>{unit}</span>
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
 function App() {
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const containerRef = useRef(null);
+  const sectionRefs = useRef([]);
+  const panelRef = useRef(null);
+  const anchorsRef = useRef([]);
+  const [active, setActive] = useState(0);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.scrollY;
-      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = Math.min(Math.max(scrollTop / docHeight, 0), 1);
-      setScrollProgress(progress);
+  useLayoutEffect(() => {
+    const measure = () => {
+      const stacked = window.matchMedia(STACKED_LAYOUT).matches;
+      const panelHeight = stacked && panelRef.current ? panelRef.current.offsetHeight : 0;
+      const focusY = panelHeight + (window.innerHeight - panelHeight) / 2;
+      const maxScroll = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+      const anchors = sectionRefs.current.map((section, index) => {
+        const rect = section.getBoundingClientRect();
+        const center = rect.top + window.scrollY + rect.height / 2;
+        return { scroll: clamp(center - focusY, 0, maxScroll), x: ANCHORS[index] };
+      });
+      anchors[0].scroll = 0;
+      anchors[anchors.length - 1].scroll = maxScroll;
+      anchorsRef.current = anchors;
     };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(document.body);
+    window.addEventListener('resize', measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', measure);
+    };
   }, []);
 
-  const cyclistWorldX = scrollProgress * (ROAD_WIDTH - ROAD_VIEW_WIDTH) + ROAD_VIEW_WIDTH / 2;
-  const cyclistRoadPosition = getRoadPosition(cyclistWorldX);
+  useEffect(() => {
+    const update = () => {
+      const anchors = anchorsRef.current;
+      let nearest = 0;
+      anchors.forEach((anchor, index) => {
+        if (Math.abs(anchor.scroll - window.scrollY) < Math.abs(anchors[nearest].scroll - window.scrollY)) nearest = index;
+      });
+      setActive(nearest);
+    };
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    return () => window.removeEventListener('scroll', update);
+  }, []);
+
+  const sectionProps = (index) => ({
+    ref: (element) => {
+      sectionRefs.current[index] = element;
+    },
+    'data-active': active === index,
+  });
 
   return (
-    <div className="app" ref={containerRef}>
-      {/* Fixed cycling sidebar */}
-      <aside className="cyclist-sidebar">
-        <div className="cycling-scene">
-          <Terrain scrollProgress={scrollProgress} />
-          <div
-            className="cyclist-wrapper"
-            style={{
-              top: `${(cyclistRoadPosition.y / 400) * 100}%`,
-              '--road-angle': `${cyclistRoadPosition.angle}deg`,
-            }}
-          >
-            <Cyclist />
-          </div>
-        </div>
-        <div className="scroll-indicator">
-          <div className="scroll-track">
-            <div
-              className="scroll-thumb"
-              style={{ width: `${scrollProgress * 100}%` }}
-            />
-          </div>
-          <span className="scroll-label">
-            {Math.round(scrollProgress * 100)}%
-          </span>
-        </div>
-      </aside>
+    <div className="page">
+      <RidePanel anchorsRef={anchorsRef} panelRef={panelRef} />
 
-      {/* Main content area */}
-      <main className="main-content">
-        <section className="content-section hero-section">
-          <h1>Ride your map</h1>
-          <p className="subtitle">From Dutch lowlands to legendary Alpine roads</p>
-          <div className="scroll-arrow">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 5v14M19 12l-7 7-7-7" />
-            </svg>
+      <main className="story">
+        <section className="chapter chapter--intro" {...sectionProps(0)}>
+          <p className="eyebrow">A ride in seven stages</p>
+          <h1>
+            Ride your <em>map</em>
+          </h1>
+          <p className="lede">From Dutch lowlands to legendary Alpine roads.</p>
+          <Stats
+            items={[
+              ['Distance', formatNumber(TOTALS.distance), 'km'],
+              ['Climbing', formatNumber(TOTALS.gain), 'm'],
+              ['High point', formatNumber(TOTALS.high), 'm'],
+            ]}
+          />
+          <div className="scroll-cue">
+            <span className="scroll-cue__line" />
+            Scroll to ride
           </div>
         </section>
 
-        {[
-          {
-            title: 'Netherlands → Bocholt',
-            text: 'Start on the open lanes west of Bocholt: straight horizons, canals, windmills, brick villages, and a tailwind that feels almost suspiciously generous.',
-            accent: '#2d6a4f',
-          },
-          {
-            title: 'Stuttgart’s rolling climbs',
-            text: 'The flatlands give way to wooded slopes and vineyards around Stuttgart. The roads tighten, the city peeks through, and every ridge earns its view.',
-            accent: '#457b9d',
-          },
-          {
-            title: 'Mont Ventoux',
-            text: 'Then comes Provence’s giant: forest on the lower slopes, exposed limestone near the summit, and the unmistakable silhouette of the weather station above.',
-            accent: '#e63946',
-          },
-          {
-            title: 'Alpe d’Huez',
-            text: 'Finish high in the Alps, tracing the famous switchbacks beneath sharp peaks. Each bend is a small promise that the next one is closer to the top.',
-            accent: '#f4a261',
-          },
-          {
-            title: 'Across every landscape',
-            text: 'The scenery changes, but the rhythm stays the same: road, breath, wheels, horizon.',
-            accent: '#e76f51',
-          },
-          {
-            title: 'The descent',
-            text: 'After the climbing comes the reward—smooth corners, cold air, and the quiet hum of tires carrying you home.',
-            accent: '#264653',
-          },
-          {
-            title: 'Finishing strong',
-            text: 'Your favourite roads live in the legs long after the ride ends: local loops, city climbs, and the mountains that keep calling you back.',
-            accent: '#2a9d8f',
-          },
-        ].map((section, i) => (
-          <section key={i} className="content-section">
-            <div className="section-accent" style={{ backgroundColor: section.accent }} />
-            <h2>{section.title}</h2>
-            <p>{section.text}</p>
-            <div className="section-decoration">
-              <div className="deco-line" style={{ backgroundColor: section.accent }} />
-              <div className="deco-dot" style={{ backgroundColor: section.accent }} />
+        {STAGES.map((stage, index) => (
+          <section key={stage.number} className="chapter" {...sectionProps(index + 1)}>
+            <div className="chapter__meta">
+              <span className="chapter__number">{stage.number}</span>
+              <span className="chapter__rule" />
+              <span>{stage.region}</span>
             </div>
+            <h2>{stage.title}</h2>
+            <p>{stage.text}</p>
+            <Stats items={stageStats(stage.stats)} />
           </section>
         ))}
 
-        <section className="content-section hero-section">
-          <h1>Journey Complete</h1>
-          <p className="subtitle">You've reached the end of the ride</p>
+        <section className="chapter chapter--outro" {...sectionProps(STAGES.length + 1)}>
+          <p className="eyebrow">Finish · Bourg d’Oisans</p>
+          <h1>
+            Journey <em>complete</em>
+          </h1>
+          <p className="lede">You’ve reached the end of the ride.</p>
+          <button type="button" className="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            Ride it again
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M8 13V3M3.5 7.5 8 3l4.5 4.5" />
+            </svg>
+          </button>
         </section>
       </main>
     </div>

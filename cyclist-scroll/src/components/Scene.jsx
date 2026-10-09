@@ -1,5 +1,5 @@
 import { clamp, smoothstep } from '../ride/math';
-import { mixRgb, paletteAt, rgb } from '../ride/palette';
+import { RIDER_KIT, mixRgb, paletteAt, rgb } from '../ride/palette';
 import { FINISH_X, MARKERS, cameraY, roadY } from '../ride/route';
 import { SCENERY } from '../ride/scenery';
 import Rider, { WHEELBASE, WHEEL_RADIUS } from './Rider';
@@ -18,6 +18,7 @@ const OBSERVATORY_X = 9720;
 const START_X = 230;
 
 const r2 = (value) => Math.round(value * 100) / 100;
+const shadeKit = (ink, amount) => Object.fromEntries(Object.entries(RIDER_KIT).map(([part, color]) => [part, rgb(mixRgb(color, ink, amount))]));
 const inView = (left, right, width, pad = 0) => right > -pad && left < width + pad;
 
 function Marker({ marker, ink }) {
@@ -66,6 +67,8 @@ export default function Scene({ x, width: W, height: H }) {
   const rearY = roadY(x - half);
   const frontY = roadY(x + half);
   const riderAngle = (Math.atan2(frontY - rearY, half * 2) * 180) / Math.PI;
+  // The kit keeps its colours by day and sinks into the silhouette after sunset.
+  const riderShade = 0.12 + dusk * 0.3 + night * 0.33;
 
   return (
     <svg className="scene" viewBox={`0 0 ${r2(W)} ${r2(H)}`} aria-hidden="true">
@@ -216,9 +219,8 @@ export default function Scene({ x, width: W, height: H }) {
         <g transform={`translate(${r2(x)} ${r2((rearY + frontY) / 2)}) rotate(${r2(riderAngle)}) scale(${RIDER_SCALE}) translate(0 ${-WHEEL_RADIUS})`}>
           <Rider
             distance={x}
-            ink={rgb(ink)}
-            inkFar={rgb(mixRgb(ink, palette.haze, 0.18))}
-            bike={rgb(mixRgb(ink, palette.haze, 0.08))}
+            kit={shadeKit(ink, riderShade)}
+            kitFar={shadeKit(ink, riderShade + 0.3)}
             spoke={rgb(palette.haze, 0.16)}
             decal={rgb(palette.haze, 0.6)}
             tailLight={dusk}

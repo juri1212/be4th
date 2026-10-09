@@ -11,6 +11,28 @@ const KEYFRAMES = [
   { t: 1.0, skyTop: '#070b1d', skyMid: '#232852', haze: '#7a5579', ink: '#09091a', sun: '#ff8a5c' },
 ];
 
+// Juri's kit and his pink gravel bike, picked from a race photo. Scene
+// shades these toward the landscape ink as the light fades.
+export const RIDER_KIT = {
+  frame: [244, 202, 204],
+  parts: [28, 28, 32],
+  tire: [46, 44, 42],
+  rim: [24, 24, 28],
+  bottle: [238, 238, 234],
+  helmet: [246, 246, 244],
+  vent: [34, 34, 38],
+  lens: [222, 96, 200],
+  hair: [96, 64, 42],
+  skin: [234, 190, 160],
+  jersey: [54, 56, 60],
+  panel: [34, 112, 100],
+  cuff: [200, 44, 56],
+  bib: [20, 20, 24],
+  glove: [196, 44, 66],
+  sock: [246, 246, 246],
+  shoe: [240, 240, 238],
+};
+
 const parse = (hex) => [1, 3, 5].map((offset) => parseInt(hex.slice(offset, offset + 2), 16));
 
 const FRAMES = KEYFRAMES.map(({ t, ...colors }) => ({

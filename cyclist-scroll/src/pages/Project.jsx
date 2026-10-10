@@ -4,7 +4,7 @@ import Prose from '../components/Prose';
 import ReadingProgress from '../components/ReadingProgress';
 import TableOfContents from '../components/TableOfContents';
 import Tags from '../components/Tags';
-import { ArrowLeft, ArrowRight, External } from '../components/icons';
+import { ArrowLeft, External } from '../components/icons';
 import { POSTS, PROJECTS, postUrl, projectUrl } from '../content';
 
 const LINK_LABELS = { download: 'Download', live: 'Open the app', source: 'Source on GitHub' };
@@ -28,7 +28,7 @@ export default function Project({ project }) {
             </a>
             {meta.icon && <img className="project-hero__icon" src={meta.icon} alt="" width="72" height="72" />}
             <p className="eyebrow">
-              {meta.kind} · {meta.year}
+              {meta.kind}, {meta.year}
             </p>
             <h1>{meta.title}</h1>
             <p className="lede">{meta.tagline}</p>
@@ -80,9 +80,7 @@ export default function Project({ project }) {
               <a className="related" href={postUrl(post)}>
                 <span className="eyebrow">Related writing</span>
                 <span className="related__title">{post.title}</span>
-                <span className="related__more">
-                  Read the guide <ArrowRight />
-                </span>
+                <span className="related__more">Read the guide</span>
               </a>
             )}
           </div>
@@ -92,10 +90,7 @@ export default function Project({ project }) {
       {next && next.slug !== meta.slug && (
         <a className="next-up" href={projectUrl(next)}>
           <span className="eyebrow">Next project</span>
-          <span className="next-up__title">
-            {next.title}
-            <ArrowRight />
-          </span>
+          <span className="next-up__title">{next.title}</span>
           <span className="next-up__tagline">{next.tagline}</span>
         </a>
       )}

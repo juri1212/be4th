@@ -10,7 +10,7 @@ export const FOCUS_X = 0.42;
 export const FOCUS_Y = 0.6;
 
 const RIDER_SCALE = 0.92;
-const ACCENT = [255, 106, 61];
+const ACCENT = [243, 195, 187];
 const WHITE = [255, 255, 255];
 const WINDOW_LIGHT = '#ffc46b';
 const LABEL_TEXT = '#f6f1e8';

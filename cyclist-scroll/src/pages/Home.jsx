@@ -4,18 +4,19 @@ import RidePanel from '../components/RidePanel';
 import SiteFooter from '../components/SiteFooter';
 import SiteHeader from '../components/SiteHeader';
 import Tags from '../components/Tags';
-import { ArrowDown, ArrowRight, ArrowUp, External } from '../components/icons';
+import { ArrowDown, ArrowUp, External } from '../components/icons';
 import { POSTS, PROJECTS, postUrl, projectUrl } from '../content';
 import { clamp } from '../ride/math';
-import { FINISH_X } from '../ride/route';
+import { FINISH_X, kmAt } from '../ride/route';
 import { STAGES } from '../ride/stages';
-import { openPalette, useShortcutLabel } from '../palette';
 import { SITE, TOOLBOX, formatDate } from '../site';
 import '../styles/home.css';
 
 // One stage per section: the intro at the start line, each project on its own stage,
 // then the toolbox and writing on the descent, and contact a few metres past the finish.
 const ANCHORS = [0, ...STAGES.slice(0, 6).map((stage) => stage.anchor), FINISH_X + 240];
+// Where the rider is when each chapter is in focus, shown in the gutter like a road book.
+const KM_MARKS = ANCHORS.map((x) => (x > FINISH_X ? 'Finish' : `Km ${Math.round(kmAt(x))}`));
 const STACKED_LAYOUT = '(max-width: 900px)';
 const WORK = PROJECTS.slice(0, 4);
 const SECTIONS = { intro: 0, work: 1, toolbox: WORK.length + 1, writing: WORK.length + 2, contact: WORK.length + 3 };
@@ -35,17 +36,22 @@ function navSection(active) {
   return null;
 }
 
-function ChapterMeta({ children }) {
-  return <p className="chapter__meta">{children}</p>;
+function Km({ index }) {
+  return (
+    <span className="chapter__km" aria-hidden="true">
+      {KM_MARKS[index]}
+    </span>
+  );
 }
 
-function ProjectChapter({ project, ...props }) {
+function ProjectChapter({ project, index, ...props }) {
   const { links } = project;
   return (
     <section className="chapter chapter--project" aria-labelledby={`project-${project.slug}`} {...props}>
-      <ChapterMeta>
+      <p className="chapter__meta">
+        <Km index={index} />
         {project.kind}, {project.year}
-      </ChapterMeta>
+      </p>
       <h2 id={`project-${project.slug}`}>
         <a href={projectUrl(project)}>{project.title}</a>
       </h2>
@@ -59,8 +65,7 @@ function ProjectChapter({ project, ...props }) {
       <Tags items={project.stack} />
       <div className="actions">
         <a className="button" href={projectUrl(project)}>
-          Read more
-          <ArrowRight />
+          Read the write-up
         </a>
         {links.live && (
           <a className="link" href={links.live}>
@@ -127,7 +132,6 @@ export default function Home() {
     'data-active': active === index,
   });
 
-  const shortcut = useShortcutLabel();
   const latestPost = POSTS[0];
 
   return (
@@ -139,8 +143,10 @@ export default function Home() {
 
         <main id="main">
           <section className="chapter chapter--intro" {...sectionProps(SECTIONS.intro)}>
-            <p className="eyebrow">{SITE.role}</p>
-            <h1>Juri Beforth</h1>
+            <h1>
+              <Km index={SECTIONS.intro} />
+              Juri Beforth
+            </h1>
             <p className="lede">
               I build software across the whole stack — native macOS apps in Swift, backend services in Rust and web apps in
               React and TypeScript — and the pipelines that ship them.
@@ -149,7 +155,8 @@ export default function Home() {
               <div>
                 <dt>Featured</dt>
                 <dd>
-                  <a href={projectUrl(PROJECTS[0])}>{PROJECTS[0].title}</a> · {PROJECTS[0].tagline}
+                  <a href={projectUrl(PROJECTS[0])}>{PROJECTS[0].title}</a>
+                  <span>{PROJECTS[0].tagline}</span>
                 </dd>
               </div>
               {latestPost && (
@@ -166,9 +173,6 @@ export default function Home() {
                 See the work
                 <ArrowDown />
               </a>
-              <button type="button" className="link" onClick={openPalette}>
-                or press <kbd>{shortcut}</kbd> to jump anywhere
-              </button>
             </div>
           </section>
 
@@ -176,13 +180,17 @@ export default function Home() {
             <ProjectChapter
               key={project.slug}
               project={project}
+              index={SECTIONS.work + index}
               id={index === 0 ? 'work' : undefined}
               {...sectionProps(SECTIONS.work + index)}
             />
           ))}
 
           <section id="toolbox" className="chapter" {...sectionProps(SECTIONS.toolbox)}>
-            <h2>Toolbox</h2>
+            <h2>
+              <Km index={SECTIONS.toolbox} />
+              Toolbox
+            </h2>
             <p>What I reach for, from the interface to the API to the workflow that deploys it.</p>
             <dl className="toolbox">
               {TOOLBOX.map(({ area, tools }) => (
@@ -197,13 +205,17 @@ export default function Home() {
           </section>
 
           <section id="writing" className="chapter" {...sectionProps(SECTIONS.writing)}>
-            <h2>Writing</h2>
+            <h2>
+              <Km index={SECTIONS.writing} />
+              Writing
+            </h2>
             <ul className="posts">
               {POSTS.slice(0, 3).map((post) => (
                 <li key={post.slug}>
                   <a href={postUrl(post)}>{post.title}</a>
                   <span className="posts__meta">
-                    <time dateTime={post.date}>{formatDate(post.date)}</time> · {post.readingTime} min read
+                    <time dateTime={post.date}>{formatDate(post.date)}</time>
+                    <span>{post.readingTime} min read</span>
                   </span>
                   <p>{post.summary}</p>
                 </li>
@@ -212,7 +224,6 @@ export default function Home() {
             <div className="actions">
               <a className="button" href="/blog/">
                 All writing
-                <ArrowRight />
               </a>
               <a className="link" href="/feed.xml">
                 RSS feed
@@ -221,7 +232,10 @@ export default function Home() {
           </section>
 
           <section id="contact" className="chapter chapter--outro" {...sectionProps(SECTIONS.contact)}>
-            <h2>Get in touch</h2>
+            <h2>
+              <Km index={SECTIONS.contact} />
+              Get in touch
+            </h2>
             <p className="lede">
               Have a project, a question or an idea? The fastest way to reach me is on <a href={SITE.github}>GitHub</a>.
             </p>

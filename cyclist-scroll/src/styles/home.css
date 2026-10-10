@@ -18,7 +18,7 @@
   height: 100%;
   overflow: hidden;
   border-radius: 12px;
-  background: #10151f;
+  background: var(--bg);
   isolation: isolate;
   box-shadow: 0 0 0 1px var(--hairline), 0 30px 80px -40px rgb(0 0 0 / 0.8);
 }
@@ -50,29 +50,33 @@
 }
 
 .scene-label {
-  font-family: var(--mono);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  font-family: var(--display);
+  font-stretch: var(--condensed);
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
 }
 
 .scene-label--sub {
-  font-size: 11px;
-  font-weight: 400;
-  opacity: 0.6;
+  font-size: 12px;
+  font-weight: 450;
+  opacity: 0.65;
 }
 
 .scene-tick {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.06em;
+  font-family: var(--display);
+  font-stretch: var(--condensed);
+  font-size: 12px;
+  font-weight: 500;
 }
 
+/* The banner over the road is the one place for capitals: it's painted on the gantry. */
 .scene-gantry {
-  font-family: var(--mono);
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.4em;
+  font-family: var(--display);
+  font-stretch: var(--condensed);
+  font-size: 19px;
+  font-weight: 750;
+  letter-spacing: 0.18em;
 }
 
 /* ========== HUD ========== */
@@ -97,8 +101,10 @@
 }
 
 .hud-brand {
-  font-family: var(--serif);
-  font-size: 26px;
+  font-family: var(--display);
+  font-stretch: var(--condensed);
+  font-weight: 700;
+  font-size: 28px;
   line-height: 1;
   letter-spacing: -0.01em;
 }
@@ -114,30 +120,28 @@
 .hud-stage span,
 .hud-metric__label,
 .hud-scale {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: 550;
 }
 
 .hud-stage em {
   font-style: normal;
-  opacity: 0.55;
+  opacity: 0.6;
 }
 
 .hud-stage strong {
-  font-family: var(--serif);
-  font-weight: 400;
-  font-size: 22px;
-  line-height: 1.1;
+  font-family: var(--display);
+  font-stretch: var(--condensed);
+  font-weight: 650;
+  font-size: 24px;
+  line-height: 1.05;
 }
 
 .hud-panel {
   padding: 18px 20px 14px;
   border-radius: 14px;
-  background: rgb(10 10 16 / 0.5);
-  border: 1px solid rgb(255 255 255 / 0.08);
+  background: rgb(14 19 27 / 0.55);
+  border: 1px solid var(--hairline);
   backdrop-filter: blur(14px) saturate(140%);
   -webkit-backdrop-filter: blur(14px) saturate(140%);
 }
@@ -163,20 +167,19 @@
 }
 
 .hud-metric__value {
-  font-family: var(--mono);
-  font-size: clamp(18px, 1.8vw, 26px);
-  font-weight: 500;
+  font-family: var(--display);
+  font-stretch: var(--condensed);
+  font-size: clamp(24px, 2.4vw, 36px);
+  font-weight: 650;
   line-height: 1;
-  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
 .hud-metric__value small {
-  margin-left: 4px;
+  margin-left: 3px;
   font-size: 0.5em;
-  font-weight: 400;
-  letter-spacing: 0.06em;
+  font-weight: 500;
   color: var(--muted);
 }
 
@@ -194,12 +197,12 @@
 }
 
 .hud-profile__area {
-  fill: rgb(255 255 255 / 0.06);
+  fill: rgb(237 232 226 / 0.06);
 }
 
 .hud-profile__line {
   fill: none;
-  stroke: rgb(255 255 255 / 0.35);
+  stroke: rgb(237 232 226 / 0.35);
   stroke-width: 1.2;
   vector-effect: non-scaling-stroke;
 }
@@ -210,7 +213,7 @@
 }
 
 .hud-profile__divider {
-  stroke: rgb(255 255 255 / 0.1);
+  stroke: rgb(237 232 226 / 0.1);
   stroke-dasharray: 2 3;
   vector-effect: non-scaling-stroke;
 }
@@ -222,7 +225,7 @@
   margin: -4.5px 0 0 -4.5px;
   border-radius: 50%;
   background: var(--accent);
-  box-shadow: 0 0 0 4px rgb(255 106 61 / 0.25), 0 0 16px rgb(255 106 61 / 0.7);
+  box-shadow: 0 0 0 4px rgb(243 195 187 / 0.22), 0 0 16px rgb(243 195 187 / 0.6);
 }
 
 .hud-scale {
@@ -230,16 +233,19 @@
   justify-content: space-between;
   margin-top: 8px;
   color: var(--faint);
-  font-size: 9.5px;
 }
 
 /* ========== STORY ========== */
 
 .story {
-  padding: 0 clamp(28px, 5vw, 96px);
+  --story-inset: clamp(72px, 7vw, 120px);
+  --story-end: clamp(28px, 5vw, 96px);
+  padding: 0 var(--story-end) 0 var(--story-inset);
 }
 
+/* Each chapter sits at a point on the route, marked in the gutter like a road book. */
 .chapter {
+  position: relative;
   min-height: 100vh;
   min-height: 100svh;
   display: flex;
@@ -247,36 +253,64 @@
   justify-content: center;
   max-width: 38rem;
   padding: 14vh 0;
-  opacity: 0.3;
-  transform: translateY(14px);
-  transition: opacity 0.7s ease, transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+  opacity: 0.4;
+  transition: opacity 0.6s ease;
 }
 
 .chapter[data-active='true'] {
   opacity: 1;
-  transform: none;
+}
+
+.chapter > :first-child {
+  position: relative;
+}
+
+/* Sits in the first element of its chapter, centred on that line, out in the gutter. */
+.chapter__km {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: calc(100% + clamp(18px, 2.6vw, 44px));
+  display: flex;
+  align-items: center;
+  font-family: var(--display);
+  font-stretch: var(--condensed);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--faint);
+  transition: color 0.6s ease;
+}
+
+.chapter[data-active='true'] .chapter__km {
+  color: var(--accent);
 }
 
 .chapter .chapter__meta {
-  margin: 0 0 12px;
-  font-size: 0.95rem;
+  margin: 0 0 14px;
+  font-size: 0.9375rem;
   color: var(--muted);
 }
 
 .chapter h1,
 .chapter h2 {
-  font-family: var(--serif);
-  font-weight: 400;
-  line-height: 1.05;
+  font-family: var(--display);
+  font-stretch: var(--condensed);
+  font-weight: 650;
+  line-height: 0.95;
+  letter-spacing: -0.005em;
   text-wrap: balance;
 }
 
 .chapter h1 {
-  font-size: clamp(3rem, 5.4vw, 5rem);
+  font-size: clamp(4rem, 7.2vw, 7rem);
+  font-weight: 700;
+  line-height: 0.9;
 }
 
 .chapter h2 {
-  font-size: clamp(2.2rem, 3.4vw, 3.2rem);
+  font-size: clamp(2.75rem, 4.4vw, 4.25rem);
 }
 
 .chapter p:not(.eyebrow) {
@@ -288,12 +322,10 @@
 }
 
 .chapter .lede {
-  font-size: 1.1875rem;
-  color: #c4c0c7;
-}
-
-.chapter .eyebrow {
-  margin-bottom: 12px;
+  margin-top: 22px;
+  font-size: 1.25rem;
+  line-height: 1.55;
+  color: var(--text);
 }
 
 /* ========== STORY HEADER ========== */
@@ -302,8 +334,8 @@
   position: sticky;
   top: 0;
   z-index: 3;
-  margin: 0 calc(-1 * clamp(28px, 5vw, 96px));
-  padding: 26px clamp(28px, 5vw, 96px) 34px;
+  margin: 0 calc(-1 * var(--story-end)) 0 calc(-1 * var(--story-inset));
+  padding: 26px var(--story-end) 34px var(--story-inset);
   background: linear-gradient(to bottom, var(--bg) 45%, transparent);
 }
 
@@ -313,7 +345,7 @@
 
 /* ========== SECTIONS ========== */
 
-.chapter a {
+.chapter a:not(.button) {
   color: inherit;
 }
 
@@ -321,7 +353,7 @@
 .now a {
   color: var(--text);
   text-decoration: underline;
-  text-decoration-color: rgb(255 106 61 / 0.6);
+  text-decoration-color: rgb(243 195 187 / 0.55);
   text-underline-offset: 3px;
   transition: text-decoration-color 0.2s ease;
 }
@@ -358,13 +390,17 @@
 }
 
 .now dt {
-  font-size: 0.95rem;
+  font-size: 0.9375rem;
   color: var(--faint);
 }
 
 .now dd {
-  font-size: 0.95rem;
+  font-size: 0.9375rem;
   color: var(--muted);
+}
+
+.now dd span {
+  display: block;
 }
 
 .highlights {
@@ -402,7 +438,8 @@
 }
 
 .toolbox dt {
-  font-size: 0.95rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
   color: var(--text);
 }
 
@@ -420,8 +457,11 @@
 }
 
 .posts a {
-  font-size: 1.125rem;
-  font-weight: 500;
+  font-family: var(--display);
+  font-stretch: var(--condensed);
+  font-size: 1.625rem;
+  font-weight: 600;
+  line-height: 1.1;
   text-decoration: underline;
   text-decoration-color: var(--hairline-strong);
   text-underline-offset: 4px;
@@ -433,8 +473,9 @@
 }
 
 .posts__meta {
-  display: block;
-  margin-top: 2px;
+  display: flex;
+  gap: 16px;
+  margin-top: 6px;
   font-size: 0.875rem;
   color: var(--faint);
 }
@@ -476,17 +517,17 @@
   }
 
   .hud-brand {
-    font-size: 20px;
+    font-size: 22px;
   }
 
   .hud-stage strong {
-    font-size: 17px;
+    font-size: 19px;
   }
 
   .hud-panel {
     padding: 10px 12px 9px;
     border-radius: 11px;
-    background: rgb(10 10 16 / 0.72);
+    background: rgb(14 19 27 / 0.76);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
@@ -500,11 +541,11 @@
   }
 
   .hud-metric__label {
-    font-size: 9px;
+    font-size: 11px;
   }
 
   .hud-metric__value {
-    font-size: 16px;
+    font-size: 22px;
   }
 
   .hud-profile {
@@ -530,7 +571,7 @@
     bottom: calc(16px + env(safe-area-inset-bottom));
     z-index: 4;
     display: inline-flex;
-    background: rgb(18 18 25 / 0.92);
+    background: rgb(22 28 39 / 0.92);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     box-shadow: 0 12px 30px -10px rgb(0 0 0 / 0.8);
@@ -540,6 +581,12 @@
   .toolbox div {
     grid-template-columns: minmax(0, 1fr);
     gap: 6px;
+  }
+
+  .chapter__km {
+    position: static;
+    display: block;
+    margin-bottom: 12px;
   }
 
   .chapter {
@@ -554,8 +601,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .chapter {
+  .chapter,
+  .chapter__km {
     transition: none;
-    transform: none;
   }
 }

@@ -2,35 +2,26 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import RidePanel from './components/RidePanel';
 import { clamp } from './ride/math';
 import { FINISH_X } from './ride/route';
-import { STAGES, TOTALS } from './ride/stages';
+import { LINKS, POSTS, PROJECTS, formatDate } from './content';
 import './App.css';
 
-// The rider rolls a few metres past the line on the final chapter.
-const ANCHORS = [0, ...STAGES.map((stage) => stage.anchor), FINISH_X + 240];
+// Where the rider stands for each section: lowlands, Stuttgart, Alpe d’Huez, a few metres past the line.
+const ANCHORS = [0, 5900, 13700, FINISH_X + 240];
 const STACKED_LAYOUT = '(max-width: 900px)';
 
-const formatNumber = (value, digits = 0) =>
-  value.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+const Arrow = () => (
+  <svg viewBox="0 0 16 16" aria-hidden="true">
+    <path d="M3 8h10M8.5 3.5 13 8l-4.5 4.5" />
+  </svg>
+);
 
-function stageStats({ distance, gain, loss, maxGrade, minGrade }) {
-  const descending = loss > gain * 2;
-  return [
-    ['Distance', formatNumber(distance, 1), 'km'],
-    descending ? ['Descending', formatNumber(loss), 'm'] : ['Climbing', formatNumber(gain), 'm'],
-    descending ? ['Max grade', `−${formatNumber(Math.abs(minGrade), 1)}`, '%'] : ['Max grade', formatNumber(maxGrade, 1), '%'],
-  ];
-}
-
-function Stats({ items }) {
+function Facts({ items }) {
   return (
     <dl className="stats">
-      {items.map(([label, value, unit]) => (
+      {items.map(([label, value]) => (
         <div key={label}>
           <dt>{label}</dt>
-          <dd>
-            {value}
-            <span>{unit}</span>
-          </dd>
+          <dd>{value}</dd>
         </div>
       ))}
     </dl>
@@ -68,6 +59,11 @@ function App() {
     };
   }, []);
 
+  // Links like /#work arrive before the sections exist, so the browser can't jump on its own.
+  useEffect(() => {
+    if (window.location.hash) document.querySelector(window.location.hash)?.scrollIntoView();
+  }, []);
+
   useEffect(() => {
     const update = () => {
       const anchors = anchorsRef.current;
@@ -95,43 +91,82 @@ function App() {
 
       <main className="story">
         <section className="chapter chapter--intro" {...sectionProps(0)}>
-          <p className="eyebrow">A ride in seven stages</p>
+          <p className="eyebrow">Juri Beforth · Developer</p>
           <h1>
-            Ride your <em>map</em>
+            I build <em>things</em>
           </h1>
-          <p className="lede">From Dutch lowlands to legendary Alpine roads.</p>
-          <Stats
-            items={[
-              ['Distance', formatNumber(TOTALS.distance), 'km'],
-              ['Climbing', formatNumber(TOTALS.gain), 'm'],
-              ['High point', formatNumber(TOTALS.high), 'm'],
-            ]}
-          />
+          <p className="lede">Apps, tools and websites — and the occasional write-up of how they work.</p>
+          <nav className="jump" aria-label="Sections">
+            <a href="#work">Work</a>
+            <a href="#writing">Writing</a>
+            <a href={LINKS.github}>GitHub</a>
+          </nav>
           <div className="scroll-cue">
             <span className="scroll-cue__line" />
             Scroll to ride
           </div>
         </section>
 
-        {STAGES.map((stage, index) => (
-          <section key={stage.number} className="chapter" {...sectionProps(index + 1)}>
-            <div className="chapter__meta">
-              <span className="chapter__number">{stage.number}</span>
-              <span className="chapter__rule" />
-              <span>{stage.region}</span>
-            </div>
-            <h2>{stage.title}</h2>
-            <p>{stage.text}</p>
-            <Stats items={stageStats(stage.stats)} />
-          </section>
-        ))}
+        <section id="work" className="chapter" {...sectionProps(1)}>
+          <div className="chapter__meta">
+            <span className="chapter__number">01</span>
+            <span className="chapter__rule" />
+            <span>Work</span>
+          </div>
+          {PROJECTS.map((project) => (
+            <article key={project.name} className="project">
+              <img className="project__icon" src={project.icon} alt="" width="64" height="64" />
+              <h2>
+                <a href={project.url}>{project.name}</a>
+              </h2>
+              <p className="lede">{project.tagline}</p>
+              <p>{project.description}</p>
+              <Facts items={project.facts} />
+              <div className="actions">
+                <a className="button" href={project.url}>
+                  View project
+                  <Arrow />
+                </a>
+                <a className="link" href={project.source}>
+                  Source on GitHub
+                </a>
+              </div>
+            </article>
+          ))}
+        </section>
 
-        <section className="chapter chapter--outro" {...sectionProps(STAGES.length + 1)}>
+        <section id="writing" className="chapter" {...sectionProps(2)}>
+          <div className="chapter__meta">
+            <span className="chapter__number">02</span>
+            <span className="chapter__rule" />
+            <span>Writing</span>
+          </div>
+          <h2>
+            From the <em>blog</em>
+          </h2>
+          <ul className="posts">
+            {POSTS.map((post) => (
+              <li key={post.url}>
+                <time dateTime={post.date}>{formatDate(post.date)}</time>
+                <a href={post.url}>{post.title}</a>
+                <p>{post.summary}</p>
+              </li>
+            ))}
+          </ul>
+          <a className="button" href="/blog/">
+            All posts
+            <Arrow />
+          </a>
+        </section>
+
+        <section className="chapter chapter--outro" {...sectionProps(3)}>
           <p className="eyebrow">Finish · Bourg d’Oisans</p>
           <h1>
-            Journey <em>complete</em>
+            Say <em>hello</em>
           </h1>
-          <p className="lede">You’ve reached the end of the ride.</p>
+          <p className="lede">
+            Questions, ideas or bugs? Find me on <a href={LINKS.github}>GitHub</a>.
+          </p>
           <button type="button" className="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             Ride it again
             <svg viewBox="0 0 16 16" aria-hidden="true">

@@ -1,21 +1,17 @@
-import { resolve } from 'node:path'
+import { execSync } from 'node:child_process'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import markdown from './plugins/markdown.js'
 
-const page = (path) => resolve(import.meta.dirname, path)
+// Shown in the footer. Taken from the commit rather than the clock, so the client and the prerender agree.
+const git = (format) => execSync(`git log -1 --format=${format}`).toString().trim()
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
-  build: {
-    rolldownOptions: {
-      // The start page is the React ride; projects and posts are static pages.
-      input: {
-        main: page('index.html'),
-        duophonic: page('projects/duophonic/index.html'),
-        blog: page('blog/index.html'),
-        'play-mac-audio-on-two-outputs': page('blog/play-mac-audio-on-two-outputs/index.html'),
-      },
-    },
+  plugins: [markdown(), react()],
+  // The prerender reads the manifest to link each page's CSS and chunks in its HTML.
+  build: { manifest: true },
+  define: {
+    __BUILD__: JSON.stringify({ commit: git('%h'), date: git('%cs') }),
   },
 })

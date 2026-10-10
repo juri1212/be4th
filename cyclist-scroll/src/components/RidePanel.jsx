@@ -43,7 +43,10 @@ export default function RidePanel({ anchorsRef, panelRef }) {
   const frameRef = useRef(null);
   const [x, setX] = useState(0);
   const [size, setSize] = useState({ width: 800, height: 1000 });
-  const [grain] = useState(grainTile);
+  const [grain, setGrain] = useState(null);
+
+  // Needs a canvas, so it's drawn after hydration rather than during the prerender.
+  useEffect(() => setGrain(grainTile()), []);
 
   useEffect(() => {
     const frame = frameRef.current;
@@ -79,7 +82,7 @@ export default function RidePanel({ anchorsRef, panelRef }) {
     <aside className="ride-panel" ref={panelRef} aria-label="Ride progress">
       <div className="ride-frame" ref={frameRef}>
         <Scene x={x} width={size.width} height={size.height} />
-        <div className="ride-frame__grain" style={{ backgroundImage: grain }} />
+        <div className="ride-frame__grain" style={grain ? { backgroundImage: grain } : undefined} />
         <Hud x={x} />
       </div>
     </aside>

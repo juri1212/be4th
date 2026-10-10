@@ -1,11 +1,11 @@
 {
-  "name": "cyclist-scroll",
+  "name": "be4th",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && vite build --ssr src/entry-server.jsx --outDir .ssr && node scripts/prerender.js",
     "lint": "oxlint",
     "preview": "vite preview"
   },
@@ -17,7 +17,10 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.4",
+    "marked": "^18.1.0",
     "oxlint": "^1.75.0",
-    "vite": "^8.2.0"
+    "shiki": "^4.5.0",
+    "vite": "^8.2.0",
+    "yaml": "^2.9.1"
   }
 }

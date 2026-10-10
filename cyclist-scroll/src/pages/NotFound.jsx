@@ -6,11 +6,8 @@ export default function NotFound() {
   return (
     <PageLayout>
       <header className="page-intro page-intro--center">
-        <p className="eyebrow">404 · Off route</p>
-        <h1>
-          Wrong <em>turn</em>
-        </h1>
-        <p className="lede">This road doesn’t go anywhere. Let’s get you back on course.</p>
+        <h1>Wrong turn</h1>
+        <p className="lede">There’s no page at this address. Head back to the start, or search the site for what you were after.</p>
         <div className="actions">
           <a className="button button--solid" href="/">
             <ArrowLeft /> Back to the start

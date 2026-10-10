@@ -3,7 +3,8 @@ import PageLayout from '../components/PageLayout';
 import Prose from '../components/Prose';
 import ReadingProgress from '../components/ReadingProgress';
 import TableOfContents from '../components/TableOfContents';
-import { ArrowLeft, ArrowRight } from '../components/icons';
+import Tags from '../components/Tags';
+import { ArrowLeft } from '../components/icons';
 import { POSTS, PROJECTS, postUrl, projectUrl } from '../content';
 import { SITE, formatDate } from '../site';
 
@@ -21,9 +22,7 @@ export default function Post({ post }) {
           <a className="back" href="/blog/">
             <ArrowLeft /> All writing
           </a>
-          <p className="eyebrow">
-            {(meta.tags ?? []).join(' · ')}
-          </p>
+          {meta.tags && <Tags items={meta.tags} label="Topics" />}
           <h1>{meta.title}</h1>
           <p className="lede">{meta.summary}</p>
           <p className="post-header__meta">
@@ -42,12 +41,8 @@ export default function Post({ post }) {
             {project && (
               <a className="related" href={projectUrl(project)}>
                 <span className="eyebrow">The project</span>
-                <span className="related__title">
-                  {project.title} — {project.tagline}
-                </span>
-                <span className="related__more">
-                  How it’s built <ArrowRight />
-                </span>
+                <span className="related__title">{project.title}</span>
+                <span className="related__more">{project.tagline} Read how it’s built.</span>
               </a>
             )}
           </div>

@@ -38,8 +38,8 @@ export default function Hud({ x }) {
         <span className="hud-brand">be4th</span>
         <div className="hud-stage">
           <span>
-            Stage {stage.number}
-            <em> / {String(STAGES.length).padStart(2, '0')}</em>
+            Stage {Number(stage.number)}
+            <em> of {STAGES.length}</em>
           </span>
           <strong>{stage.place}</strong>
         </div>
@@ -58,8 +58,8 @@ export default function Hud({ x }) {
                 <rect width={progress * 1000} height={PROFILE_HEIGHT} />
               </clipPath>
               <linearGradient id="hud-fill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stopColor="#ff6a3d" stopOpacity="0.45" />
-                <stop offset="1" stopColor="#ff6a3d" stopOpacity="0" />
+                <stop offset="0" stopColor="#f3c3bb" stopOpacity="0.4" />
+                <stop offset="1" stopColor="#f3c3bb" stopOpacity="0" />
               </linearGradient>
             </defs>
             <path d={PROFILE_AREA} className="hud-profile__area" />

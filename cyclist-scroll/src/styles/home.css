@@ -1,6 +1,6 @@
 .page {
   display: grid;
-  grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 0.72fr) minmax(0, 1fr);
 }
 
 /* ========== RIDE PANEL ========== */
@@ -17,7 +17,7 @@
   position: relative;
   height: 100%;
   overflow: hidden;
-  border-radius: 20px;
+  border-radius: 12px;
   background: #10151f;
   isolation: isolate;
   box-shadow: 0 0 0 1px var(--hairline), 0 30px 80px -40px rgb(0 0 0 / 0.8);
@@ -236,7 +236,7 @@
 /* ========== STORY ========== */
 
 .story {
-  padding: 0 clamp(28px, 6vw, 112px);
+  padding: 0 clamp(28px, 5vw, 96px);
 }
 
 .chapter {
@@ -245,9 +245,9 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  max-width: 34rem;
-  padding: 12vh 0;
-  opacity: 0.22;
+  max-width: 38rem;
+  padding: 14vh 0;
+  opacity: 0.3;
   transform: translateY(14px);
   transition: opacity 0.7s ease, transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
@@ -257,107 +257,43 @@
   transform: none;
 }
 
-.chapter__meta,
-.scroll-cue {
-  font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+.chapter .chapter__meta {
+  margin: 0 0 12px;
+  font-size: 0.95rem;
   color: var(--muted);
-}
-
-.chapter__meta {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 28px;
-}
-
-.chapter__number {
-  color: var(--accent);
-}
-
-.chapter__rule {
-  width: 40px;
-  height: 1px;
-  background: var(--hairline);
-  background: rgb(255 255 255 / 0.2);
 }
 
 .chapter h1,
 .chapter h2 {
   font-family: var(--serif);
   font-weight: 400;
-  letter-spacing: -0.015em;
-  line-height: 0.98;
+  line-height: 1.05;
   text-wrap: balance;
 }
 
 .chapter h1 {
-  font-size: clamp(3.6rem, 7.4vw, 7.25rem);
+  font-size: clamp(3rem, 5.4vw, 5rem);
 }
 
 .chapter h2 {
-  font-size: clamp(2.8rem, 4.8vw, 4.9rem);
-}
-
-.chapter h1 em,
-.chapter h2 em {
-  font-style: italic;
-  color: var(--accent);
+  font-size: clamp(2.2rem, 3.4vw, 3.2rem);
 }
 
 .chapter p:not(.eyebrow) {
-  margin-top: 24px;
-  font-size: clamp(1rem, 1.15vw, 1.125rem);
-  line-height: 1.75;
+  margin-top: 18px;
+  font-size: 1.0625rem;
+  line-height: 1.65;
   color: var(--muted);
   text-wrap: pretty;
 }
 
 .chapter .lede {
-  font-size: clamp(1.1rem, 1.35vw, 1.3rem);
-  color: #b9b5bd;
+  font-size: 1.1875rem;
+  color: #c4c0c7;
 }
 
-.eyebrow {
-  margin-bottom: 26px;
-}
-
-.scroll-cue {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-top: 64px;
-  color: var(--faint);
-}
-
-.scroll-cue__line {
-  position: relative;
-  width: 48px;
-  height: 1px;
-  overflow: hidden;
-  background: rgb(255 255 255 / 0.12);
-}
-
-.scroll-cue__line::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--accent);
-  will-change: transform;
-  animation: cue 2.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
-}
-
-@keyframes cue {
-  from {
-    transform: translateX(-100%);
-  }
-
-  to {
-    transform: translateX(100%);
-  }
+.chapter .eyebrow {
+  margin-bottom: 12px;
 }
 
 /* ========== STORY HEADER ========== */
@@ -366,8 +302,8 @@
   position: sticky;
   top: 0;
   z-index: 3;
-  margin: 0 calc(-1 * clamp(28px, 6vw, 112px));
-  padding: 26px clamp(28px, 6vw, 112px) 34px;
+  margin: 0 calc(-1 * clamp(28px, 5vw, 96px));
+  padding: 26px clamp(28px, 5vw, 96px) 34px;
   background: linear-gradient(to bottom, var(--bg) 45%, transparent);
 }
 
@@ -404,31 +340,14 @@
   color: var(--accent);
 }
 
-.chapter h2.display {
-  font-size: clamp(3.4rem, 6.6vw, 6.5rem);
-}
-
 .chapter .actions {
-  margin-top: 44px;
-}
-
-.status-dot {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  margin-right: 12px;
-  border-radius: 50%;
-  background: #4ade80;
-  box-shadow: 0 0 0 3px rgb(74 222 128 / 0.18);
-  vertical-align: 1px;
+  margin-top: 32px;
 }
 
 .now {
   display: grid;
-  gap: 14px;
-  margin-top: 36px;
-  padding-top: 24px;
-  border-top: 1px solid var(--hairline);
+  gap: 10px;
+  margin-top: 28px;
 }
 
 .now div {
@@ -439,10 +358,7 @@
 }
 
 .now dt {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  font-size: 0.95rem;
   color: var(--faint);
 }
 
@@ -453,37 +369,28 @@
 
 .highlights {
   display: grid;
-  gap: 10px;
-  margin-top: 28px;
-  list-style: none;
+  gap: 6px;
+  margin-top: 18px;
+  padding-left: 1.1em;
 }
 
 .highlights li {
-  position: relative;
-  padding-left: 22px;
-  font-size: 0.95rem;
+  font-size: 1rem;
   line-height: 1.6;
-  color: #b9b5bd;
+  color: var(--muted);
 }
 
-.highlights li::before {
-  content: '';
-  position: absolute;
-  top: 0.72em;
-  left: 0;
-  width: 10px;
-  height: 1px;
-  background: var(--accent);
+.highlights li::marker {
+  color: var(--faint);
 }
 
 .chapter .tags {
-  margin-top: 28px;
+  margin-top: 20px;
 }
 
 .toolbox {
   display: grid;
-  margin-top: 36px;
-  border-top: 1px solid var(--hairline);
+  margin-top: 24px;
 }
 
 .toolbox div {
@@ -491,16 +398,12 @@
   grid-template-columns: 7.5rem minmax(0, 1fr);
   gap: 16px;
   align-items: baseline;
-  padding: 18px 0;
-  border-bottom: 1px solid var(--hairline);
+  padding: 10px 0;
 }
 
 .toolbox dt {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--muted);
+  font-size: 0.95rem;
+  color: var(--text);
 }
 
 .toolbox .tags {
@@ -509,40 +412,36 @@
 
 .posts {
   list-style: none;
-  margin-top: 36px;
-  border-top: 1px solid var(--hairline);
+  margin-top: 24px;
 }
 
 .posts li {
-  padding: 24px 0;
-  border-bottom: 1px solid var(--hairline);
+  padding: 14px 0;
+}
+
+.posts a {
+  font-size: 1.125rem;
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: var(--hairline-strong);
+  text-underline-offset: 4px;
+  transition: text-decoration-color 0.2s ease;
+}
+
+.posts a:hover {
+  text-decoration-color: var(--accent);
 }
 
 .posts__meta {
   display: block;
-  margin-bottom: 8px;
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  margin-top: 2px;
+  font-size: 0.875rem;
   color: var(--faint);
 }
 
-.posts a {
-  font-family: var(--serif);
-  font-size: clamp(1.5rem, 2vw, 1.85rem);
-  line-height: 1.12;
-  text-decoration: none;
-  transition: color 0.25s ease;
-}
-
-.posts a:hover {
-  color: var(--accent);
-}
-
 .chapter .posts p {
-  margin-top: 8px;
-  font-size: 0.95rem;
+  margin-top: 4px;
+  font-size: 1rem;
 }
 
 .story > .site-footer {
@@ -655,10 +554,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .scroll-cue__line::after {
-    animation: none;
-  }
-
   .chapter {
     transition: none;
     transform: none;

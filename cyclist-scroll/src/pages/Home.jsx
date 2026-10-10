@@ -35,22 +35,16 @@ function navSection(active) {
   return null;
 }
 
-function ChapterMeta({ number, children }) {
-  return (
-    <div className="chapter__meta">
-      <span className="chapter__number">{number}</span>
-      <span className="chapter__rule" />
-      <span>{children}</span>
-    </div>
-  );
+function ChapterMeta({ children }) {
+  return <p className="chapter__meta">{children}</p>;
 }
 
-function ProjectChapter({ project, number, ...props }) {
+function ProjectChapter({ project, ...props }) {
   const { links } = project;
   return (
     <section className="chapter chapter--project" aria-labelledby={`project-${project.slug}`} {...props}>
-      <ChapterMeta number={number}>
-        {project.kind} · {project.year}
+      <ChapterMeta>
+        {project.kind}, {project.year}
       </ChapterMeta>
       <h2 id={`project-${project.slug}`}>
         <a href={projectUrl(project)}>{project.title}</a>
@@ -65,7 +59,7 @@ function ProjectChapter({ project, number, ...props }) {
       <Tags items={project.stack} />
       <div className="actions">
         <a className="button" href={projectUrl(project)}>
-          Read the case study
+          Read more
           <ArrowRight />
         </a>
         {links.live && (
@@ -145,13 +139,8 @@ export default function Home() {
 
         <main id="main">
           <section className="chapter chapter--intro" {...sectionProps(SECTIONS.intro)}>
-            <p className="eyebrow">
-              <span className="status-dot" aria-hidden="true" />
-              {SITE.role}
-            </p>
-            <h1>
-              Juri <em>Beforth</em>
-            </h1>
+            <p className="eyebrow">{SITE.role}</p>
+            <h1>Juri Beforth</h1>
             <p className="lede">
               I build software across the whole stack — native macOS apps in Swift, backend services in Rust and web apps in
               React and TypeScript — and the pipelines that ship them.
@@ -181,28 +170,20 @@ export default function Home() {
                 or press <kbd>{shortcut}</kbd> to jump anywhere
               </button>
             </div>
-            <div className="scroll-cue">
-              <span className="scroll-cue__line" />
-              Scroll to ride through the work
-            </div>
           </section>
 
           {WORK.map((project, index) => (
             <ProjectChapter
               key={project.slug}
               project={project}
-              number={String(index + 1).padStart(2, '0')}
               id={index === 0 ? 'work' : undefined}
               {...sectionProps(SECTIONS.work + index)}
             />
           ))}
 
           <section id="toolbox" className="chapter" {...sectionProps(SECTIONS.toolbox)}>
-            <ChapterMeta number="05">Toolbox</ChapterMeta>
-            <h2>
-              End to <em>end</em>
-            </h2>
-            <p>From the interface to the API to the workflow that deploys it — the tools behind the projects above.</p>
+            <h2>Toolbox</h2>
+            <p>What I reach for, from the interface to the API to the workflow that deploys it.</p>
             <dl className="toolbox">
               {TOOLBOX.map(({ area, tools }) => (
                 <div key={area}>
@@ -216,17 +197,14 @@ export default function Home() {
           </section>
 
           <section id="writing" className="chapter" {...sectionProps(SECTIONS.writing)}>
-            <ChapterMeta number="06">Writing</ChapterMeta>
-            <h2>
-              Notes from the <em>workshop</em>
-            </h2>
+            <h2>Writing</h2>
             <ul className="posts">
               {POSTS.slice(0, 3).map((post) => (
                 <li key={post.slug}>
+                  <a href={postUrl(post)}>{post.title}</a>
                   <span className="posts__meta">
                     <time dateTime={post.date}>{formatDate(post.date)}</time> · {post.readingTime} min read
                   </span>
-                  <a href={postUrl(post)}>{post.title}</a>
                   <p>{post.summary}</p>
                 </li>
               ))}
@@ -243,20 +221,17 @@ export default function Home() {
           </section>
 
           <section id="contact" className="chapter chapter--outro" {...sectionProps(SECTIONS.contact)}>
-            <p className="eyebrow">Finish · Bourg d’Oisans</p>
-            <h2 className="display">
-              Let’s build <em>something</em>
-            </h2>
+            <h2>Get in touch</h2>
             <p className="lede">
               Have a project, a question or an idea? The fastest way to reach me is on <a href={SITE.github}>GitHub</a>.
             </p>
             <div className="actions">
               <a className="button button--solid" href={SITE.github}>
-                Say hello on GitHub
+                GitHub
                 <External />
               </a>
               <button type="button" className="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                Ride it again
+                Back to top
                 <ArrowUp />
               </button>
             </div>

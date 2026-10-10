@@ -450,6 +450,7 @@ body {
   color: var(--text);
   font: 500 14px/1 var(--sans);
   letter-spacing: 0.01em;
+  text-decoration: none;
   cursor: pointer;
   transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
 }
@@ -473,6 +474,131 @@ body {
 .button:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
+}
+
+/* ========== WORK & WRITING ========== */
+
+.chapter a {
+  color: inherit;
+}
+
+.chapter p a {
+  color: var(--text);
+  text-decoration-color: var(--accent);
+  text-underline-offset: 3px;
+}
+
+.chapter h2 a {
+  text-decoration: none;
+  transition: color 0.25s ease;
+}
+
+.chapter h2 a:hover {
+  color: var(--accent);
+}
+
+.jump {
+  display: flex;
+  gap: 28px;
+  margin-top: 36px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.jump a {
+  text-decoration: none;
+  border-bottom: 1px solid rgb(255 255 255 / 0.2);
+  padding-bottom: 4px;
+  transition: border-color 0.25s ease, color 0.25s ease;
+}
+
+.jump a:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.project {
+  display: flex;
+  flex-direction: column;
+}
+
+.project__icon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 24px;
+  border-radius: 15px;
+}
+
+.stats dd:not(:has(span)) {
+  font-size: clamp(1.1rem, 1.5vw, 1.35rem);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 28px;
+  margin-top: 44px;
+}
+
+.actions .button {
+  margin-top: 0;
+}
+
+.link {
+  font-size: 14px;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.25s ease;
+}
+
+.chapter .link {
+  color: var(--muted);
+}
+
+.link:hover,
+.chapter .link:hover {
+  color: var(--text);
+}
+
+.posts {
+  list-style: none;
+  margin-top: 36px;
+  border-top: 1px solid var(--hairline);
+}
+
+.posts li {
+  padding: 22px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.posts time {
+  display: block;
+  margin-bottom: 8px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.posts a {
+  font-family: var(--serif);
+  font-size: clamp(1.45rem, 2vw, 1.8rem);
+  line-height: 1.15;
+  text-decoration: none;
+  transition: color 0.25s ease;
+}
+
+.posts a:hover {
+  color: var(--accent);
+}
+
+.chapter .posts p {
+  margin-top: 8px;
+  font-size: 0.95rem;
 }
 
 /* ========== RESPONSIVE ========== */
@@ -548,6 +674,7 @@ body {
   }
 
   .chapter {
+    scroll-margin-top: 50svh;
     min-height: 60svh;
     padding: 8vh 0;
   }

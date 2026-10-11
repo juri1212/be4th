@@ -502,8 +502,8 @@
 
   .ride-panel {
     z-index: 2;
-    height: 50vh;
-    height: 50svh;
+    height: 34vh;
+    height: 34svh;
     padding: var(--frame-gap);
     background: linear-gradient(to bottom, var(--bg) 85%, transparent);
   }
@@ -525,35 +525,6 @@
   }
 
   .hud-panel {
-    padding: 10px 12px 9px;
-    border-radius: 11px;
-    background: rgb(14 19 27 / 0.76);
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
-
-  .hud-metric {
-    gap: 4px;
-  }
-
-  .hud-metric + .hud-metric {
-    padding-left: 12px;
-  }
-
-  .hud-metric__label {
-    font-size: 11px;
-  }
-
-  .hud-metric__value {
-    font-size: 22px;
-  }
-
-  .hud-profile {
-    height: 18px;
-    margin-top: 8px;
-  }
-
-  .hud-scale {
     display: none;
   }
 
@@ -590,13 +561,13 @@
   }
 
   .chapter {
-    scroll-margin-top: 50svh;
+    scroll-margin-top: 34svh;
     min-height: 60svh;
     padding: 8vh 0;
   }
 
   .chapter:last-child {
-    min-height: 50svh;
+    min-height: 66svh;
   }
 }
 

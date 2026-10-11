@@ -136,7 +136,7 @@ export default function Home() {
 
   return (
     <div className="page">
-      <RidePanel anchorsRef={anchorsRef} panelRef={panelRef} />
+      <RidePanel anchorsRef={anchorsRef} panelRef={panelRef} stackedQuery={STACKED_LAYOUT} />
 
       <div className="story">
         <SiteHeader links={NAV} current={navSection(active)} brand={false} />

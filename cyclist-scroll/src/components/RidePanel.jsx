@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { clamp, lerp } from '../ride/math';
 import Hud from './Hud';
-import Scene from './Scene';
+import Scene, { FOCUS_Y, FOCUS_Y_STACKED } from './Scene';
 
 // Film grain, rendered once into a small tile instead of an SVG filter that repaints.
 function grainTile() {
@@ -39,10 +39,19 @@ function scrollToWorld(anchors, scroll) {
   return anchors[anchors.length - 1].x;
 }
 
-export default function RidePanel({ anchorsRef, panelRef }) {
+export default function RidePanel({ anchorsRef, panelRef, stackedQuery }) {
   const frameRef = useRef(null);
   const [x, setX] = useState(0);
   const [size, setSize] = useState({ width: 800, height: 1000 });
+  const [stacked, setStacked] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia(stackedQuery);
+    const update = () => setStacked(query.matches);
+    update();
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, [stackedQuery]);
   const [grain, setGrain] = useState(null);
 
   // Needs a canvas, so it's drawn after hydration rather than during the prerender.
@@ -53,7 +62,7 @@ export default function RidePanel({ anchorsRef, panelRef }) {
     const observer = new ResizeObserver(([entry]) => {
       const { width, height } = entry.contentRect;
       if (!width || !height) return;
-      const viewHeight = clamp(height * 1.25, 640, 1000);
+      const viewHeight = clamp(height * 1.25, 480, 1000);
       setSize({ width: (viewHeight * width) / height, height: viewHeight });
     });
     observer.observe(frame);
@@ -81,7 +90,7 @@ export default function RidePanel({ anchorsRef, panelRef }) {
   return (
     <aside className="ride-panel" ref={panelRef} aria-label="Ride progress">
       <div className="ride-frame" ref={frameRef}>
-        <Scene x={x} width={size.width} height={size.height} />
+        <Scene x={x} width={size.width} height={size.height} focusY={stacked ? FOCUS_Y_STACKED : FOCUS_Y} />
         <div className="ride-frame__grain" style={grain ? { backgroundImage: grain } : undefined} />
         <Hud x={x} />
       </div>

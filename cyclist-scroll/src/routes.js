@@ -49,7 +49,13 @@ export function headFor(route) {
         ...base,
         title: `${SITE.author} · ${SITE.role}`,
         description: SITE.description,
-        jsonLd: { '@context': 'https://schema.org', ...person, jobTitle: SITE.role },
+        jsonLd: {
+          '@context': 'https://schema.org',
+          '@graph': [
+            { '@type': 'WebSite', name: SITE.name, url: SITE.url, description: SITE.description, inLanguage: 'en', publisher: person },
+            { ...person, jobTitle: SITE.role },
+          ],
+        },
       };
     case 'projects':
       return { ...base, title: `Work · ${SITE.name}`, description: `Projects by ${SITE.author}: native apps, backend services and web apps.` };
@@ -62,6 +68,18 @@ export function headFor(route) {
         title: `${meta.title} — ${meta.tagline} · ${SITE.name}`,
         description: meta.summary,
         image: meta.image?.endsWith('.webp') ? null : meta.image,
+        jsonLd: {
+          '@context': 'https://schema.org',
+          '@type': 'CreativeWork',
+          name: meta.title,
+          headline: meta.tagline,
+          description: meta.summary,
+          url: base.url,
+          author: person,
+          keywords: meta.stack?.join(', '),
+          image: meta.image && absoluteUrl(meta.image),
+          sameAs: [meta.links?.live, meta.links?.source].filter(Boolean),
+        },
       };
     }
     case 'post': {
@@ -73,6 +91,7 @@ export function headFor(route) {
         description: meta.description,
         image: meta.image,
         published: meta.date,
+        modified: meta.updated ?? meta.date,
         jsonLd: {
           '@context': 'https://schema.org',
           '@type': 'BlogPosting',

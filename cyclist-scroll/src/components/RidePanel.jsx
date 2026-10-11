@@ -39,7 +39,7 @@ function scrollToWorld(anchors, scroll) {
   return anchors[anchors.length - 1].x;
 }
 
-export default function RidePanel({ anchorsRef, panelRef, stackedQuery }) {
+export default function RidePanel({ anchorsRef, panelRef, stackedQuery, chapter }) {
   const frameRef = useRef(null);
   const [x, setX] = useState(0);
   const [size, setSize] = useState({ width: 800, height: 1000 });
@@ -92,7 +92,7 @@ export default function RidePanel({ anchorsRef, panelRef, stackedQuery }) {
       <div className="ride-frame" ref={frameRef}>
         <Scene x={x} width={size.width} height={size.height} focusY={stacked ? FOCUS_Y_STACKED : FOCUS_Y} />
         <div className="ride-frame__grain" style={grain ? { backgroundImage: grain } : undefined} />
-        <Hud x={x} />
+        <Hud x={x} chapter={chapter} />
       </div>
     </aside>
   );

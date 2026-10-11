@@ -20,6 +20,8 @@ const KM_MARKS = ANCHORS.map((x) => (x > FINISH_X ? 'Finish' : `Km ${Math.round(
 const STACKED_LAYOUT = '(max-width: 900px)';
 const WORK = PROJECTS.slice(0, 4);
 const SECTIONS = { intro: 0, work: 1, toolbox: WORK.length + 1, writing: WORK.length + 2, contact: WORK.length + 3 };
+// Mirrors each chapter's heading, so the HUD can carry it once the real one scrolls under the ride panel.
+const HEADINGS = ['Juri Beforth', ...WORK.map((project) => project.title), 'Toolbox', 'Writing', 'Get in touch'];
 
 const NAV = [
   { id: 'work', href: '#work', label: 'Work' },
@@ -136,7 +138,12 @@ export default function Home() {
 
   return (
     <div className="page">
-      <RidePanel anchorsRef={anchorsRef} panelRef={panelRef} stackedQuery={STACKED_LAYOUT} />
+      <RidePanel
+        anchorsRef={anchorsRef}
+        panelRef={panelRef}
+        stackedQuery={STACKED_LAYOUT}
+        chapter={{ number: active + 1, total: HEADINGS.length, heading: HEADINGS[active] }}
+      />
 
       <div className="story">
         <SiteHeader links={NAV} current={navSection(active)} brand={false} />

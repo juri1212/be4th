@@ -130,11 +130,21 @@
 }
 
 .hud-stage strong {
+  max-width: 14em;
   font-family: var(--display);
   font-stretch: var(--condensed);
   font-weight: 650;
   font-size: 24px;
   line-height: 1.05;
+  text-wrap: balance;
+  animation: hud-heading-in 0.35s ease-out;
+}
+
+@keyframes hud-heading-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
 }
 
 .hud-panel {
@@ -575,5 +585,9 @@
   .chapter,
   .chapter__km {
     transition: none;
+  }
+
+  .hud-stage strong {
+    animation: none;
   }
 }

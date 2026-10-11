@@ -34,6 +34,11 @@ export default function SiteFooter() {
             <a href="/blog/">Writing</a>
           </div>
           <div>
+            <h2>Legal</h2>
+            <a href="/imprint/">Imprint</a>
+            <a href="/privacy/">Privacy</a>
+          </div>
+          <div>
             <h2>Elsewhere</h2>
             <a href={SITE.github}>GitHub</a>
             <a href="/feed.xml">RSS feed</a>

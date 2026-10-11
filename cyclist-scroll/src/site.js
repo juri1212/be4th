@@ -9,6 +9,17 @@ export const SITE = {
   source: 'https://github.com/juri1212/be4th',
 };
 
+// Provider details for the imprint (§ 5 DDG) and the privacy policy. Fill in before deploying.
+export const LEGAL = {
+  name: 'Juri Beforth',
+  street: 'TODO Street 1',
+  city: 'TODO 12345 City',
+  country: 'Germany',
+  email: 'TODO@be4th.com',
+  hoster: 'TODO hosting provider, address',
+  updated: '2026-10-11',
+};
+
 export const SITE_LINKS = [
   { id: 'work', href: '/projects/', label: 'Work' },
   { id: 'writing', href: '/blog/', label: 'Writing' },

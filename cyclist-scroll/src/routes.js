@@ -2,13 +2,15 @@ import { POSTS, PROJECTS, loadPost, loadProject, postUrl, projectUrl } from './c
 import { SITE, absoluteUrl } from './site';
 
 // Every page of the site. The build prerenders each path; the browser resolves the same table to hydrate.
-export const PATHS = ['/', '/projects/', ...PROJECTS.map(projectUrl), '/blog/', ...POSTS.map(postUrl), '/404.html'];
+export const PATHS = ['/', '/projects/', ...PROJECTS.map(projectUrl), '/blog/', ...POSTS.map(postUrl), '/imprint/', '/privacy/', '/404.html'];
 
 export function resolve(pathname) {
   const path = pathname.endsWith('/') || pathname.endsWith('.html') ? pathname : `${pathname}/`;
   if (path === '/' || path === '/index.html') return { page: 'home', path: '/' };
   if (path === '/projects/') return { page: 'projects', path };
   if (path === '/blog/') return { page: 'blog', path };
+  if (path === '/imprint/') return { page: 'imprint', path };
+  if (path === '/privacy/') return { page: 'privacy', path };
   const project = PROJECTS.find((item) => projectUrl(item) === path);
   if (project) return { page: 'project', path, slug: project.slug };
   const post = POSTS.find((item) => postUrl(item) === path);
@@ -17,7 +19,7 @@ export function resolve(pathname) {
 }
 
 // Each page is its own chunk, so the blog doesn't download the ride and the home page doesn't download posts.
-const PAGE_FILES = { home: 'Home', projects: 'Projects', project: 'Project', blog: 'Blog', post: 'Post', 'not-found': 'NotFound' };
+const PAGE_FILES = { home: 'Home', projects: 'Projects', project: 'Project', blog: 'Blog', post: 'Post', imprint: 'Imprint', privacy: 'Privacy', 'not-found': 'NotFound' };
 const pages = import.meta.glob('./pages/*.jsx');
 
 export const pageFile = (route) => `src/pages/${PAGE_FILES[route.page]}.jsx`;
@@ -55,6 +57,10 @@ export function headFor(route) {
       return { ...base, title: `Work · ${SITE.name}`, description: `Projects by ${SITE.author}: native apps, backend services and web apps.` };
     case 'blog':
       return { ...base, title: `Writing · ${SITE.name}`, description: `Notes by ${SITE.author} on the things I build and how they work.` };
+    case 'imprint':
+      return { ...base, title: `Imprint · ${SITE.name}`, description: `Legal notice and provider identification for ${SITE.name}.` };
+    case 'privacy':
+      return { ...base, title: `Privacy policy · ${SITE.name}`, description: `How ${SITE.name} handles personal data.` };
     case 'project': {
       const { meta } = route.project;
       return {

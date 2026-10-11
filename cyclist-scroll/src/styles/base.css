@@ -14,8 +14,8 @@
   --accent-bright: #fbdcd6;
   --on-accent: #1a1013;
   /* One family: Archivo condensed for display and readouts, at normal width for reading. */
-  --sans: 'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --display: 'Archivo', 'Arial Narrow', sans-serif;
+  --sans: 'Archivo Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --display: 'Archivo Variable', 'Arial Narrow', sans-serif;
   --condensed: 68%;
   --mono: ui-monospace, 'SF Mono', Menlo, monospace;
   --frame-gap: 14px;

@@ -19,6 +19,8 @@ export const LEGAL = {
   // A second fast way to reach the provider besides email (ECJ C-298/07).
   phone: 'TODO +49 …',
   hoster: 'ALL-INKL.COM – Neue Medien Münnich, Hauptstraße 68, 02742 Friedersdorf, Germany',
+  // Must match the log settings in the ALL-INKL KAS (Einstellungen → Logs & Statistiken).
+  logRetentionDays: 7,
   updated: '2026-10-14',
 };
 

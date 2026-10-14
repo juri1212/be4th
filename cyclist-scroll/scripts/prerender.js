@@ -77,7 +77,8 @@ const outputFor = (path) => (path.endsWith('.html') ? join(dist, path) : join(di
 const sitemap = [];
 for (const path of PATHS) {
   const { html, head, files } = await render(path);
-  if (head.url) sitemap.push({ url: head.url, lastmod: lastModified(SOURCES[path] ?? files) });
+  // Posts state their own modified date (`updated` in the front matter), so the sitemap agrees with the page.
+  if (head.url) sitemap.push({ url: head.url, lastmod: head.modified ?? lastModified(SOURCES[path] ?? files) });
   // Page CSS goes after the shared stylesheet that Vite links at the end of <head>, so it wins ties.
   const page = template
     .replace('<!--app-head-->', headTags(head))

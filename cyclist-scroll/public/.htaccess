@@ -9,9 +9,10 @@ ErrorDocument 404 /404.html
 </IfModule>
 
 # One canonical host: https://be4th.com. Duplicate hosts split ranking signals.
+# The host's nginx already redirects http to https. Apache behind it may not see the request
+# as https, so checking %{HTTPS} here could redirect forever.
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteCond %{HTTPS} off [OR]
   RewriteCond %{HTTP_HOST} ^www\. [NC]
   RewriteRule ^ https://be4th.com%{REQUEST_URI} [R=301,L]
 </IfModule>

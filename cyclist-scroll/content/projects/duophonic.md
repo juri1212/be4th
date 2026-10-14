@@ -6,6 +6,8 @@ year: 2025–26
 tagline: Play your Mac’s audio on two outputs at once.
 summary: A menu bar app that sends sound to two devices together — two pairs of AirPods, headphones and speakers, or any two outputs — and keeps them in sync.
 stack: [Swift, SwiftUI, Core Audio, XCTest]
+os: macOS 26.1 or later
+category: UtilitiesApplication
 highlights:
   - Builds a Core Audio multi-output device with drift compensation on the second output
   - Switches either output while playing by updating the device in place

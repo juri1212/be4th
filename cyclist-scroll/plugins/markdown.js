@@ -4,7 +4,7 @@ import { createHighlighter } from 'shiki';
 import { parse as parseYaml } from 'yaml';
 
 // Turns content/*.md into modules at build time, so no Markdown parser or highlighter ships to the browser.
-//   import post from './post.md'       → { meta, html, headings }
+//   import post from './post.md'       → { meta, html, headings, faq }
 //   import meta from './post.md?meta'  → meta only, for lists and the command palette
 
 const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
@@ -25,6 +25,28 @@ const slugify = (value) =>
 function readingTime(body) {
   const words = body.replace(/<[^>]+>|```[\s\S]*?```/g, ' ').split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.round(words / WORDS_PER_MINUTE));
+}
+
+const ENTITIES = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'" };
+const plainText = (html) =>
+  html
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&(amp|lt|gt|quot|#39);/g, (entity) => ENTITIES[entity])
+    .replace(/\s+/g, ' ')
+    .replace(/ ([.,:;?!)])/g, '$1')
+    .trim();
+
+// Questions and answers from a "## FAQ" section: each ### heading is a question, the text up to the next heading its answer.
+function faqOf(tokens, marked) {
+  const start = tokens.findIndex((token) => token.type === 'heading' && token.depth === 2 && /^faq$/i.test(token.text));
+  if (start < 0) return [];
+  const faq = [];
+  for (const token of tokens.slice(start + 1)) {
+    if (token.type === 'heading' && token.depth <= 2) break;
+    if (token.type === 'heading') faq.push({ question: token.text, answer: [] });
+    else if (faq.length && token.type !== 'space') faq.at(-1).answer.push(token.type === 'code' ? token.text : plainText(marked.parser([token])));
+  }
+  return faq.map(({ question, answer }) => ({ question, answer: answer.join(' ') }));
 }
 
 function render(body, highlighter) {
@@ -55,7 +77,8 @@ function render(body, highlighter) {
       },
     },
   });
-  return { html: marked.parse(body), headings };
+  const tokens = marked.lexer(body);
+  return { html: marked.parser(tokens), headings, faq: faqOf(tokens, marked) };
 }
 
 export default function markdown() {

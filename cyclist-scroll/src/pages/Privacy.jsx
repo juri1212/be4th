@@ -19,7 +19,8 @@ export default function Privacy() {
         <h2>2. Hosting and server logs</h2>
         <p>
           This site is hosted by {LEGAL.hoster}. When you visit a page, the server automatically processes data your browser sends: IP
-          address, date and time of the request, the page requested, the referring URL, browser type and operating system. This is
+          address, date and time of the request, the page requested, the referring URL, browser type and operating system. The servers
+          are located in Germany. This is
           technically necessary to deliver the site and keep it secure and stable. The legal basis is Art. 6 (1) (f) GDPR. The host
           deletes these logs after a short period and does not combine them with other data. A data processing agreement under Art. 28
           GDPR is in place with the host.
@@ -45,9 +46,19 @@ export default function Privacy() {
 
         <h2>6. Your rights</h2>
         <p>
-          You have the right of access (Art. 15 GDPR), rectification (Art. 16), erasure (Art. 17), restriction of processing (Art. 18),
-          data portability (Art. 20) and to object to processing (Art. 21 GDPR). To exercise them, write to the email address above. You
-          also have the right to lodge a complaint with a data protection supervisory authority (Art. 77 GDPR).
+          You have the right of access (Art. 15 GDPR), rectification (Art. 16), erasure (Art. 17), restriction of processing (Art. 18)
+          and data portability (Art. 20 GDPR). To exercise them, write to the email address above. You also have the right to lodge a
+          complaint with a data protection supervisory authority (Art. 77 GDPR).
+        </p>
+
+        <h2>7. Right to object</h2>
+        <p>
+          <strong>
+            Where I process your data on the basis of legitimate interests (Art. 6 (1) (f) GDPR), such as the server logs in section 2,
+            you have the right to object to this processing at any time on grounds relating to your particular situation (Art. 21
+            GDPR). I will then stop processing your data unless I can demonstrate compelling legitimate grounds that override your
+            interests, rights and freedoms, or the processing serves to establish, exercise or defend legal claims.
+          </strong>
         </p>
 
         <p>Last updated: {formatDate(LEGAL.updated)}</p>

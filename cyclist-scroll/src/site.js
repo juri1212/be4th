@@ -16,8 +16,10 @@ export const LEGAL = {
   city: 'TODO 12345 City',
   country: 'Germany',
   email: 'TODO@be4th.com',
-  hoster: 'TODO hosting provider, address',
-  updated: '2026-10-11',
+  // A second fast way to reach the provider besides email (ECJ C-298/07).
+  phone: 'TODO +49 …',
+  hoster: 'ALL-INKL.COM – Neue Medien Münnich, Hauptstraße 68, 02742 Friedersdorf, Germany',
+  updated: '2026-10-14',
 };
 
 export const SITE_LINKS = [

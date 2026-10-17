@@ -30,7 +30,6 @@ export default function SiteFooter() {
           <div>
             <h2>Site</h2>
             <a href="/">Home</a>
-            <a href="/projects/">Work</a>
             <a href="/blog/">Writing</a>
           </div>
           <div>

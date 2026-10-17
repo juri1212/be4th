@@ -5,20 +5,22 @@ import SiteFooter from '../components/SiteFooter';
 import SiteHeader from '../components/SiteHeader';
 import Tags from '../components/Tags';
 import { ArrowDown, ArrowUp, External } from '../components/icons';
-import { POSTS, PROJECTS, postUrl, projectUrl } from '../content';
+import { POSTS, PROJECTS, postUrl } from '../content';
 import { clamp } from '../ride/math';
 import { FINISH_X, kmAt } from '../ride/route';
 import { STAGES } from '../ride/stages';
 import { SITE, TOOLBOX, formatDate } from '../site';
 import '../styles/home.css';
 
-// One stage per section: the intro at the start line, each project on its own stage,
+// One stage per section: the intro at the start line, the projects in the lowlands and on Mont Ventoux,
 // then the toolbox and writing on the descent, and contact a few metres past the finish.
-const ANCHORS = [0, ...STAGES.slice(0, 6).map((stage) => stage.anchor), FINISH_X + 240];
+const ANCHORS = [0, ...[0, 2, 4, 5].map((stage) => STAGES[stage].anchor), FINISH_X + 240];
 // Where the rider is when each chapter is in focus, shown in the gutter like a road book.
 const KM_MARKS = ANCHORS.map((x) => (x > FINISH_X ? 'Finish' : `Km ${Math.round(kmAt(x))}`));
 const STACKED_LAYOUT = '(max-width: 900px)';
-const WORK = PROJECTS.slice(0, 4);
+const WORK = PROJECTS.slice(0, 2);
+// The project write-ups have their own chapters, so the writing section lists the other posts.
+const WRITING = POSTS.filter((post) => !post.featured);
 const SECTIONS = { intro: 0, work: 1, toolbox: WORK.length + 1, writing: WORK.length + 2, contact: WORK.length + 3 };
 // Mirrors each chapter's heading, so the HUD can carry it once the real one scrolls under the ride panel.
 const HEADINGS = ['Juri Beforth', ...WORK.map((project) => project.title), 'Toolbox', 'Writing', 'Get in touch'];
@@ -55,7 +57,7 @@ function ProjectChapter({ project, index, ...props }) {
         {project.kind}, {project.year}
       </p>
       <h2 id={`project-${project.slug}`}>
-        <a href={projectUrl(project)}>{project.title}</a>
+        <a href={postUrl(project)}>{project.title}</a>
       </h2>
       <p className="lede">{project.tagline}</p>
       <p>{project.summary}</p>
@@ -64,9 +66,9 @@ function ProjectChapter({ project, index, ...props }) {
           <li key={highlight}>{highlight}</li>
         ))}
       </ul>
-      <Tags items={project.stack} />
+      <Tags items={project.tags} />
       <div className="actions">
-        <a className="button" href={projectUrl(project)}>
+        <a className="button" href={postUrl(project)}>
           Read the write-up
         </a>
         {links.live && (
@@ -134,7 +136,7 @@ export default function Home() {
     'data-active': active === index,
   });
 
-  const latestPost = POSTS[0];
+  const latestPost = WRITING[0];
 
   return (
     <div className="page">
@@ -162,7 +164,7 @@ export default function Home() {
               <div>
                 <dt>Featured</dt>
                 <dd>
-                  <a href={projectUrl(PROJECTS[0])}>{PROJECTS[0].title}</a>
+                  <a href={postUrl(PROJECTS[0])}>{PROJECTS[0].title}</a>
                   <span>{PROJECTS[0].tagline}</span>
                 </dd>
               </div>
@@ -217,7 +219,7 @@ export default function Home() {
               Writing
             </h2>
             <ul className="posts">
-              {POSTS.slice(0, 3).map((post) => (
+              {WRITING.slice(0, 3).map((post) => (
                 <li key={post.slug}>
                   <a href={postUrl(post)}>{post.title}</a>
                   <span className="posts__meta">

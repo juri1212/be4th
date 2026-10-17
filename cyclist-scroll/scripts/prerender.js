@@ -70,7 +70,7 @@ function lastModified(files) {
 }
 
 // Index pages change when anything they list changes.
-const SOURCES = { '/': ['src', 'content'], '/projects/': ['src/pages/Projects.jsx', 'content/projects'], '/blog/': ['src/pages/Blog.jsx', 'content/posts'] };
+const SOURCES = { '/': ['src', 'content'], '/blog/': ['src/pages/Blog.jsx', 'content/posts'] };
 
 const outputFor = (path) => (path.endsWith('.html') ? join(dist, path) : join(dist, path, 'index.html'));
 

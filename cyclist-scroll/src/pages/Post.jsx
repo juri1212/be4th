@@ -4,15 +4,18 @@ import Prose from '../components/Prose';
 import ReadingProgress from '../components/ReadingProgress';
 import TableOfContents from '../components/TableOfContents';
 import Tags from '../components/Tags';
-import { ArrowLeft } from '../components/icons';
-import { POSTS, PROJECTS, postUrl, projectUrl } from '../content';
+import { ArrowLeft, External } from '../components/icons';
+import { POSTS, PROJECTS, postUrl } from '../content';
 import { SITE, formatDate } from '../site';
+
+const LINK_LABELS = { download: 'Download', live: 'Open the app', source: 'Source on GitHub' };
 
 export default function Post({ post }) {
   const { meta, html, headings } = post;
   const articleRef = useRef(null);
   const project = PROJECTS.find((item) => item.slug === meta.project);
-  const others = POSTS.filter((item) => item.slug !== meta.slug).slice(0, 2);
+  const links = Object.entries(meta.links ?? {});
+  const others = POSTS.filter((item) => item.slug !== meta.slug && item !== project).slice(0, 2);
 
   return (
     <PageLayout current="writing">
@@ -30,6 +33,16 @@ export default function Post({ post }) {
             <time dateTime={meta.date}>{formatDate(meta.date)}</time>
             <span>{meta.readingTime} min read</span>
           </p>
+          {links.length > 0 && (
+            <div className="actions">
+              {links.map(([kind, href], position) => (
+                <a key={kind} className={position === 0 ? 'button button--solid' : 'button'} href={href}>
+                  {LINK_LABELS[kind] ?? kind}
+                  <External />
+                </a>
+              ))}
+            </div>
+          )}
         </header>
 
         <div className="article-layout">
@@ -39,7 +52,7 @@ export default function Post({ post }) {
           <div>
             <Prose html={html} />
             {project && (
-              <a className="related" href={projectUrl(project)}>
+              <a className="related" href={postUrl(project)}>
                 <span className="eyebrow">The project</span>
                 <span className="related__title">{project.title}</span>
                 <span className="related__more">{project.tagline} Read how it’s built.</span>

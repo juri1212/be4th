@@ -1,5 +1,6 @@
 // Renders every route of the built site to static HTML, then writes the feed, sitemap and robots.txt.
 // Runs after `vite build` (client) and `vite build --ssr` (server bundle in .ssr/).
+import { execFileSync } from 'node:child_process';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -43,22 +44,41 @@ function headTags(head) {
   if (head.url) tags.push(`<link rel="canonical" href="${head.url}" />`, `<meta property="og:url" content="${head.url}" />`);
   tags.push(
     `<meta property="og:type" content="${head.type}" />`,
-    `<meta property="og:site_name" content="be4th" />`,
+    `<meta property="og:site_name" content="${SITE.name}" />`,
+    `<meta property="og:locale" content="en_US" />`,
     `<meta property="og:title" content="${escape(head.title)}" />`,
     `<meta property="og:description" content="${escape(head.description)}" />`,
-    `<meta name="twitter:card" content="${head.image ? 'summary_large_image' : 'summary'}" />`,
+    `<meta name="twitter:card" content="summary_large_image" />`,
+    `<meta property="og:image" content="${new URL(head.image ?? SITE.image, SITE.url).href}" />`,
   );
-  if (head.image) tags.push(`<meta property="og:image" content="${new URL(head.image, SITE.url).href}" />`);
+  if (!head.image) tags.push('<meta property="og:image:width" content="1200" />', '<meta property="og:image:height" content="630" />');
   if (head.published) tags.push(`<meta property="article:published_time" content="${head.published}" />`);
+  if (head.modified) tags.push(`<meta property="article:modified_time" content="${head.modified}" />`);
   if (head.jsonLd) tags.push(`<script type="application/ld+json">${JSON.stringify(head.jsonLd).replace(/</g, '\\u003c')}</script>`);
   if (!head.url) tags.push('<meta name="robots" content="noindex" />');
   return tags.join('\n  ');
 }
 
+// Last commit touching any of the files, so crawlers can skip pages that haven't changed. Needs full git history.
+function lastModified(files) {
+  try {
+    const date = execFileSync('git', ['log', '-1', '--format=%cs', '--', ...files], { cwd: root, encoding: 'utf8' }).trim();
+    return date || null;
+  } catch {
+    return null;
+  }
+}
+
+// Index pages change when anything they list changes.
+const SOURCES = { '/': ['src', 'content'], '/projects/': ['src/pages/Projects.jsx', 'content/projects'], '/blog/': ['src/pages/Blog.jsx', 'content/posts'] };
+
 const outputFor = (path) => (path.endsWith('.html') ? join(dist, path) : join(dist, path, 'index.html'));
 
+const sitemap = [];
 for (const path of PATHS) {
   const { html, head, files } = await render(path);
+  // Posts state their own modified date (`updated` in the front matter), so the sitemap agrees with the page.
+  if (head.url) sitemap.push({ url: head.url, lastmod: head.modified ?? lastModified(SOURCES[path] ?? files) });
   // Page CSS goes after the shared stylesheet that Vite links at the end of <head>, so it wins ties.
   const page = template
     .replace('<!--app-head-->', headTags(head))
@@ -71,12 +91,11 @@ for (const path of PATHS) {
   console.log(`  prerendered ${path}`);
 }
 
-const pageUrls = PATHS.filter((path) => !path.endsWith('.html')).map((path) => new URL(path, SITE.url).href);
 await writeFile(
   join(dist, 'sitemap.xml'),
   `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${pageUrls.map((url) => `  <url><loc>${url}</loc></url>`).join('\n')}
+${sitemap.map(({ url, lastmod }) => `  <url><loc>${url}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}</url>`).join('\n')}
 </urlset>
 `,
 );

@@ -7,6 +7,8 @@ export const SITE = {
     'Juri Beforth is a full-stack developer building native macOS apps in Swift, backend services in Rust and web apps in React and TypeScript.',
   github: 'https://github.com/juri1212',
   source: 'https://github.com/juri1212/be4th',
+  // Social preview for pages without their own image. 1200×630.
+  image: '/og-image.jpg',
 };
 
 // Provider details for the imprint (§ 5 DDG) and the privacy policy. Fill in before deploying.

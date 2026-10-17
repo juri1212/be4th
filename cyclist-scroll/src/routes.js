@@ -41,7 +41,34 @@ export async function loadRoute(route) {
   return { ...route, ...data, Page: page.default };
 }
 
-const person = { '@type': 'Person', name: SITE.author, url: SITE.url, sameAs: [SITE.github] };
+const person = { '@type': 'Person', '@id': `${SITE.url}/#person`, name: SITE.author, url: SITE.url, sameAs: [SITE.github] };
+
+const breadcrumbs = (...items) => ({
+  '@type': 'BreadcrumbList',
+  itemListElement: [{ name: SITE.name, url: SITE.url }, ...items].map(({ name, url }, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name,
+    item: absoluteUrl(url),
+  })),
+});
+
+// Projects you can download are described as apps, so search engines know what they are and where to get them.
+const app = (meta) => ({
+  '@type': 'SoftwareApplication',
+  '@id': `${absoluteUrl(projectUrl(meta))}#app`,
+  name: meta.title,
+  description: meta.summary,
+  applicationCategory: meta.category,
+  operatingSystem: meta.os,
+  downloadUrl: meta.links.download,
+  url: absoluteUrl(projectUrl(meta)),
+  image: meta.image && absoluteUrl(meta.image),
+  author: person,
+  isAccessibleForFree: true,
+  offers: { '@type': 'Offer', price: 0, priceCurrency: 'USD' },
+  sameAs: [meta.links.source].filter(Boolean),
+});
 
 export function headFor(route) {
   const base = { url: absoluteUrl(route.path), type: 'website', image: null, jsonLd: null };
@@ -51,7 +78,13 @@ export function headFor(route) {
         ...base,
         title: `${SITE.author} · ${SITE.role}`,
         description: SITE.description,
-        jsonLd: { '@context': 'https://schema.org', ...person, jobTitle: SITE.role },
+        jsonLd: {
+          '@context': 'https://schema.org',
+          '@graph': [
+            { '@type': 'WebSite', name: SITE.name, url: SITE.url, description: SITE.description, inLanguage: 'en', publisher: person },
+            { ...person, jobTitle: SITE.role },
+          ],
+        },
       };
     case 'projects':
       return { ...base, title: `Work · ${SITE.name}`, description: `Projects by ${SITE.author}: native apps, backend services and web apps.` };
@@ -63,15 +96,34 @@ export function headFor(route) {
       return { ...base, title: `Privacy policy · ${SITE.name}`, description: `How ${SITE.name} handles personal data.` };
     case 'project': {
       const { meta } = route.project;
+      const work = meta.links?.download
+        ? { ...app(meta), keywords: meta.stack?.join(', ') }
+        : {
+            '@type': 'CreativeWork',
+            name: meta.title,
+            headline: meta.tagline,
+            description: meta.summary,
+            url: base.url,
+            author: person,
+            keywords: meta.stack?.join(', '),
+            image: meta.image && absoluteUrl(meta.image),
+            sameAs: [meta.links?.live, meta.links?.source].filter(Boolean),
+          };
       return {
         ...base,
         title: `${meta.title} — ${meta.tagline} · ${SITE.name}`,
         description: meta.summary,
         image: meta.image?.endsWith('.webp') ? null : meta.image,
+        jsonLd: {
+          '@context': 'https://schema.org',
+          '@graph': [work, breadcrumbs({ name: 'Work', url: '/projects/' }, { name: meta.title, url: route.path })],
+        },
       };
     }
     case 'post': {
-      const { meta } = route.post;
+      const { meta, faq } = route.post;
+      const project = PROJECTS.find((item) => item.slug === meta.project);
+      const modified = meta.updated ?? meta.date;
       return {
         ...base,
         type: 'article',
@@ -79,16 +131,35 @@ export function headFor(route) {
         description: meta.description,
         image: meta.image,
         published: meta.date,
+        modified,
         jsonLd: {
           '@context': 'https://schema.org',
-          '@type': 'BlogPosting',
-          headline: meta.title,
-          description: meta.description,
-          datePublished: meta.date,
-          dateModified: meta.updated ?? meta.date,
-          author: person,
-          image: meta.image && absoluteUrl(meta.image),
-          mainEntityOfPage: base.url,
+          '@graph': [
+            {
+              '@type': 'BlogPosting',
+              headline: meta.title,
+              description: meta.description,
+              datePublished: meta.date,
+              dateModified: modified,
+              inLanguage: 'en',
+              keywords: meta.tags,
+              author: person,
+              publisher: person,
+              image: meta.image && absoluteUrl(meta.image),
+              mainEntityOfPage: base.url,
+              about: project?.links?.download ? app(project) : undefined,
+            },
+            breadcrumbs({ name: 'Writing', url: '/blog/' }, { name: meta.title, url: route.path }),
+            faq.length > 0 && {
+              '@type': 'FAQPage',
+              url: base.url,
+              mainEntity: faq.map(({ question, answer }) => ({
+                '@type': 'Question',
+                name: question,
+                acceptedAnswer: { '@type': 'Answer', text: answer },
+              })),
+            },
+          ].filter(Boolean),
         },
       };
     }

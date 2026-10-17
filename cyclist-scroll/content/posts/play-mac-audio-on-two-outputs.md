@@ -1,20 +1,21 @@
 ---
 title: How to play audio on two AirPods (or any two outputs) on a Mac
-description: macOS plays sound on one output at a time. Here's how to listen with two pairs of AirPods, or headphones and speakers together, using Audio MIDI Setup or the free Duophonic app.
+description: Share audio to two pairs of AirPods on one Mac or MacBook, or to headphones and speakers at once. The built-in way, and the free Duophonic app.
 summary: The built-in way with Audio MIDI Setup, and the one-switch way with Duophonic.
 date: "2026-10-05"
+updated: "2026-10-14"
 tags: [macOS, Core Audio, Guide]
 project: duophonic
 image: /images/duophonic/og-image.jpg
 ---
 
-Two people, one laptop, one film. On an iPhone you'd tap *Share Audio* and both pairs of AirPods would play. On a Mac, the sound menu lets you pick exactly one output. Choose your AirPods and the speakers go quiet; choose your friend's and yours do.
+Two people, one laptop, one film. On an iPhone you'd tap *Share Audio* and both pairs of AirPods would play. On a Mac or MacBook, the sound menu lets you pick exactly one output. Choose your AirPods and the speakers go quiet; choose your friend's and yours do.
 
-macOS can play to several devices at once. The feature is just hidden in a utility most people never open. This guide shows the built-in way first, then the faster way with [Duophonic](/projects/duophonic/), a small free menu bar app I wrote to make it one switch.
+macOS can share audio with several devices at once, including two pairs of AirPods or two Bluetooth headphones. The feature is just hidden in a utility most people never open. This guide shows the built-in way first, then the faster way with [Duophonic](/projects/duophonic/), a small free menu bar app I wrote to make it one switch.
 
 <div class="summary"><strong>Short version</strong><ol><li>Connect both outputs to your Mac (for AirPods: pair both in Bluetooth settings).</li><li>Install <a href="/projects/duophonic/">Duophonic</a> and click its icon in the menu bar.</li><li>Pick Output 1 and Output 2.</li><li>Turn on <strong>Audio Sharing</strong>. Sound now plays on both, in sync.</li></ol></div>
 
-## Works for more than AirPods
+## Works with any headphones or speakers, not just AirPods
 
 Anything that shows up as a sound output can be combined: AirPods, Beats or other Bluetooth headphones, the built-in speakers, USB headsets and DACs, and monitors over HDMI or DisplayPort. A few setups people use it for:
 
@@ -105,9 +106,9 @@ To have it ready all the time, turn on **Open at Login** in the same menu.
 
 ## FAQ
 
-### Can I connect two pairs of AirPods to one Mac?
+### Can I connect two pairs of AirPods or Bluetooth headphones to one Mac?
 
-Yes. A Mac can be connected to several Bluetooth audio devices at the same time, but it plays to only one of them unless you combine them into a multi-output device, either in Audio MIDI Setup or with Duophonic.
+Yes. A Mac or MacBook can be connected to several Bluetooth audio devices at the same time, but it plays to only one of them unless you combine them into a multi-output device, either in Audio MIDI Setup or with Duophonic.
 
 ### Does the Mac have a Share Audio feature like the iPhone?
 

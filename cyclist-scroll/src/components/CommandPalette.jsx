@@ -25,7 +25,6 @@ const ITEMS = [
   })),
   { group: 'Elsewhere', label: 'GitHub', hint: 'juri1212', href: SITE.github, keywords: 'code profile' },
   { group: 'Elsewhere', label: 'Source of this site', href: SITE.source, keywords: 'github repository be4th' },
-  { group: 'Elsewhere', label: 'RSS feed', href: '/feed.xml', keywords: 'subscribe atom' },
   { group: 'Actions', label: 'Copy link to this page', action: 'copy', keywords: 'share url clipboard' },
   { group: 'Actions', label: 'Back to top', action: 'top', keywords: 'scroll up start' },
 ];

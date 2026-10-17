@@ -14,7 +14,7 @@ export default function Blog() {
       <header className="page-intro">
         <h1>Notes from the workshop</h1>
         <p className="lede">
-          Guides and write-ups about the things I build and how they work. Follow along via <a href="/feed.xml">RSS</a>.
+          Guides and write-ups about the things I build and how they work.
         </p>
       </header>
 

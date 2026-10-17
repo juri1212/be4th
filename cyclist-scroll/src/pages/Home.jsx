@@ -232,9 +232,6 @@ export default function Home() {
               <a className="button" href="/blog/">
                 All writing
               </a>
-              <a className="link" href="/feed.xml">
-                RSS feed
-              </a>
             </div>
           </section>
 

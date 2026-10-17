@@ -41,7 +41,6 @@ export default function SiteFooter() {
           <div>
             <h2>Elsewhere</h2>
             <a href={SITE.github}>GitHub</a>
-            <a href="/feed.xml">RSS feed</a>
             <a href={SITE.source}>Source of this site</a>
           </div>
         </nav>

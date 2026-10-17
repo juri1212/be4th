@@ -1,4 +1,4 @@
-// Renders every route of the built site to static HTML, then writes the feed, sitemap and robots.txt.
+// Renders every route of the built site to static HTML, then writes the sitemap and robots.txt.
 // Runs after `vite build` (client) and `vite build --ssr` (server bundle in .ssr/).
 import { execFileSync } from 'node:child_process';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
@@ -12,7 +12,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const dist = join(root, 'dist');
 const ssr = join(root, '.ssr');
 
-const { render, PATHS, POSTS, SITE } = await import(pathToFileURL(join(ssr, 'entry-server.js')).href);
+const { render, PATHS, SITE } = await import(pathToFileURL(join(ssr, 'entry-server.js')).href);
 const template = await readFile(join(dist, 'index.html'), 'utf8');
 const manifestFile = join(dist, '.vite', 'manifest.json');
 const manifest = JSON.parse(await readFile(manifestFile, 'utf8'));
@@ -102,32 +102,6 @@ ${sitemap.map(({ url, lastmod }) => `  <url><loc>${url}</loc>${lastmod ? `<lastm
 
 await writeFile(join(dist, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${new URL('/sitemap.xml', SITE.url).href}\n`);
 
-const items = POSTS.map((post) => {
-  const url = new URL(`/blog/${post.slug}/`, SITE.url).href;
-  return `    <item>
-      <title>${escape(post.title)}</title>
-      <link>${url}</link>
-      <guid>${url}</guid>
-      <pubDate>${new Date(`${post.date}T00:00:00Z`).toUTCString()}</pubDate>
-      <description>${escape(post.description ?? post.summary)}</description>
-    </item>`;
-});
-await writeFile(
-  join(dist, 'feed.xml'),
-  `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>be4th — Writing</title>
-    <link>${SITE.url}/blog/</link>
-    <atom:link href="${SITE.url}/feed.xml" rel="self" type="application/rss+xml" />
-    <description>Notes by ${escape(SITE.author)} on the things I build and how they work.</description>
-    <language>en</language>
-${items.join('\n')}
-  </channel>
-</rss>
-`,
-);
-
 await rm(ssr, { recursive: true, force: true });
 await rm(join(dist, '.vite'), { recursive: true, force: true });
-console.log(`  wrote sitemap.xml, robots.txt, feed.xml`);
+console.log(`  wrote sitemap.xml, robots.txt`);

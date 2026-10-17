@@ -9,6 +9,16 @@ export const SITE = {
   source: 'https://github.com/juri1212/be4th',
 };
 
+// Provider details for the imprint (§ 5 DDG) and the privacy policy. Fill in before deploying.
+export const LEGAL = {
+  name: 'Juri Beforth',
+  email: 'TODO@be4th.com',
+  hoster: 'ALL-INKL.COM – Neue Medien Münnich, Hauptstraße 68, 02742 Friedersdorf, Germany',
+  // Must match the log settings in the ALL-INKL KAS (Einstellungen → Logs & Statistiken).
+  logRetentionDays: 7,
+  updated: '2026-10-14',
+};
+
 export const SITE_LINKS = [
   { id: 'work', href: '/projects/', label: 'Work' },
   { id: 'writing', href: '/blog/', label: 'Writing' },

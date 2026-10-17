@@ -7,6 +7,8 @@ const ITEMS = [
   { group: 'Pages', label: 'Home', href: '/', keywords: 'start ride intro' },
   { group: 'Pages', label: 'Work', href: '/projects/', keywords: 'projects portfolio' },
   { group: 'Pages', label: 'Writing', href: '/blog/', keywords: 'blog posts articles' },
+  { group: 'Pages', label: 'Imprint', href: '/imprint/', keywords: 'impressum legal notice contact' },
+  { group: 'Pages', label: 'Privacy', href: '/privacy/', keywords: 'privacy policy gdpr datenschutz' },
   ...PROJECTS.map((project) => ({
     group: 'Projects',
     label: project.title,

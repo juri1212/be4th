@@ -1,0 +1,24 @@
+# be4th.com is served by Apache. Unknown paths get the prerendered 404 page.
+ErrorDocument 404 /404.html
+
+# File names in /assets contain a content hash, so they can be cached forever.
+<IfModule mod_headers.c>
+  <If "%{REQUEST_URI} =~ m#^/assets/#">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </If>
+</IfModule>
+
+# One canonical host: https://be4th.com. Duplicate hosts split ranking signals.
+# The host's nginx already redirects http to https. Apache behind it may not see the request
+# as https, so checking %{HTTPS} here could redirect forever.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTP_HOST} ^www\. [NC]
+  RewriteRule ^ https://be4th.com%{REQUEST_URI} [R=301,L]
+</IfModule>
+
+# Project pages used to live under /projects/. Their write-ups are posts now.
+<IfModule mod_alias.c>
+  RedirectMatch 301 ^/projects/?$ /
+  RedirectMatch 301 ^/projects/(duophonic|car-configurator-mcp)/?$ /blog/$1/
+</IfModule>

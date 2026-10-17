@@ -1,6 +1,6 @@
 import { clamp } from '../ride/math';
 import { FINISH_X, elevationAt, gradeAt, kmAt, profilePoints } from '../ride/route';
-import { STAGES, TOTALS, stageIndexAt } from '../ride/stages';
+import { STAGES, TOTALS } from '../ride/stages';
 
 const PROFILE_HEIGHT = 56;
 const PROFILE_TOP = Math.ceil(TOTALS.high / 250) * 250;
@@ -24,10 +24,9 @@ function Metric({ label, value, unit }) {
   );
 }
 
-export default function Hud({ x }) {
+export default function Hud({ x, chapter }) {
   const position = clamp(x, 0, FINISH_X);
   const progress = position / FINISH_X;
-  const stage = STAGES[stageIndexAt(position)];
   const grade = gradeAt(position);
   const roundedGrade = Math.abs(grade) < 0.05 ? 0 : grade;
   const markerTop = (profileY(elevationAt(position)) / PROFILE_HEIGHT) * 100;
@@ -38,10 +37,10 @@ export default function Hud({ x }) {
         <span className="hud-brand">be4th</span>
         <div className="hud-stage">
           <span>
-            Stage {stage.number}
-            <em> / {String(STAGES.length).padStart(2, '0')}</em>
+            Stage {chapter.number}
+            <em> of {chapter.total}</em>
           </span>
-          <strong>{stage.place}</strong>
+          <strong key={chapter.heading}>{chapter.heading}</strong>
         </div>
       </div>
 
@@ -58,8 +57,8 @@ export default function Hud({ x }) {
                 <rect width={progress * 1000} height={PROFILE_HEIGHT} />
               </clipPath>
               <linearGradient id="hud-fill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stopColor="#ff6a3d" stopOpacity="0.45" />
-                <stop offset="1" stopColor="#ff6a3d" stopOpacity="0" />
+                <stop offset="0" stopColor="#f3c3bb" stopOpacity="0.4" />
+                <stop offset="1" stopColor="#f3c3bb" stopOpacity="0" />
               </linearGradient>
             </defs>
             <path d={PROFILE_AREA} className="hud-profile__area" />

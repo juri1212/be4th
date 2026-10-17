@@ -8,9 +8,11 @@ import { Gantry, Lamp, Observatory, Prop } from './Silhouettes';
 // Where the rider sits in the frame, as a fraction of the viewport.
 export const FOCUS_X = 0.42;
 export const FOCUS_Y = 0.6;
+// Without the HUD panel underneath, the stacked layout drops the road towards the bottom edge.
+export const FOCUS_Y_STACKED = 0.8;
 
 const RIDER_SCALE = 0.92;
-const ACCENT = [255, 106, 61];
+const ACCENT = [243, 195, 187];
 const WHITE = [255, 255, 255];
 const WINDOW_LIGHT = '#ffc46b';
 const LABEL_TEXT = '#f6f1e8';
@@ -42,13 +44,13 @@ function Marker({ marker, ink }) {
   );
 }
 
-export default function Scene({ x, width: W, height: H }) {
+export default function Scene({ x, width: W, height: H, focusY = FOCUS_Y }) {
   const t = clamp(x / FINISH_X, 0, 1);
   const palette = paletteAt(t);
   const camY = cameraY(x);
   const dusk = smoothstep(0.7, 0.95, t);
   const night = smoothstep(0.82, 1, t);
-  const horizon = FOCUS_Y * H - 110;
+  const horizon = focusY * H - 110;
 
   const sunArc = Math.sin(Math.PI * (t * 0.98 + 0.1));
   const sun = { x: W * (0.84 - 0.28 * t), y: horizon - sunArc * (horizon - 90) };
@@ -60,7 +62,7 @@ export default function Scene({ x, width: W, height: H }) {
   const snowTint = mixRgb(WHITE, palette.sun, 0.25 + dusk * 0.6);
 
   const groundX = FOCUS_X * W - x;
-  const groundY = FOCUS_Y * H - camY;
+  const groundY = focusY * H - camY;
   const visibleWorld = (left, right, pad = 0) => inView(left + groundX, right + groundX, W, pad);
 
   const half = (WHEELBASE / 2) * RIDER_SCALE;
@@ -123,7 +125,7 @@ export default function Scene({ x, width: W, height: H }) {
       {/* Parallax layers */}
       {SCENERY.layers.map((layer, index) => {
         const ox = FOCUS_X * W - x * layer.p;
-        const oy = FOCUS_Y * H - camY * layer.p;
+        const oy = focusY * H - camY * layer.p;
         const color = mixRgb(ink, palette.haze, layer.depth);
         const fog = mixRgb(ink, palette.haze, layer.depth + (1 - layer.depth) * 0.45);
         const snow = mixRgb(color, snowTint, 0.55);

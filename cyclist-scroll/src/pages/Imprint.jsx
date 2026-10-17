@@ -10,23 +10,13 @@ export default function Imprint() {
       </header>
       <div className="prose">
         <h2>Provider (§ 5 DDG)</h2>
-        <p>
-          {LEGAL.name}
-          <br />
-          {LEGAL.street}
-          <br />
-          {LEGAL.city}
-          <br />
-          {LEGAL.country}
-        </p>
+        <p>{LEGAL.name}</p>
         <h2>Contact</h2>
         <p>
           Email: <a href={`mailto:${LEGAL.email}`}>{LEGAL.email}</a>
-          <br />
-          Phone: <a href={`tel:${LEGAL.phone.replace(/[^+\d]/g, '')}`}>{LEGAL.phone}</a>
         </p>
         <h2>Responsible for content (§ 18 (2) MStV)</h2>
-        <p>{LEGAL.name}, address as above.</p>
+        <p>{LEGAL.name}, contact as above.</p>
         <h2>Liability for content and links</h2>
         <p>
           The content of this site was written with care, but I can’t guarantee that it is correct, complete or up to date. This site

@@ -11,7 +11,7 @@ export default function Privacy() {
       <div className="prose">
         <h2>1. Controller</h2>
         <p>
-          {LEGAL.name}, {LEGAL.street}, {LEGAL.city}, {LEGAL.country}
+          {LEGAL.name}
           <br />
           Email: <a href={`mailto:${LEGAL.email}`}>{LEGAL.email}</a>
         </p>

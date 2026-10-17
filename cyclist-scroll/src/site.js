@@ -12,12 +12,7 @@ export const SITE = {
 // Provider details for the imprint (§ 5 DDG) and the privacy policy. Fill in before deploying.
 export const LEGAL = {
   name: 'Juri Beforth',
-  street: 'TODO Street 1',
-  city: 'TODO 12345 City',
-  country: 'Germany',
   email: 'TODO@be4th.com',
-  // A second fast way to reach the provider besides email (ECJ C-298/07).
-  phone: 'TODO +49 …',
   hoster: 'ALL-INKL.COM – Neue Medien Münnich, Hauptstraße 68, 02742 Friedersdorf, Germany',
   // Must match the log settings in the ALL-INKL KAS (Einstellungen → Logs & Statistiken).
   logRetentionDays: 7,

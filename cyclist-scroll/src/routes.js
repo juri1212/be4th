@@ -1,37 +1,32 @@
-import { POSTS, PROJECTS, loadPost, loadProject, postUrl, projectUrl } from './content';
+import { POSTS, PROJECTS, loadPost, postUrl } from './content';
 import { SITE, absoluteUrl } from './site';
 
 // Every page of the site. The build prerenders each path; the browser resolves the same table to hydrate.
-export const PATHS = ['/', '/projects/', ...PROJECTS.map(projectUrl), '/blog/', ...POSTS.map(postUrl), '/imprint/', '/privacy/', '/404.html'];
+export const PATHS = ['/', '/blog/', ...POSTS.map(postUrl), '/imprint/', '/privacy/', '/404.html'];
 
 export function resolve(pathname) {
   const path = pathname.endsWith('/') || pathname.endsWith('.html') ? pathname : `${pathname}/`;
   if (path === '/' || path === '/index.html') return { page: 'home', path: '/' };
-  if (path === '/projects/') return { page: 'projects', path };
   if (path === '/blog/') return { page: 'blog', path };
   if (path === '/imprint/') return { page: 'imprint', path };
   if (path === '/privacy/') return { page: 'privacy', path };
-  const project = PROJECTS.find((item) => projectUrl(item) === path);
-  if (project) return { page: 'project', path, slug: project.slug };
   const post = POSTS.find((item) => postUrl(item) === path);
   if (post) return { page: 'post', path, slug: post.slug };
   return { page: 'not-found', path: '/404.html' };
 }
 
 // Each page is its own chunk, so the blog doesn't download the ride and the home page doesn't download posts.
-const PAGE_FILES = { home: 'Home', projects: 'Projects', project: 'Project', blog: 'Blog', post: 'Post', imprint: 'Imprint', privacy: 'Privacy', 'not-found': 'NotFound' };
+const PAGE_FILES = { home: 'Home', blog: 'Blog', post: 'Post', imprint: 'Imprint', privacy: 'Privacy', 'not-found': 'NotFound' };
 const pages = import.meta.glob('./pages/*.jsx');
 
 export const pageFile = (route) => `src/pages/${PAGE_FILES[route.page]}.jsx`;
 
 export function contentFile(route) {
-  if (route.page === 'project') return `content/projects/${route.slug}.md`;
   if (route.page === 'post') return `content/posts/${route.slug}.md`;
   return null;
 }
 
 async function loadData(route) {
-  if (route.page === 'project') return { project: await loadProject(route.slug) };
   if (route.page === 'post') return { post: await loadPost(route.slug) };
   return {};
 }
@@ -56,13 +51,13 @@ const breadcrumbs = (...items) => ({
 // Projects you can download are described as apps, so search engines know what they are and where to get them.
 const app = (meta) => ({
   '@type': 'SoftwareApplication',
-  '@id': `${absoluteUrl(projectUrl(meta))}#app`,
+  '@id': `${absoluteUrl(postUrl(meta))}#app`,
   name: meta.title,
   description: meta.summary,
   applicationCategory: meta.category,
   operatingSystem: meta.os,
   downloadUrl: meta.links.download,
-  url: absoluteUrl(projectUrl(meta)),
+  url: absoluteUrl(postUrl(meta)),
   image: meta.image && absoluteUrl(meta.image),
   author: person,
   isAccessibleForFree: true,
@@ -86,43 +81,16 @@ export function headFor(route) {
           ],
         },
       };
-    case 'projects':
-      return { ...base, title: `Work · ${SITE.name}`, description: `Projects by ${SITE.author}: native apps, backend services and web apps.` };
     case 'blog':
       return { ...base, title: `Writing · ${SITE.name}`, description: `Notes by ${SITE.author} on the things I build and how they work.` };
     case 'imprint':
       return { ...base, title: `Imprint · ${SITE.name}`, description: `Legal notice and provider identification for ${SITE.name}.` };
     case 'privacy':
       return { ...base, title: `Privacy policy · ${SITE.name}`, description: `How ${SITE.name} handles personal data.` };
-    case 'project': {
-      const { meta } = route.project;
-      const work = meta.links?.download
-        ? { ...app(meta), keywords: meta.stack?.join(', ') }
-        : {
-            '@type': 'CreativeWork',
-            name: meta.title,
-            headline: meta.tagline,
-            description: meta.summary,
-            url: base.url,
-            author: person,
-            keywords: meta.stack?.join(', '),
-            image: meta.image && absoluteUrl(meta.image),
-            sameAs: [meta.links?.live, meta.links?.source].filter(Boolean),
-          };
-      return {
-        ...base,
-        title: `${meta.title} — ${meta.tagline} · ${SITE.name}`,
-        description: meta.summary,
-        image: meta.image?.endsWith('.webp') ? null : meta.image,
-        jsonLd: {
-          '@context': 'https://schema.org',
-          '@graph': [work, breadcrumbs({ name: 'Work', url: '/projects/' }, { name: meta.title, url: route.path })],
-        },
-      };
-    }
     case 'post': {
       const { meta, faq } = route.post;
-      const project = PROJECTS.find((item) => item.slug === meta.project);
+      // A project's own write-up describes the project; a guide is about the project it names.
+      const project = meta.featured ? meta : PROJECTS.find((item) => item.slug === meta.project);
       const modified = meta.updated ?? meta.date;
       return {
         ...base,

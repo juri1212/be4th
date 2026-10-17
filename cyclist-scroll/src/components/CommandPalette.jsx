@@ -1,21 +1,13 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { POSTS, PROJECTS, postUrl, projectUrl } from '../content';
+import { POSTS, postUrl } from '../content';
 import { SITE, formatDate } from '../site';
 import { ArrowRight, External, Search } from './icons';
 
 const ITEMS = [
   { group: 'Pages', label: 'Home', href: '/', keywords: 'start ride intro' },
-  { group: 'Pages', label: 'Work', href: '/projects/', keywords: 'projects portfolio' },
   { group: 'Pages', label: 'Writing', href: '/blog/', keywords: 'blog posts articles' },
   { group: 'Pages', label: 'Imprint', href: '/imprint/', keywords: 'impressum legal notice contact' },
   { group: 'Pages', label: 'Privacy', href: '/privacy/', keywords: 'privacy policy gdpr datenschutz' },
-  ...PROJECTS.map((project) => ({
-    group: 'Projects',
-    label: project.title,
-    hint: project.kind,
-    href: projectUrl(project),
-    keywords: `${project.tagline} ${project.stack.join(' ')}`,
-  })),
   ...POSTS.map((post) => ({
     group: 'Writing',
     label: post.title,
@@ -121,7 +113,7 @@ export default function CommandPalette() {
           <input
             type="text"
             value={query}
-            placeholder="Search projects, posts, pages…"
+            placeholder="Search posts and pages…"
             autoComplete="off"
             spellCheck="false"
             role="combobox"

@@ -22,7 +22,6 @@ export const LEGAL = {
 };
 
 export const SITE_LINKS = [
-  { id: 'work', href: '/projects/', label: 'Work' },
   { id: 'writing', href: '/blog/', label: 'Writing' },
   { id: 'github', href: SITE.github, label: 'GitHub' },
 ];

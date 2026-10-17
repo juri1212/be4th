@@ -1,31 +1,32 @@
 ---
 title: Duophonic
-order: 1
+description: Duophonic is a free macOS menu bar app that plays your Mac’s audio on two outputs at once, like two pairs of AirPods, and keeps them in sync. How it works with Core Audio.
+summary: A menu bar app that sends sound to two devices together — two pairs of AirPods, headphones and speakers, or any two outputs — and keeps them in sync.
+date: "2026-10-10"
+tags: [Swift, SwiftUI, Core Audio, XCTest]
+featured: 1
 kind: macOS app
 year: 2025–26
 tagline: Play your Mac’s audio on two outputs at once.
-summary: A menu bar app that sends sound to two devices together — two pairs of AirPods, headphones and speakers, or any two outputs — and keeps them in sync.
-stack: [Swift, SwiftUI, Core Audio, XCTest]
 os: macOS 26.1 or later
 category: UtilitiesApplication
 highlights:
   - Builds a Core Audio multi-output device with drift compensation on the second output
   - Switches either output while playing by updating the device in place
   - Restores your previous outputs on quit, and cleans up after a crash on the next launch
-image: /images/duophonic/menu-sharing.webp
-imageAlt: Duophonic’s menu bar window sharing audio between MacBook Pro Speakers and AirPods Pro
-icon: /images/duophonic/icon-256.png
+image: /images/duophonic/og-image.jpg
 links:
   download: https://github.com/juri1212/Duophonic/releases/latest/download/Duophonic.zip
   source: https://github.com/juri1212/Duophonic
-post: play-mac-audio-on-two-outputs
 ---
+
+<figure><img src="/images/duophonic/menu-sharing.webp" width="768" height="922" alt="Duophonic’s menu bar window sharing audio between MacBook Pro Speakers and AirPods Pro" /><figcaption>Sharing: MacBook Pro Speakers and AirPods Pro play together.</figcaption></figure>
 
 ## The problem
 
 On an iPhone you tap *Share Audio* and two pairs of AirPods play the same film. On a Mac, the sound menu lets you pick exactly one output. macOS *can* play to several devices at once — through a Multi-Output Device in Audio MIDI Setup — but it takes six steps, breaks the volume keys and stays in your output list until you delete it by hand.
 
-Duophonic turns that into one switch in the menu bar.
+Duophonic turns that into one switch in the menu bar. For a step-by-step guide, including the built-in way, see [how to play audio on two AirPods on a Mac](/blog/play-mac-audio-on-two-outputs/).
 
 ## How it works
 

@@ -14,7 +14,22 @@ npm run preview # serve dist/
 - **Content** lives in `content/posts/*.md`, with YAML frontmatter. `plugins/markdown.js` turns each file into a module at build time: headings get anchors for the table of contents, and code blocks are highlighted with Shiki, so neither a Markdown parser nor a highlighter ships to the browser.
 - **Routes** are defined once in `src/routes.js`. Each page is its own chunk.
 - **Prerendering:** `npm run build` builds the client, then a server bundle, then `scripts/prerender.js` renders every route to `dist/<path>/index.html` and writes `sitemap.xml` and `robots.txt`. Each page's CSS and chunks are linked from the Vite manifest, and the browser hydrates the prerendered HTML.
-- **Deploy:** pushing to `main` builds the site and uploads `dist/` over FTP (`.github/workflows/deploy-ftp.yml`). `public/.htaccess` sets up the 404 page and asset caching on Apache.
+- **Deploy:** pushing to `main` builds the site and uploads `dist/` over FTPS (`.github/workflows/deploy-ftp.yml`). `public/.htaccess` sets up the 404 page and asset caching on Apache.
+- **Activity graphs:** the start page shows GitHub contributions and Strava training per day for the past year. Every night, `.github/workflows/activity-data.yml` runs `scripts/fetch-activity.js` and uploads the JSON to `/data/` on the server, separately from the site, so neither upload overwrites the other. Visitors only load those files from be4th.com; their browsers never contact GitHub or Strava. Both graphs share one scale, set by `ACTIVITY` in `src/site.js`.
+
+## Activity data
+
+```sh
+npm run fetch-activity  # writes .data/*.json, which dev and preview serve at /data/
+```
+
+Without Strava credentials it only fetches GitHub. To connect Strava:
+
+1. Create an API app at <https://www.strava.com/settings/api> with the callback domain `localhost`.
+2. Run `npm run strava-auth`, enter the app's client ID and secret, and approve in the browser tab that opens. It catches the redirect on `localhost:8723`, and with the [GitHub CLI](https://cli.github.com) signed in, stores the variable `STRAVA_CLIENT_ID` and the secrets `STRAVA_CLIENT_SECRET` and `STRAVA_REFRESH_TOKEN` in this repository. Without it, the script prints them to add by hand.
+3. Run "Update activity data" from the Actions tab once instead of waiting for the night.
+
+Only the hours per day are published, from all activity types. If Strava ever revokes the refresh token, the nightly run fails and the site keeps showing the last good data; run step 2 again.
 
 ## Adding a post
 

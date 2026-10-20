@@ -26,13 +26,10 @@ export const SITE_LINKS = [
   { id: 'github', href: SITE.github, label: 'GitHub' },
 ];
 
-// Grouped from what the projects on this site are actually built with.
-export const TOOLBOX = [
-  { area: 'Apps', tools: ['Swift', 'SwiftUI', 'Core Audio', 'XCTest'] },
-  { area: 'Backend', tools: ['Rust', 'axum', 'Tokio', 'Node.js', 'REST APIs'] },
-  { area: 'Web', tools: ['TypeScript', 'React', 'Vite', 'Service Workers', 'Leaflet'] },
-  { area: 'Delivery', tools: ['GitHub Actions', 'GitHub Apps & OAuth', 'Static hosting', 'Prerendering'] },
-];
+// The activity graphs on the start page shade each day on one scale, so a dark square means an equally busy day in either.
+// A day counts in contributions; an hour of training counts as `hourWeight` of them. `levels` are the thresholds for
+// the four shades: a day with at least levels[i] reaches shade i + 1.
+export const ACTIVITY = { hourWeight: 10, levels: [1, 10, 20, 30] };
 
 /* global __BUILD__ */
 export const BUILD = __BUILD__;

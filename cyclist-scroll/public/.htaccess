@@ -22,9 +22,11 @@ ErrorDocument 404 /404.html
 </IfModule>
 
 # Project pages used to live under /projects/. Their write-ups are posts now.
+# The Duophonic guide was merged into its post.
 <IfModule mod_alias.c>
   RedirectMatch 301 ^/projects/?$ /
   RedirectMatch 301 ^/projects/(duophonic|car-configurator-mcp)/?$ /blog/$1/
+  RedirectMatch 301 ^/blog/play-mac-audio-on-two-outputs/?$ /blog/duophonic/
 </IfModule>
 
 # The FTP deploys keep their sync state next to the files they upload. It's not meant to be public.

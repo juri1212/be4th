@@ -1,8 +1,9 @@
 ---
 title: Duophonic
-description: Duophonic is a free macOS menu bar app that plays your Mac’s audio on two outputs at once, like two pairs of AirPods, and keeps them in sync. How it works with Core Audio.
+description: Duophonic is a free macOS menu bar app that plays your Mac’s audio on two outputs at once, like two pairs of AirPods, and keeps them in sync. One switch instead of Audio MIDI Setup.
 summary: A menu bar app that sends sound to two devices together — two pairs of AirPods, headphones and speakers, or any two outputs — and keeps them in sync.
 date: "2026-10-10"
+updated: "2026-10-20"
 tags: [Swift, SwiftUI, Core Audio, XCTest]
 featured: 1
 kind: macOS app
@@ -11,61 +12,54 @@ tagline: Play your Mac’s audio on two outputs at once.
 os: macOS 26.1 or later
 category: UtilitiesApplication
 highlights:
-  - Builds a Core Audio multi-output device with drift compensation on the second output
-  - Switches either output while playing by updating the device in place
-  - Restores your previous outputs on quit, and cleans up after a crash on the next launch
+  - One switch to play on two outputs, with a volume slider for each
+  - Switch either output while playing, the music keeps going
+  - Puts your previous outputs back when you stop, even after a crash
 image: /images/duophonic/og-image.jpg
 links:
   download: https://github.com/juri1212/Duophonic/releases/latest/download/Duophonic.zip
   source: https://github.com/juri1212/Duophonic
 ---
 
-<figure><img src="/images/duophonic/menu-sharing.webp" width="768" height="922" alt="Duophonic’s menu bar window sharing audio between MacBook Pro Speakers and AirPods Pro" /><figcaption>Sharing: MacBook Pro Speakers and AirPods Pro play together.</figcaption></figure>
+<figure><img src="/images/duophonic/menu-sharing.webp" width="768" height="922" alt="Duophonic’s menu bar window sharing audio between MacBook Pro Speakers and AirPods Pro, In Sync" /><figcaption>Sharing: MacBook Pro Speakers and AirPods Pro play together, each with its own volume.</figcaption></figure>
 
-## The problem
+Two people, one laptop, one film. On an iPhone you tap *Share Audio* and both pairs of AirPods play. On a Mac, the sound menu lets you pick exactly one output.
 
-On an iPhone you tap *Share Audio* and two pairs of AirPods play the same film. On a Mac, the sound menu lets you pick exactly one output. macOS *can* play to several devices at once — through a Multi-Output Device in Audio MIDI Setup — but it takes six steps, breaks the volume keys and stays in your output list until you delete it by hand.
+macOS *can* play to several devices at once, through a Multi-Output Device in Audio MIDI Setup. But it takes six steps, breaks the volume keys, and stays in your output list until you delete it by hand. Duophonic turns all of that into one switch in the menu bar.
 
-Duophonic turns that into one switch in the menu bar. For a step-by-step guide, including the built-in way, see [how to play audio on two AirPods on a Mac](/blog/play-mac-audio-on-two-outputs/).
+## How to use it
+
+1. Connect both outputs. AirPods, Bluetooth headphones, built-in speakers, USB, HDMI: anything that shows up as a sound output works.
+2. Click the Duophonic icon in the menu bar and pick **Output 1** and **Output 2**.
+3. Turn on **Audio Sharing**. Everything your Mac plays now goes to both, in sync.
+
+To stop, flip the switch off, quit, or just pick another output in Control Center.
+
+## Why not Audio MIDI Setup?
+
+It's the same idea, without the chores:
+
+- **One switch** instead of six steps in a utility.
+- **A volume slider per device.** With a Multi-Output Device the volume keys simply stop working.
+- **Swap either output while playing.** Picking the device that's already in the other slot swaps the two.
+- **Cleans up after itself.** Your normal output comes back and the temporary device is gone.
 
 ## How it works
 
-When you turn on **Audio Sharing**, Duophonic creates a private aggregate device through Core Audio, with your two outputs as sub-devices:
+When you turn on sharing, Duophonic creates a private aggregate device through Core Audio, with your two outputs inside it.
 
-- **Output 1 is the clock source.** It plays without resampling and sets the timing.
-- **Output 2 is drift compensated,** so the two don't wander apart during a long film.
-- **The aggregate becomes the default output** for sound and for alerts. The outputs it replaced are persisted first, so they can be restored even if the app is killed.
+- **Output 1 is the clock.** It plays without resampling and sets the timing.
+- **Output 2 follows it** with drift correction, so the two don't wander apart during a long film.
+- **Your previous outputs are saved first**, for sound and for alerts, so they come back even if the app is killed.
 
-Switching either output while sharing updates the aggregate's sub-device list in place, so playback never stops. Picking the device that's already in the other slot swaps the two.
+Duophonic also watches the hardware. AirPods go back in their case, a monitor gets unplugged, someone picks another output: it notices and does the sensible thing. A device that reconnects rejoins playback. On launch it cleans up anything a crash left behind, and only ever touches its own devices.
 
-## Following the hardware
+All Core Audio access sits behind a small protocol with an in-memory fake, so the whole lifecycle is unit tested without a real device.
 
-Audio devices come and go: AirPods go back into their case, a monitor gets unplugged, someone picks a different output in Control Center. Duophonic observes Core Audio's hardware properties and reacts to each case:
+## Free and private
 
-- If macOS already moved to another output, it reflects that and turns sharing off.
-- If you picked another output yourself, it respects that choice and removes its device.
-- If a selected device reconnects, it rejoins playback, with drift compensation re-applied.
+No account, no tracking, no network access. Duophonic runs in the macOS sandbox and is open source under the MIT license.
 
-On launch it looks for aggregates left behind by a crash. One that's still in use is adopted, any other is removed. Only devices with Duophonic's own UID format are touched, so aggregates created by other apps are never destroyed.
+<p><a class="button" href="https://github.com/juri1212/Duophonic/releases/latest/download/Duophonic.zip">Download Duophonic</a></p>
 
-## Built to be tested
-
-Core Audio is a C API full of global state, which makes it hard to test against. All hardware access goes through a small `AudioHardware` protocol with two implementations: one backed by Core Audio, and an in-memory one that the tests drive. The lifecycle — enabling, swapping, disconnects, crash recovery, restoring defaults — is covered by unit tests that never touch a real device.
-
-```swift
-protocol AudioHardware: AnyObject {
-    func outputDevices() -> [AudioDevice]
-    func defaultDeviceUID(_ kind: DefaultDeviceKind) -> String?
-    func setDefaultDevice(_ kind: DefaultDeviceKind, uid: String) throws
-    func createAggregate(_ configuration: AggregateConfiguration) throws
-    func updateAggregate(uid: String, mainUID: String, secondaryUID: String) throws
-    func destroyAggregate(uid: String) throws
-    func startObserving(_ handler: @escaping () -> Void)
-}
-```
-
-## Small and private
-
-Duophonic is a sandboxed menu bar app with no account, no tracking and no network access. It's free and open source under the MIT license, and ships as a zip from GitHub Releases.
-
-<figure><img src="/images/duophonic/menu-off.webp" width="768" height="922" alt="Duophonic menu bar window before sharing, showing Output 1 and Output 2 and the Audio Sharing switch turned off" loading="lazy" /><figcaption>Before sharing: two outputs chosen, the switch still off.</figcaption></figure>
+Unzip it, drag it to Applications and open it. If macOS can't verify the app, click **Open Anyway** in *System Settings → Privacy & Security*. Found a bug or have an idea? [Open an issue on GitHub](https://github.com/juri1212/Duophonic/issues).

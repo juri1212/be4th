@@ -13,11 +13,6 @@ import { STAGES } from '../ride/stages';
 import { ACTIVITY, SITE, formatDate } from '../site';
 import '../styles/home.css';
 
-// One stage per section: the intro at the start line, the projects in the lowlands and on Mont Ventoux,
-// then activity and writing on the descent, and contact a few metres past the finish.
-const ANCHORS = [0, ...[0, 2, 4, 5].map((stage) => STAGES[stage].anchor), FINISH_X + 240];
-// Where the rider is when each chapter is in focus, shown in the gutter like a road book.
-const KM_MARKS = ANCHORS.map((x) => (x > FINISH_X ? 'Finish' : `Km ${Math.round(kmAt(x))}`));
 const STACKED_LAYOUT = '(max-width: 900px)';
 const WORK = PROJECTS.slice(0, 2);
 // The project write-ups have their own chapters, so the writing section lists the other posts.
@@ -25,6 +20,20 @@ const WRITING = POSTS.filter((post) => !post.featured);
 const SECTIONS = { intro: 0, work: 1, activity: WORK.length + 1, writing: WORK.length + 2, contact: WORK.length + 3 };
 // Mirrors each chapter's heading, so the HUD can carry it once the real one scrolls under the ride panel.
 const HEADINGS = ['Juri Beforth', ...WORK.map((project) => project.title), 'Activity', 'Writing', 'Get in touch'];
+// The intro sits at the start line and contact a few metres past the finish. Every chapter in between stops at
+// the stage scenery closest to an even split of the route, so the spacing stays roughly even as chapters change.
+const ROUTE_KM = kmAt(FINISH_X);
+const nearestStageAnchor = (km) =>
+  STAGES.reduce((best, stage) =>
+    Math.abs(kmAt(stage.anchor) - km) < Math.abs(kmAt(best.anchor) - km) ? stage : best,
+  ).anchor;
+const ANCHORS = [
+  0,
+  ...HEADINGS.slice(1, -1).map((_, index) => nearestStageAnchor((ROUTE_KM * (index + 1)) / (HEADINGS.length - 1))),
+  FINISH_X + 240,
+];
+// Where the rider is when each chapter is in focus, shown in the gutter like a road book.
+const KM_MARKS = ANCHORS.map((x) => (x > FINISH_X ? 'Finish' : `Km ${Math.round(kmAt(x))}`));
 
 const NAV = [
   { id: 'work', href: '#work', label: 'Work' },

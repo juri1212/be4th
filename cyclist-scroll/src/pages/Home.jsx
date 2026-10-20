@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import ActivityGraph, { ActivityLegend } from '../components/ActivityGraph';
 import PaletteButton from '../components/PaletteButton';
 import RidePanel from '../components/RidePanel';
 import SiteFooter from '../components/SiteFooter';
@@ -9,11 +10,11 @@ import { POSTS, PROJECTS, postUrl } from '../content';
 import { clamp } from '../ride/math';
 import { FINISH_X, kmAt } from '../ride/route';
 import { STAGES } from '../ride/stages';
-import { SITE, TOOLBOX, formatDate } from '../site';
+import { ACTIVITY, SITE, formatDate } from '../site';
 import '../styles/home.css';
 
 // One stage per section: the intro at the start line, the projects in the lowlands and on Mont Ventoux,
-// then the toolbox and writing on the descent, and contact a few metres past the finish.
+// then activity and writing on the descent, and contact a few metres past the finish.
 const ANCHORS = [0, ...[0, 2, 4, 5].map((stage) => STAGES[stage].anchor), FINISH_X + 240];
 // Where the rider is when each chapter is in focus, shown in the gutter like a road book.
 const KM_MARKS = ANCHORS.map((x) => (x > FINISH_X ? 'Finish' : `Km ${Math.round(kmAt(x))}`));
@@ -21,13 +22,13 @@ const STACKED_LAYOUT = '(max-width: 900px)';
 const WORK = PROJECTS.slice(0, 2);
 // The project write-ups have their own chapters, so the writing section lists the other posts.
 const WRITING = POSTS.filter((post) => !post.featured);
-const SECTIONS = { intro: 0, work: 1, toolbox: WORK.length + 1, writing: WORK.length + 2, contact: WORK.length + 3 };
+const SECTIONS = { intro: 0, work: 1, activity: WORK.length + 1, writing: WORK.length + 2, contact: WORK.length + 3 };
 // Mirrors each chapter's heading, so the HUD can carry it once the real one scrolls under the ride panel.
-const HEADINGS = ['Juri Beforth', ...WORK.map((project) => project.title), 'Toolbox', 'Writing', 'Get in touch'];
+const HEADINGS = ['Juri Beforth', ...WORK.map((project) => project.title), 'Activity', 'Writing', 'Get in touch'];
 
 const NAV = [
   { id: 'work', href: '#work', label: 'Work' },
-  { id: 'toolbox', href: '#toolbox', label: 'Toolbox' },
+  { id: 'activity', href: '#activity', label: 'Activity' },
   { id: 'writing', href: '#writing', label: 'Writing' },
   { id: 'contact', href: '#contact', label: 'Contact' },
 ];
@@ -35,7 +36,7 @@ const NAV = [
 function navSection(active) {
   if (active >= SECTIONS.contact) return 'contact';
   if (active >= SECTIONS.writing) return 'writing';
-  if (active >= SECTIONS.toolbox) return 'toolbox';
+  if (active >= SECTIONS.activity) return 'activity';
   if (active >= SECTIONS.work) return 'work';
   return null;
 }
@@ -195,22 +196,19 @@ export default function Home() {
             />
           ))}
 
-          <section id="toolbox" className="chapter" {...sectionProps(SECTIONS.toolbox)}>
+          <section id="activity" className="chapter" {...sectionProps(SECTIONS.activity)}>
             <h2>
-              <Km index={SECTIONS.toolbox} />
-              Toolbox
+              <Km index={SECTIONS.activity} />
+              Activity
             </h2>
-            <p>What I reach for, from the interface to the API to the workflow that deploys it.</p>
-            <dl className="toolbox">
-              {TOOLBOX.map(({ area, tools }) => (
-                <div key={area}>
-                  <dt>{area}</dt>
-                  <dd>
-                    <Tags items={tools} label={area} />
-                  </dd>
-                </div>
-              ))}
-            </dl>
+            <p>
+              The last twelve months, day by day: commits, pull requests and reviews on <a href={SITE.github}>GitHub</a>, and
+              hours of training on Strava. Both share one scale, with an hour of training weighing as much as{' '}
+              {ACTIVITY.hourWeight} contributions.
+            </p>
+            <ActivityGraph kind="github" />
+            <ActivityGraph kind="strava" />
+            <ActivityLegend />
           </section>
 
           <section id="writing" className="chapter" {...sectionProps(SECTIONS.writing)}>

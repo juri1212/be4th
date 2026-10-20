@@ -6,6 +6,10 @@ ErrorDocument 404 /404.html
   <If "%{REQUEST_URI} =~ m#^/assets/#">
     Header set Cache-Control "public, max-age=31536000, immutable"
   </If>
+  # Activity data is replaced nightly; revalidate so visitors get the new file the next morning.
+  <If "%{REQUEST_URI} =~ m#^/data/#">
+    Header set Cache-Control "no-cache"
+  </If>
 </IfModule>
 
 # One canonical host: https://be4th.com. Duplicate hosts split ranking signals.
@@ -22,3 +26,8 @@ ErrorDocument 404 /404.html
   RedirectMatch 301 ^/projects/?$ /
   RedirectMatch 301 ^/projects/(duophonic|car-configurator-mcp)/?$ /blog/$1/
 </IfModule>
+
+# The FTP deploys keep their sync state next to the files they upload. It's not meant to be public.
+<Files ".ftp-deploy-sync-state.json">
+  Require all denied
+</Files>

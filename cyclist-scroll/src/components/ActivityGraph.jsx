@@ -28,6 +28,8 @@ const KINDS = {
     file: 'contributions.json',
     title: 'Code',
     source: 'GitHub',
+    // Official lockups, unaltered: GitHub's white logo and Strava's white "Powered by Strava" mark for dark backgrounds.
+    logo: { src: '/images/brands/github.svg', alt: 'GitHub', width: 416, height: 95 },
     weight: 1,
     total: { label: 'Contributions', format: (sum) => sum.toLocaleString('en-US') },
     peak: { label: 'Busiest day', format: (count) => count.toLocaleString('en-US') },
@@ -38,6 +40,7 @@ const KINDS = {
     file: 'training.json',
     title: 'Training',
     source: 'Strava',
+    logo: { src: '/images/brands/powered-by-strava.svg', alt: 'Powered by Strava', width: 365, height: 37 },
     weight: ACTIVITY.hourWeight,
     total: { label: 'Hours', format: (sum) => Math.round(sum).toLocaleString('en-US') },
     peak: { label: 'Longest day', format: formatHours },
@@ -106,9 +109,10 @@ export default function ActivityGraph({ kind }) {
 
   return (
     <figure className="activity-graph" aria-labelledby={titleId} aria-busy={!data && !failed}>
-      <h3 id={titleId}>
-        {config.title} <span>on {config.source}</span>
-      </h3>
+      <header className="activity-graph__header">
+        <h3 id={titleId}>{config.title}</h3>
+        <img className={`activity-graph__logo activity-graph__logo--${kind}`} {...config.logo} />
+      </header>
       <div className="activity-graph__scroller" ref={scrollerRef}>
         <svg
           viewBox={`0 0 ${WIDTH} ${HEIGHT}`}

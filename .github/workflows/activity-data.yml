@@ -27,7 +27,7 @@ jobs:
 
     # Fails on any error, so nothing is uploaded and the site keeps the previous night's data.
     - name: Fetch activity
-      run: node scripts/fetch-activity.js
+      run: node scripts/fetch-activity.ts
       working-directory: ./cyclist-scroll/
       env:
         STRAVA_CLIENT_ID: ${{ vars.STRAVA_CLIENT_ID }}

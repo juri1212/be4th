@@ -35,7 +35,7 @@ interface KindConfig {
   title: string;
   source: string;
   logo: { src: string; alt: string; width: number; height: number };
-  // How many commits a unit of this activity counts as, for the shared scale.
+  // How many contributions a unit of this activity counts as, for the shared scale.
   weight: number;
   total: { label: string; format: (sum: number) => string };
   peak: { label: string; format: (value: number) => string };
@@ -51,10 +51,10 @@ const KINDS: Record<ActivityKind, KindConfig> = {
     // Official lockups, unaltered: GitHub's white logo and Strava's white "Powered by Strava" mark for dark backgrounds.
     logo: { src: '/images/brands/github.svg', alt: 'GitHub', width: 416, height: 95 },
     weight: 1,
-    total: { label: 'Commits', format: (sum) => sum.toLocaleString('en-US') },
+    total: { label: 'Contributions', format: (sum) => sum.toLocaleString('en-US') },
     peak: { label: 'Busiest day', format: (count) => count.toLocaleString('en-US') },
-    format: (count) => plural(count, 'commit'),
-    none: 'No commits',
+    format: (count) => plural(count, 'contribution'),
+    none: 'No contributions',
   },
   strava: {
     file: 'training.json',

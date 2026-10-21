@@ -34,6 +34,7 @@ interface KindConfig {
   file: string;
   title: string;
   source: string;
+  logo: { src: string; alt: string; width: number; height: number };
   // How many contributions a unit of this activity counts as, for the shared scale.
   weight: number;
   total: { label: string; format: (sum: number) => string };

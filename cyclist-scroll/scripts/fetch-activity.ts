@@ -1,5 +1,5 @@
 // Fetches the activity graphs on the start page and writes them to .data/ as JSON:
-//   contributions.json  GitHub contributions per day, scraped from the public profile calendar
+//   contributions.json  GitHub commits per day, from the GraphQL API (needs GITHUB_TOKEN)
 //   training.json       hours of Strava activity per day, all sport types
 // Each file is { updated, to, days: { 'YYYY-MM-DD': value } }, covering the year up to `to`. Days without activity are left out.
 // Runs nightly in .github/workflows/activity-data.yml, which uploads .data/ to /data/ on the server.
@@ -26,18 +26,59 @@ async function request(url: string, init?: RequestInit): Promise<Response> {
 
 const requestJson = async <T>(url: string, init?: RequestInit) => (await (await request(url, init)).json()) as T;
 
-async function contributions(): Promise<Omit<ActivityData, 'updated'>> {
-  const html = await (await request(`https://github.com/users/${GITHUB_USER}/contributions`)).text();
-  // Each day is a <td data-date id> with a <tool-tip for=id> that reads "3 contributions on …" or "No contributions on …".
-  const counts = new Map([...html.matchAll(/<tool-tip[^>]*for="([^"]+)"[^>]*>(\d+) contributions?/g)].map(([, id, count]) => [id, Number(count)]));
-  const dates = [...html.matchAll(/<td[^>]*data-date="([\d-]+)"[^>]*id="([^"]+)"/g)];
-  if (!dates.length) throw new Error('GitHub: no contribution days found, the calendar markup may have changed');
-  const days: Days = {};
-  for (const [, date, id] of dates) {
-    const count = counts.get(id);
-    if (count) days[date] = count;
+interface CommitContributions {
+  nodes: { occurredAt: string; commitCount: number }[];
+  pageInfo: { hasNextPage: boolean; endCursor: string | null };
+}
+
+const COMMITS_QUERY = `query($login: String!, $from: DateTime!, $to: DateTime!, $after: String) {
+  user(login: $login) {
+    contributionsCollection(from: $from, to: $to) {
+      commitContributionsByRepository(maxRepositories: 100) {
+        repository { nameWithOwner }
+        contributions(first: 100, after: $after) { nodes { occurredAt commitCount } pageInfo { hasNextPage endCursor } }
+      }
+    }
   }
-  return { to: dates.map(([, date]) => date).sort().at(-1)!, days };
+}`;
+
+// Commits only, the same ones GitHub's contribution calendar counts: by the user, to a default branch, in the last year.
+// Private repositories only show up if GITHUB_TOKEN can read them; the workflow's own token sees public ones.
+async function commits(token: string): Promise<Omit<ActivityData, 'updated'>> {
+  const to = new Date();
+  const from = new Date(to);
+  from.setFullYear(from.getFullYear() - 1);
+  const page = async (repo?: string, after?: string) => {
+    const { data, errors } = await requestJson<{
+      data?: { user: { contributionsCollection: { commitContributionsByRepository: { repository: { nameWithOwner: string }; contributions: CommitContributions }[] } } };
+      errors?: { message: string }[];
+    }>('https://api.github.com/graphql', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: COMMITS_QUERY, variables: { login: GITHUB_USER, from: from.toISOString(), to: to.toISOString(), after } }),
+    });
+    if (!data) throw new Error(`GitHub: ${errors?.map(({ message }) => message).join('; ')}`);
+    return data.user.contributionsCollection.commitContributionsByRepository.filter(({ repository }) => !repo || repository.nameWithOwner === repo);
+  };
+
+  const days: Days = {};
+  const add = ({ nodes }: CommitContributions) => {
+    // occurredAt is midnight of the day in the user's GitHub time zone, written in UTC.
+    for (const { occurredAt, commitCount } of nodes) {
+      const date = new Date(occurredAt).toLocaleDateString('sv-SE', { timeZone: TIME_ZONE });
+      days[date] = (days[date] ?? 0) + commitCount;
+    }
+  };
+  for (const { repository, contributions } of await page()) {
+    add(contributions);
+    // Repositories with more than 100 active days are paged one by one.
+    for (let { pageInfo } = contributions; pageInfo.hasNextPage; ) {
+      const [next] = await page(repository.nameWithOwner, pageInfo.endCursor!);
+      add(next.contributions);
+      pageInfo = next.contributions.pageInfo;
+    }
+  }
+  return { to: today(), days };
 }
 
 interface StravaCredentials {
@@ -91,7 +132,8 @@ async function write(name: string, data: Omit<ActivityData, 'updated'>) {
 }
 
 await mkdir(out, { recursive: true });
-await write('contributions.json', await contributions());
+if (!process.env.GITHUB_TOKEN) throw new Error('Set GITHUB_TOKEN to fetch contributions.json, e.g. GITHUB_TOKEN=$(gh auth token)');
+await write('contributions.json', await commits(process.env.GITHUB_TOKEN));
 
 const strava = ['STRAVA_CLIENT_ID', 'STRAVA_CLIENT_SECRET', 'STRAVA_REFRESH_TOKEN'] as const;
 const hasStrava = (env: NodeJS.ProcessEnv): env is NodeJS.ProcessEnv & StravaCredentials => strava.every((name) => env[name]);

@@ -10,7 +10,7 @@ import { POSTS, PROJECTS, postUrl } from '../content';
 import { clamp } from '../ride/math';
 import { FINISH_X, kmAt } from '../ride/route';
 import { STAGES } from '../ride/stages';
-import { ACTIVITY, SITE, formatDate, type NavLink } from '../site';
+import { SITE, formatDate, type NavLink } from '../site';
 import type { Project } from '../types';
 import '../styles/home.css';
 
@@ -210,11 +210,7 @@ export default function Home() {
               <Km index={SECTIONS.activity} />
               Activity
             </h2>
-            <p>
-              The last twelve months, day by day: commits, pull requests and reviews on <a href={SITE.github}>GitHub</a>, and
-              hours of training on Strava. Both share one scale, with an hour of training weighing as much as{' '}
-              {ACTIVITY.hourWeight} contributions.
-            </p>
+            <p>The last twelve months, day by day: commits pushed and hours trained.</p>
             <ActivityGraph kind="github" />
             <ActivityGraph kind="strava" />
             <ActivityLegend />

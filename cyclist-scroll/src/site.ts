@@ -35,7 +35,7 @@ export const SITE_LINKS: NavLink[] = [
 ];
 
 // The activity graphs on the start page shade each day on one scale, so a dark square means an equally busy day in either.
-// A day counts in contributions; an hour of training counts as `hourWeight` of them. `levels` are the thresholds for
+// A day counts in commits; an hour of training counts as `hourWeight` of them. `levels` are the thresholds for
 // the four shades: a day with at least levels[i] reaches shade i + 1.
 export const ACTIVITY = { hourWeight: 10, levels: [1, 10, 20, 30] } as const;
 

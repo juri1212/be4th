@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: '17 3 * * *' # 05:17 in Berlin in summer, 04:17 in winter
   workflow_dispatch:
+  # Also when the fetching changes, so the live data follows right away instead of the next night.
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/activity-data.yml
+      - cyclist-scroll/scripts/fetch-activity.ts
 
 name: Update activity data
 
@@ -30,6 +36,7 @@ jobs:
       run: node scripts/fetch-activity.ts
       working-directory: ./cyclist-scroll/
       env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         STRAVA_CLIENT_ID: ${{ vars.STRAVA_CLIENT_ID }}
         STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}
         STRAVA_REFRESH_TOKEN: ${{ secrets.STRAVA_REFRESH_TOKEN }}

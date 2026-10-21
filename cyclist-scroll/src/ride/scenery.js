@@ -1,3 +1,4 @@
+import { BOCHOLT_SKYLINE } from './bocholt';
 import { clamp, fbm, lerp, ridgedNoise, seededRandom, smoothstep, valueNoise } from './math';
 import { FINISH_X, MARKERS, WORLD_MAX, WORLD_MIN, roadY, xAtKm } from './route';
 
@@ -27,6 +28,16 @@ const ZONES = [
   { x: 24000, amp: [450, 380, 300, 200, 110], ridge: 1, canopy: 0.9 },
 ];
 
+const BOCHOLT_X = 3250;
+const BOCHOLT_SCALE = 0.6;
+const BOCHOLT_LAYER = 4;
+
+// Bocholt stands in open fields, so the treeline thins out instead of hiding its skyline.
+function clearing(index, x) {
+  if (index !== BOCHOLT_LAYER) return 1;
+  return lerp(0.2, 1, smoothstep(430, 560, Math.abs(x - BOCHOLT_X)));
+}
+
 function zoneAt(x) {
   let i = 0;
   while (i < ZONES.length - 2 && x > ZONES[i + 1].x) i++;
@@ -53,7 +64,7 @@ export function layerHeight(index, lx) {
   const hills = clamp((fbm(f, layer.seed) - 0.2) / 0.6, 0, 1);
   const peaks = clamp((ridgedNoise(f * 0.8, layer.seed + 5) - 0.15) / 0.7, 0, 1);
   let height = zone.amp[index] * lerp(hills, peaks, zone.ridge);
-  if (index >= 2) height += zone.canopy * canopy(lx, layer.seed) * (index - 1) * 1.6;
+  if (index >= 2) height += zone.canopy * clearing(index, lx / layer.p) * canopy(lx, layer.seed) * (index - 1) * 1.6;
   return height;
 }
 
@@ -109,15 +120,23 @@ function buildRoadTiles() {
   return tiles;
 }
 
+// Landmarks keep their spacing on the layer they're drawn on, so the skyline reads as one town.
+const BOCHOLT = BOCHOLT_SKYLINE.map(({ landmark, offset }) => ({
+  kind: 'bocholt',
+  landmark,
+  x: BOCHOLT_X + (offset * BOCHOLT_SCALE) / LAYERS[BOCHOLT_LAYER].p,
+  scale: BOCHOLT_SCALE,
+}));
+
 // Objects placed on parallax layers, given in world x so they appear alongside the right stage.
 const LAYER_PROPS = {
   4: [
     ...[650, 1850, 2700].map((x) => ({ kind: 'windmill', x, scale: 0.72 })),
     ...[1150, 1205, 2350].map((x) => ({ kind: 'dutchHouse', x, scale: 0.7 })),
     ...[400, 1000, 1550, 2150, 2550].flatMap((x) => row('poplar', x, 5, 15, 0.62)),
-    { kind: 'church', x: 3350, scale: 0.68 },
-    ...[3550, 3800].map((x) => ({ kind: 'farmhouse', x, scale: 0.66 })),
-    ...[3100, 3450, 3950, 4300, 4600, 5050, 5400, 6450].flatMap((x) => row('roundTree', x, 3, 20, 0.62)),
+    ...[3800, 4050].map((x) => ({ kind: 'farmhouse', x, scale: 0.66 })),
+    ...[3950, 4300, 4600, 5050, 5400, 6450].flatMap((x) => row('roundTree', x, 3, 20, 0.62)),
+    ...BOCHOLT,
     ...[5760, 5800, 5845, 5885, 5930, 5975, 6020].map((x, i) => ({ kind: 'building', x, scale: 0.62, variant: i })),
     ...[7000, 7350, 7700, 8100].flatMap((x) => row('cypress', x, 3, 11, 0.62)),
     { kind: 'farmhouse', x: 7550, scale: 0.64 },
@@ -130,7 +149,6 @@ const LAYER_PROPS = {
   3: [
     ...[1300, 2300].map((x) => ({ kind: 'windmill', x, scale: 0.5 })),
     ...[700, 2000].flatMap((x) => row('poplar', x, 6, 11, 0.46)),
-    { kind: 'church', x: 3200, scale: 0.48 },
     { kind: 'tvTower', x: 6250, scale: 0.55 },
     ...[5700, 5760, 5820, 5900, 5960].map((x, i) => ({ kind: 'building', x, scale: 0.46, variant: i + 3 })),
     ...[7200, 7900].flatMap((x) => row('cypress', x, 4, 9, 0.46)),

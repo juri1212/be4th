@@ -1,3 +1,5 @@
+import { BOCHOLT_SKYLINE } from '../ride/bocholt';
+
 // Flat silhouettes drawn around a base point at (0, 0), growing upwards.
 // They inherit `fill` from their parent; `currentColor` is used for line work.
 
@@ -129,6 +131,13 @@ function TvTower() {
       <path d="M-3.4 -262H3.4V-258H-3.4Z" />
     </>
   );
+}
+
+const BOCHOLT_PATHS = Object.fromEntries(BOCHOLT_SKYLINE.map(({ landmark, d }) => [landmark, d]));
+
+// One landmark of Bocholt's skyline; window and arch cut-outs let the haze show through.
+function Bocholt({ landmark }) {
+  return <path d={BOCHOLT_PATHS[landmark]} fillRule="evenodd" />;
 }
 
 function Chalet({ light, glow }) {
@@ -313,6 +322,7 @@ const SHAPES = {
   church: Church,
   building: Building,
   tvTower: TvTower,
+  bocholt: Bocholt,
   chalet: Chalet,
 };
 

@@ -1,0 +1,46 @@
+# Fetches the GitHub and Strava activity graphs nightly and uploads them to /data/ on the server.
+# Independent of the site deploy: it keeps its own FTP sync state in /data/, and the site deploy never touches that folder.
+on:
+  schedule:
+    - cron: '17 3 * * *' # 05:17 in Berlin in summer, 04:17 in winter
+  workflow_dispatch:
+
+name: Update activity data
+
+# Shared with deploy-ftp.yml, so the two never upload at the same time.
+concurrency:
+  group: ftp
+  cancel-in-progress: false
+
+jobs:
+  activity-data:
+    name: Fetch and upload
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v7
+      with:
+        node-version: 24
+
+    # Fails on any error, so nothing is uploaded and the site keeps the previous night's data.
+    - name: Fetch activity
+      run: node scripts/fetch-activity.js
+      working-directory: ./cyclist-scroll/
+      env:
+        STRAVA_CLIENT_ID: ${{ vars.STRAVA_CLIENT_ID }}
+        STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}
+        STRAVA_REFRESH_TOKEN: ${{ secrets.STRAVA_REFRESH_TOKEN }}
+
+    - name: Upload to FTP server
+      uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+      with:
+        server: ${{ vars.FTP_SERVER }}
+        username: ${{ vars.FTP_USER }}
+        password: ${{ secrets.FTP_PASS }}
+        protocol: ftps
+        port: 21
+        local-dir: ./cyclist-scroll/.data/
+        server-dir: data/

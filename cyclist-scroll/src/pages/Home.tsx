@@ -168,8 +168,7 @@ export default function Home() {
               Juri Beforth
             </h1>
             <p className="lede">
-              I build software across the whole stack — native macOS apps in Swift, backend services in Rust and web apps in
-              React and TypeScript — and the pipelines that ship them.
+              Here's what I build, mostly between rides.
             </p>
             <dl className="now">
               <div>

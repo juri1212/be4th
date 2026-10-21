@@ -210,7 +210,7 @@ export default function Home() {
               <Km index={SECTIONS.activity} />
               Activity
             </h2>
-            <p>The last twelve months, day by day: commits pushed and hours trained.</p>
+            <p>The last twelve months, day by day: code shipped and hours trained.</p>
             <ActivityGraph kind="github" />
             <ActivityGraph kind="strava" />
             <ActivityLegend />

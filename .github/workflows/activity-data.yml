@@ -36,7 +36,6 @@ jobs:
       run: node scripts/fetch-activity.ts
       working-directory: ./cyclist-scroll/
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         STRAVA_CLIENT_ID: ${{ vars.STRAVA_CLIENT_ID }}
         STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}
         STRAVA_REFRESH_TOKEN: ${{ secrets.STRAVA_REFRESH_TOKEN }}

@@ -18,7 +18,7 @@ npm run lint
 - **Routes** are defined once in `src/routes.ts`. Each page is its own chunk.
 - **Prerendering:** `npm run build` builds the client, then a server bundle, then `scripts/prerender.ts` renders every route to `dist/<path>/index.html` and writes `sitemap.xml` and `robots.txt`. Each page's CSS and chunks are linked from the Vite manifest, and the browser hydrates the prerendered HTML.
 - **Deploy:** pushing to `main` builds the site and uploads `dist/` over FTPS (`.github/workflows/deploy-ftp.yml`). `public/.htaccess` sets up the 404 page and asset caching on Apache.
-- **Activity graphs:** the start page shows GitHub commits and Strava training per day for the past year. Every night, `.github/workflows/activity-data.yml` runs `scripts/fetch-activity.ts` and uploads the JSON to `/data/` on the server, separately from the site, so neither upload overwrites the other. Visitors only load those files from be4th.com; their browsers never contact GitHub or Strava. Both graphs share one scale, set by `ACTIVITY` in `src/site.ts`.
+- **Activity graphs:** the start page shows GitHub contributions and Strava training per day for the past year. Every night, `.github/workflows/activity-data.yml` runs `scripts/fetch-activity.ts` and uploads the JSON to `/data/` on the server, separately from the site, so neither upload overwrites the other. Visitors only load those files from be4th.com; their browsers never contact GitHub or Strava. Both graphs share one scale, set by `ACTIVITY` in `src/site.ts`.
 
 ## Activity data
 

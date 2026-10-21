@@ -3,7 +3,7 @@ import { RIDER_KIT, mixRgb, paletteAt, rgb } from '../ride/palette';
 import { FINISH_X, MARKERS, cameraY, roadY } from '../ride/route';
 import { SCENERY } from '../ride/scenery';
 import Rider, { WHEELBASE, WHEEL_RADIUS } from './Rider';
-import { Gantry, Lamp, Observatory, Prop } from './Silhouettes';
+import { Gantry, Inspiration911, Lamp, Observatory, Prop } from './Silhouettes';
 
 // Where the rider sits in the frame, as a fraction of the viewport.
 export const FOCUS_X = 0.42;
@@ -15,6 +15,10 @@ const WHITE = [255, 255, 255];
 const WINDOW_LIGHT = '#ffc46b';
 const LABEL_TEXT = '#f6f1e8';
 const OBSERVATORY_X = 9720;
+const PORSCHE_X = 6090;
+const PORSCHE_SCALE = 0.6;
+// The sculpture stands back from the road, so its feet sink behind the nearer ground.
+const PORSCHE_Y = Math.max(roadY(PORSCHE_X - 90), roadY(PORSCHE_X + 90)) + 14;
 const START_X = 230;
 
 const r2 = (value) => Math.round(value * 100) / 100;
@@ -62,6 +66,21 @@ export default function Scene({ x, width: W, height: H }) {
   const groundX = FOCUS_X * W - x;
   const groundY = FOCUS_Y * H - camY;
   const visibleWorld = (left, right, pad = 0) => inView(left + groundX, right + groundX, W, pad);
+
+  // The white steel picks up the light of the hour; short, phone-sized scenes
+  // shrink the sculpture so the cars stay in frame.
+  const steel = mixRgb(WHITE, palette.haze, 0.25);
+  const sculpture = {
+    body: rgb(steel),
+    edge: rgb(mixRgb(steel, ink, 0.26)),
+    under: rgb(mixRgb(steel, ink, 0.18)),
+    rim: rgb(mixRgb(steel, ink, 0.3)),
+    dark: rgb(ink),
+    tail: '#cf3434',
+    indicator: '#f0a640',
+    head: rgb(WHITE),
+  };
+  const porscheScale = PORSCHE_SCALE * clamp(H / 820, 0.7, 1);
 
   const half = (WHEELBASE / 2) * RIDER_SCALE;
   const rearY = roadY(x - half);
@@ -153,6 +172,11 @@ export default function Scene({ x, width: W, height: H }) {
 
       {/* Rider's plane */}
       <g transform={`translate(${r2(groundX)} ${r2(groundY)})`}>
+        {visibleWorld(PORSCHE_X - 160, PORSCHE_X + 160) && (
+          <g transform={`translate(${PORSCHE_X} ${r2(PORSCHE_Y)}) scale(${r2(porscheScale)})`}>
+            <Inspiration911 colors={sculpture} />
+          </g>
+        )}
         <g fill={rgb(mixRgb(ink, palette.haze, 0.18))}>
           {SCENERY.roadside
             .filter((tree) => visibleWorld(tree.x, tree.x, 120))

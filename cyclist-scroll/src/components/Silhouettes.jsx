@@ -155,6 +155,118 @@ export function Observatory() {
   );
 }
 
+const n1 = (value) => Math.round(value * 10) / 10;
+
+const PROFILE_911 = 'M2.5 -3.6C1 -5 0.2 -8 0.3 -10.5C0.4 -12.6 1 -14 2.4 -15C10 -18.5 20 -24.5 32 -27.4C38 -28.6 44 -28.9 49 -28.6C53 -28.3 56 -27.6 58.6 -26.2C62.5 -24 65.8 -21 69 -19.4C75 -18.5 81 -18 85 -17.6C87 -18.6 90 -18.8 92 -17.6C95.6 -15.6 98.6 -12.6 99.6 -9.2C100.2 -6.8 99.8 -4.8 98 -3.6H85.6A8.6 8.6 0 1 0 70.4 -3.6H31.6A8.6 8.6 0 1 0 16.4 -3.6Z';
+
+function Wheel({ cx, cy, colors, rimOpacity = 1 }) {
+  return (
+    <>
+      <circle cx={cx} cy={cy} r="7.4" fill={colors.dark} />
+      <circle cx={cx} cy={cy} r="4.4" fill={colors.rim} opacity={rimOpacity} />
+      <circle cx={cx} cy={cy} r="1.3" fill={colors.dark} />
+    </>
+  );
+}
+
+// A 911 in side view, facing right, its belly centred on the origin. Seen from
+// below, the floor and the far wheels show beneath the sill.
+function Porsche911Side({ colors }) {
+  return (
+    <g transform="translate(-51 0)">
+      {[22, 76].map((cx) => <Wheel key={cx} cx={cx} cy={2.5} colors={colors} rimOpacity={0.55} />)}
+      <path d="M3 -4C2 0 4 5 8 6.5H94C97.5 5 99 0 98 -4Z" fill={colors.under} />
+      <path d="M14 -2H88V3.6H14Z" fill={colors.dark} opacity="0.85" />
+      <path d={PROFILE_911} fill={colors.body} />
+      <path d="M63.2 -20.6C60.6 -22.8 58.4 -24.6 56.2 -25.8C52 -27.1 47 -27.4 42.5 -27C35 -26.3 29 -23.8 23 -21C36 -20.8 50 -20.7 63.2 -20.6Z" fill={colors.dark} />
+      <path d="M45 -20.6L43.6 -27.1" stroke={colors.body} strokeWidth="1.6" />
+      <path d="M1 -13.4L2.6 -15.2L5 -15.6L4 -13Z" fill={colors.tail} />
+      <ellipse cx="90" cy="-16.8" rx="2.6" ry="1.3" transform="rotate(-20 90 -16.8)" fill={colors.head} />
+      <path d="M96.5 -8.5H99.1V-6.9H96.5Z" fill={colors.indicator} />
+      {[24, 78].map((cx) => <Wheel key={cx} cx={cx} cy={-7.6} colors={colors} />)}
+    </g>
+  );
+}
+
+// A 911 seen from above, nose up: windscreen, roof, rear window, engine grille.
+function Porsche911Top({ colors }) {
+  return (
+    <>
+      <path d="M-15 -41C-8 -42.6 8 -42.6 15 -41C20 -40 22 -36 22 -30L21 -12C21 -4 23.5 4 23.5 14C23.5 28 22 36 18 40C10 42.2 -10 42.2 -18 40C-22 36 -23.5 28 -23.5 14C-23.5 4 -21 -4 -21 -12L-22 -30C-22 -36 -20 -40 -15 -41Z" fill={colors.body} />
+      <path d="M-22 -21L-25.4 -19.8V-16.8L-22.2 -17.2Z M22 -21L25.4 -19.8V-16.8L22.2 -17.2Z" fill={colors.body} />
+      <path d="M-15.5 -30C-6 -31.6 6 -31.6 15.5 -30L18 -22C6 -23.4 -6 -23.4 -18 -22Z" fill={colors.dark} />
+      <path d="M-18 -22L-17.6 2H-15.8L-16 -21.2Z M18 -22L17.6 2H15.8L16 -21.2Z" fill={colors.dark} />
+      <path d="M-12.5 3H12.5L11 17H-11Z" fill={colors.dark} />
+      <path d="M-10 21.5H10V25.5H-10Z" fill={colors.dark} />
+      <path d="M-21.5 32.5L-15 35.5V37.5L-20.5 35.5Z M21.5 32.5L15 35.5V37.5L20.5 35.5Z" fill={colors.tail} />
+      <path d="M-19 -38.5L-13 -40V-37.5L-18.5 -36Z M19 -38.5L13 -40V-37.5L18.5 -36Z" fill={colors.head} />
+    </>
+  );
+}
+
+// Gerry Judah's "Inspiration 911" on the Porscheplatz roundabout in Zuffenhausen,
+// traced from a photo: x runs from the middle of the lawn, y up from it. Flat white
+// planks cross in an X; the wide ones twist as they climb, so their shaded edge
+// grows towards the car, and they narrow into a neck that hides under the body.
+const INSPIRATION_BLADES = [
+  { foot: [-115, 0], top: [-4, -523], widths: [15, 24, 24], edge: -1, twist: 0.4 },
+  { foot: [30, 0], top: [25, -523], widths: [20, 24, 24], edge: 1, twist: 0.35 },
+  { foot: [-23, 0], top: [126, -508], widths: [46, 54, 30], edge: 1, twist: 0.4 },
+  { foot: [83, 0], top: [-90, -528], widths: [34, 60, 32], edge: -1, twist: 0.45 },
+];
+const BLADE_SHOULDER = 0.84;
+
+// The side cars sit nose-up with their roofs turned inwards; the middle one faces the street.
+const INSPIRATION_CARS = [
+  { at: [-98, -549], angle: -111.7, mirror: true },
+  { at: [122, -525], angle: -74 },
+];
+const INSPIRATION_CAR_SCALE = 1.3;
+
+function bladePaths({ foot, top, widths, edge, twist }) {
+  const dx = top[0] - foot[0];
+  const dy = top[1] - foot[1];
+  const length = Math.hypot(dx, dy);
+  const nx = -dy / length;
+  const ny = dx / length;
+  const stations = [0, BLADE_SHOULDER, 1];
+  const at = (t, side) => `${n1(foot[0] + dx * t + nx * side)} ${n1(foot[1] + dy * t + ny * side)}`;
+  const outline = (sides) => `M${stations.map((t, i) => at(t, sides[i])).join('L')}`;
+  const back = (sides) => `L${stations.map((t, i) => at(t, sides[i])).reverse().join('L')}Z`;
+  const half = widths.map((width) => width / 2);
+  const shade = [0.15, twist, twist];
+  return {
+    face: outline(half) + back(half.map((value) => -value)),
+    edge: outline(half.map((value) => edge * value)) + back(half.map((value, i) => edge * (value - widths[i] * shade[i]))),
+  };
+}
+
+const BLADE_PATHS = INSPIRATION_BLADES.map(bladePaths);
+
+export function Inspiration911({ colors }) {
+  return (
+    <>
+      {BLADE_PATHS.map((paths, i) => (
+        <g key={INSPIRATION_BLADES[i].foot[0]}>
+          <path d={paths.face} fill={colors.body} />
+          <path d={paths.edge} fill={colors.edge} />
+        </g>
+      ))}
+      {INSPIRATION_CARS.map(({ at, angle, mirror }) => (
+        <g
+          key={at[0]}
+          transform={`translate(${at[0]} ${at[1]}) rotate(${angle}) scale(${INSPIRATION_CAR_SCALE} ${mirror ? -INSPIRATION_CAR_SCALE : INSPIRATION_CAR_SCALE}) translate(0 14)`}
+        >
+          <Porsche911Side colors={colors} />
+        </g>
+      ))}
+      <g transform="translate(17 -572)">
+        <Porsche911Top colors={colors} />
+      </g>
+    </>
+  );
+}
+
 export function Gantry({ label, textColor, accent }) {
   const squares = Array.from({ length: 19 }, (_, i) => i);
   return (

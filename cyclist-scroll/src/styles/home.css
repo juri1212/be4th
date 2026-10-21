@@ -438,15 +438,30 @@
   margin-top: 32px;
 }
 
-.activity-graph h3 {
+.activity-graph__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
   margin-bottom: 12px;
+}
+
+.activity-graph h3 {
   font-size: 0.9375rem;
   font-weight: 600;
 }
 
-.activity-graph h3 span {
-  font-weight: 400;
-  color: var(--faint);
+.activity-graph__logo {
+  display: block;
+  width: auto;
+}
+
+.activity-graph__logo--github {
+  height: 22px;
+}
+
+.activity-graph__logo--strava {
+  height: 14px;
 }
 
 .activity-graph__scroller {

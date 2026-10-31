@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ACTIVITY, formatDate } from '../site';
 import type { ActivityData } from '../types';
 
-// A year of daily activity, loaded from /data/ (uploaded nightly by .github/workflows/activity-data.yml).
+// A year of daily activity, loaded from /data/ (refreshed nightly by .github/workflows/deploy.yml).
 // The prerendered page shows an empty grid of the same size, so nothing shifts when the data arrives.
 
 const CELL = 10;

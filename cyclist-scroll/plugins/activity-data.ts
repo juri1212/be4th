@@ -1,10 +1,10 @@
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { Connect, Plugin } from 'vite';
 
-// In production /data/*.json is uploaded nightly, separately from the site (see scripts/fetch-activity.ts).
-// Locally, `npm run fetch-activity` writes it to .data/, and this serves it at /data/ in dev and preview.
-// It's never part of the build, so a site deploy can't overwrite or delete the data.
+// `npm run fetch-activity` writes the activity graphs to .data/ (see scripts/fetch-activity.ts).
+// This serves them at /data/ in dev and preview, and copies them to dist/data/ in the client build.
+// The deploy workflow fetches them right before building, so every deploy ships current data.
 export default function activityData(): Plugin {
   const serve =
     (root: string): Connect.NextHandleFunction =>
@@ -21,16 +21,26 @@ export default function activityData(): Plugin {
       }
     };
   let root = process.cwd();
+  let ssr = false;
   return {
     name: 'be4th:activity-data',
     configResolved(config) {
       root = config.root;
+      ssr = !!config.build.ssr;
     },
     configureServer(server) {
       server.middlewares.use(serve(root));
     },
     configurePreviewServer(server) {
       server.middlewares.use(serve(root));
+    },
+    async generateBundle() {
+      if (ssr) return;
+      // A local build without `npm run fetch-activity` ships without data; the graphs stay empty.
+      const files = await readdir(join(root, '.data')).catch(() => []);
+      for (const name of files.filter((file) => file.endsWith('.json'))) {
+        this.emitFile({ type: 'asset', fileName: `data/${name}`, source: await readFile(join(root, '.data', name)) });
+      }
     },
   };
 }

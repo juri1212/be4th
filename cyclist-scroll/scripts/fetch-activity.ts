@@ -2,9 +2,9 @@
 //   contributions.json  GitHub contributions per day, scraped from the public profile calendar
 //   training.json       hours of Strava activity per day, all sport types
 // Each file is { updated, to, days: { 'YYYY-MM-DD': value } }, covering the year up to `to`. Days without activity are left out.
-// Runs nightly in .github/workflows/activity-data.yml, which uploads .data/ to /data/ on the server.
+// Runs before every build in .github/workflows/deploy.yml, which ships .data/ as /data/ with the site.
 // Strava is skipped until STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET and STRAVA_REFRESH_TOKEN are set (see scripts/strava-auth.ts).
-// Any failure exits non-zero, so the workflow uploads nothing and the site keeps the previous night's data.
+// Any failure exits non-zero, so the workflow deploys nothing and the live site keeps its current data.
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';

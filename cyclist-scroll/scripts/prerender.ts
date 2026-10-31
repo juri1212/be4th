@@ -1,4 +1,4 @@
-// Renders every route of the built site to static HTML, then writes the sitemap and robots.txt.
+// Renders every route of the built site to static HTML, then writes the sitemap, robots.txt and redirects for old URLs.
 // Runs after `vite build` (client) and `vite build --ssr` (server bundle in .ssr/).
 import { execFileSync } from 'node:child_process';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
@@ -104,6 +104,39 @@ ${sitemap.map(({ url, lastmod }) => `  <url><loc>${url}</loc>${lastmod ? `<lastm
 );
 
 await writeFile(join(dist, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${new URL('/sitemap.xml', SITE.url).href}\n`);
+
+// GitHub Pages can't send real redirects, so old URLs get a page that refreshes to the new one. The canonical link
+// tells search engines where the content lives now.
+// Project pages used to live under /projects/; their write-ups are posts now. The Duophonic guide was merged into its post.
+const REDIRECTS: Record<string, string> = {
+  '/projects/': '/',
+  '/projects/duophonic/': '/blog/duophonic/',
+  '/projects/car-configurator-mcp/': '/blog/car-configurator-mcp/',
+  '/blog/play-mac-audio-on-two-outputs/': '/blog/duophonic/',
+};
+
+for (const [from, to] of Object.entries(REDIRECTS)) {
+  if (PATHS.includes(from)) throw new Error(`Redirect from ${from} would overwrite a page`);
+  const target = new URL(to, SITE.url).href;
+  const output = outputFor(from);
+  await mkdir(dirname(output), { recursive: true });
+  await writeFile(
+    output,
+    `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Moved</title>
+  <link rel="canonical" href="${target}" />
+  <meta name="robots" content="noindex" />
+  <meta http-equiv="refresh" content="0; url=${to}" />
+</head>
+<body><p>This page has moved to <a href="${to}">${target}</a>.</p></body>
+</html>
+`,
+  );
+  console.log(`  redirect ${from} -> ${to}`);
+}
 
 await rm(ssr, { recursive: true, force: true });
 await rm(join(dist, '.vite'), { recursive: true, force: true });

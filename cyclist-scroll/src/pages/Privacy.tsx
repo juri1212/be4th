@@ -18,50 +18,48 @@ export default function Privacy() {
 
         <h2>2. Hosting and server logs</h2>
         <p>
-          This site is hosted by {LEGAL.hoster}, on servers in Germany. When you visit a page, the server automatically logs data your
-          browser sends: your IP address shortened by its last two octets (so 11.22.33.44 is stored as 11.22.0.0), date and time of the
-          request, the page requested, the referring URL, browser type and operating system. This is technically necessary to deliver
-          the site and keep it secure and stable. The legal basis is my legitimate interest in a secure, working site (Art. 6 (1) (f)
-          GDPR). The logs are deleted after {LEGAL.logRetentionDays} days and are not combined with other data. The host processes them
-          on my behalf under a data processing agreement (Art. 28 GDPR).
+          This site is hosted on GitHub Pages, a service of {LEGAL.hoster}. When you visit a page, GitHub’s servers automatically
+          process data your browser sends, such as your IP address, date and time of the request, the page requested, the referring URL
+          and browser type. This is technically necessary to deliver the site. GitHub also logs and stores visitors’ IP addresses for
+          security purposes, whether or not they have a GitHub account. The legal basis is my legitimate interest in a secure, working
+          site (Art. 6 (1) (f) GDPR). I have no access to these logs and receive no visitor statistics from them. How long GitHub keeps
+          them is set out in the{' '}
+          <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">GitHub General Privacy Statement</a>.
         </p>
-
-        <h2>3. Access statistics</h2>
         <p>
-          The host generates aggregate access statistics from these server logs with Webalizer: for example, how many pages were
-          requested per day and which pages and referrers were most common. They contain no full IP addresses, are only visible to me,
-          and are based on the same legitimate interest in seeing how the site is used (Art. 6 (1) (f) GDPR).
+          The data may be processed on servers in the USA. GitHub, Inc. is certified under the EU-U.S. Data Privacy Framework, for which
+          the European Commission has issued an adequacy decision (Art. 45 GDPR).
         </p>
 
-        <h2>4. Cookies, tracking and fonts</h2>
+        <h2>3. Cookies, tracking and fonts</h2>
         <p>
           This site sets no cookies, stores nothing on your device and uses no tracking or third-party analytics services. Fonts are
-          served from this site’s own server; no connections are made to third parties such as Google Fonts or CDNs.
+          served with the site itself; no connections are made to third parties such as Google Fonts or CDNs.
         </p>
 
-        <h2>5. Contact by email</h2>
+        <h2>4. Contact by email</h2>
         <p>
           If you email me, I process your details to answer your request (Art. 6 (1) (b) or (f) GDPR). I delete them once they are no
           longer needed for that, unless the law requires me to keep them.
         </p>
 
-        <h2>6. External links</h2>
+        <h2>5. External links</h2>
         <p>
           This site links to external services such as GitHub. Data is only sent to them once you follow a link, and their own privacy
           policies apply.
         </p>
 
-        <h2>7. Your rights</h2>
+        <h2>6. Your rights</h2>
         <p>
           You have the right of access (Art. 15 GDPR), rectification (Art. 16), erasure (Art. 17), restriction of processing (Art. 18)
           and data portability (Art. 20 GDPR). To exercise them, write to the email address above. You also have the right to lodge a
           complaint with a data protection supervisory authority (Art. 77 GDPR).
         </p>
 
-        <h2>8. Right to object</h2>
+        <h2>7. Right to object</h2>
         <p>
           <strong>
-            Where I process your data on the basis of legitimate interests (Art. 6 (1) (f) GDPR), such as the server logs and statistics in sections 2 and 3,
+            Where I process your data on the basis of legitimate interests (Art. 6 (1) (f) GDPR), such as the server logs in section 2,
             you have the right to object to this processing at any time on grounds relating to your particular situation (Art. 21
             GDPR). I will then stop processing your data unless I can demonstrate compelling legitimate grounds that override your
             interests, rights and freedoms, or the processing serves to establish, exercise or defend legal claims.

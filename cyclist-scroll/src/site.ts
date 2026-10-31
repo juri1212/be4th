@@ -17,10 +17,8 @@ export const SITE = {
 export const LEGAL = {
   name: 'Juri Beforth',
   email: 'TODO@be4th.com',
-  hoster: 'ALL-INKL.COM – Neue Medien Münnich, Hauptstraße 68, 02742 Friedersdorf, Germany',
-  // Must match the log settings in the ALL-INKL KAS (Einstellungen → Logs & Statistiken).
-  logRetentionDays: 7,
-  updated: '2026-10-14',
+  hoster: 'GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA',
+  updated: '2026-10-31',
 } as const;
 
 export interface NavLink {

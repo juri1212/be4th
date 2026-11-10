@@ -33,6 +33,7 @@ jobs:
       uses: actions/setup-node@v7
       with:
         node-version: 24
+        cache: npm
 
     # Fails on any error, so nothing is deployed and the live site keeps its current data.
     - name: Fetch activity
@@ -43,7 +44,7 @@ jobs:
         STRAVA_REFRESH_TOKEN: ${{ secrets.STRAVA_REFRESH_TOKEN }}
 
     - name: Install dependencies
-      run: npm install
+      run: npm ci
 
     # Includes .data/ as dist/data/ (plugins/activity-data.ts).
     - name: Build project

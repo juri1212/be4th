@@ -38,7 +38,8 @@
   pointer-events: none;
   background:
     radial-gradient(120% 90% at 50% 40%, transparent 55%, rgb(0 0 0 / 0.35) 100%),
-    linear-gradient(to bottom, rgb(0 0 0 / 0.28), transparent 18%);
+    radial-gradient(70% 22% at 100% 0, rgb(8 11 16 / 0.5), transparent),
+    linear-gradient(to bottom, rgb(8 11 16 / 0.5), transparent 24%);
 }
 
 .ride-frame__grain {
@@ -66,7 +67,7 @@
 .scene-tick {
   font-family: var(--display);
   font-stretch: var(--condensed);
-  font-size: 12px;
+  font-size: 13.5px;
   font-weight: 500;
 }
 
@@ -93,11 +94,13 @@
   color: var(--text);
 }
 
+/* The names sit straight on the sky, so they carry their own shade for the hours when it's bright. */
 .hud-top {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 16px;
+  text-shadow: 0 1px 2px rgb(8 11 16 / 0.55), 0 0 18px rgb(8 11 16 / 0.45);
 }
 
 .hud-brand {
@@ -126,7 +129,7 @@
 
 .hud-stage em {
   font-style: normal;
-  opacity: 0.6;
+  opacity: 0.75;
 }
 
 .hud-stage strong {
@@ -242,13 +245,17 @@
   display: flex;
   justify-content: space-between;
   margin-top: 8px;
-  color: var(--faint);
+  color: var(--muted);
+}
+
+.hud-progress {
+  display: none;
 }
 
 /* ========== STORY ========== */
 
 .story {
-  --story-inset: clamp(72px, 7vw, 120px);
+  --story-inset: clamp(84px, 7vw, 120px);
   --story-end: clamp(28px, 5vw, 96px);
   padding: 0 var(--story-end) 0 var(--story-inset);
 }
@@ -263,12 +270,6 @@
   justify-content: center;
   max-width: 38rem;
   padding: 14vh 0;
-  opacity: 0.4;
-  transition: opacity 0.6s ease;
-}
-
-.chapter[data-active='true'] {
-  opacity: 1;
 }
 
 .chapter > :first-child {
@@ -280,17 +281,28 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  right: calc(100% + clamp(18px, 2.6vw, 44px));
+  right: calc(100% + clamp(10px, 1.1vw, 18px));
   display: flex;
   align-items: center;
+  gap: 10px;
   font-family: var(--display);
   font-stretch: var(--condensed);
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 600;
   line-height: 1;
+  letter-spacing: 0;
   white-space: nowrap;
-  color: var(--faint);
+  color: var(--muted);
   transition: color 0.6s ease;
+}
+
+/* A short leader ties the mark to the line it measures, like the rule in a road book. */
+.chapter__km::after {
+  content: '';
+  width: clamp(8px, 1.1vw, 18px);
+  height: 1px;
+  background: currentColor;
+  opacity: 0.55;
 }
 
 .chapter[data-active='true'] .chapter__km {
@@ -311,6 +323,12 @@
   line-height: 0.95;
   letter-spacing: -0.005em;
   text-wrap: balance;
+  transition: color 0.6s ease;
+}
+
+/* Only the chapter in focus has its heading lit. The text beneath stays readable either way. */
+.chapter:not([data-active='true']) :is(h1, h2) {
+  color: var(--faint);
 }
 
 .chapter h1 {
@@ -331,11 +349,17 @@
   text-wrap: pretty;
 }
 
-.chapter .lede {
+.chapter p.lede {
   margin-top: 22px;
   font-size: 1.25rem;
-  line-height: 1.55;
+  line-height: 1.5;
   color: var(--text);
+}
+
+/* The last chapter sits at the foot of its screen, so the page comes to rest on it with the footer right below. */
+.chapter--outro {
+  justify-content: flex-end;
+  padding-bottom: 48px;
 }
 
 /* ========== STORY HEADER ========== */
@@ -346,11 +370,7 @@
   z-index: 3;
   margin: 0 calc(-1 * var(--story-end)) 0 calc(-1 * var(--story-inset));
   padding: 26px var(--story-end) 34px var(--story-inset);
-  background: linear-gradient(to bottom, var(--bg) 45%, transparent);
-}
-
-.palette-fab {
-  display: none;
+  background: linear-gradient(to bottom, var(--bg) 66%, transparent);
 }
 
 /* ========== SECTIONS ========== */
@@ -360,7 +380,7 @@
 }
 
 .chapter p a,
-.now a {
+.chapter .now a {
   color: var(--text);
   text-decoration: underline;
   text-decoration-color: rgb(243 195 187 / 0.55);
@@ -369,7 +389,7 @@
 }
 
 .chapter p a:hover,
-.now a:hover {
+.chapter .now a:hover {
   text-decoration-color: var(--accent);
 }
 
@@ -457,7 +477,7 @@
 }
 
 .activity-graph__logo--github {
-  height: 22px;
+  height: 18px;
 }
 
 .activity-graph__logo--strava {
@@ -488,6 +508,8 @@
   min-width: 0;
   height: 100%;
   background: var(--bg);
+  /* Weeks sliding under the weekdays fade out instead of being cut off. */
+  box-shadow: 8px 0 8px var(--bg);
 }
 
 .activity-graph rect,
@@ -522,8 +544,8 @@
 
 .activity-graph__label {
   font-family: var(--sans);
-  font-size: 10px;
-  fill: var(--faint);
+  font-size: 11.5px;
+  fill: var(--muted);
 }
 
 .activity-graph figcaption {
@@ -607,14 +629,13 @@
   font-size: 1.625rem;
   font-weight: 600;
   line-height: 1.1;
-  text-decoration: underline;
-  text-decoration-color: var(--hairline-strong);
-  text-underline-offset: 4px;
-  transition: text-decoration-color 0.2s ease;
+  color: var(--text);
+  text-decoration: none;
+  transition: color 0.25s ease;
 }
 
 .posts a:hover {
-  text-decoration-color: var(--accent);
+  color: var(--accent);
 }
 
 .posts__meta {
@@ -630,7 +651,9 @@
   font-size: 1rem;
 }
 
+/* The footer keeps to the chapters' measure, so the column has one right edge. */
 .story > .site-footer {
+  max-width: 38rem;
   margin-top: 0;
 }
 
@@ -643,18 +666,37 @@
 
   .page {
     grid-template-columns: minmax(0, 1fr);
+    /* The panel stays in view the whole way, so it takes no more of the screen than the scene needs. */
+    --panel-height: max(28vh, 200px);
+  }
+
+  @supports (height: 1svh) {
+    .page {
+      --panel-height: max(28svh, 200px);
+    }
   }
 
   .ride-panel {
     z-index: 2;
-    height: 34vh;
-    height: 34svh;
+    height: var(--panel-height);
     padding: var(--frame-gap);
-    background: linear-gradient(to bottom, var(--bg) 85%, transparent);
+    background: var(--bg);
   }
 
   .ride-frame {
     border-radius: 16px;
+  }
+
+  /* The distance readout sits on the road, whatever colour the ground is at that hour. */
+  .ride-frame::after {
+    background:
+      linear-gradient(to bottom, rgb(8 11 16 / 0.5), transparent 30%),
+      linear-gradient(to top, rgb(8 11 16 / 0.6), transparent 26%);
+  }
+
+  /* The km posts along the road would run into the readout, which already gives the distance. */
+  .scene-ticks {
+    display: none;
   }
 
   .hud {
@@ -673,24 +715,69 @@
     display: none;
   }
 
+  .hud-progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--display);
+    font-stretch: var(--condensed);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+
+  .hud-progress i {
+    flex: 1;
+    height: 2px;
+    overflow: hidden;
+    border-radius: 1px;
+    background: rgb(237 232 226 / 0.2);
+  }
+
+  .hud-progress b {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    transform-origin: left;
+  }
+
   .story {
     padding: 0 24px;
   }
 
+  /* The section links ride along under the panel, so every chapter stays one tap away. */
   .story > .site-header {
-    display: none;
+    top: var(--panel-height);
+    gap: 12px;
+    margin: 0 -24px;
+    padding: 0 16px 10px 24px;
+    background: linear-gradient(to bottom, var(--bg) 72%, transparent);
   }
 
-  .palette-fab {
-    position: fixed;
-    right: 16px;
-    bottom: calc(16px + env(safe-area-inset-bottom));
-    z-index: 4;
-    display: inline-flex;
-    background: rgb(22 28 39 / 0.92);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    box-shadow: 0 12px 30px -10px rgb(0 0 0 / 0.8);
+  .story > .site-header nav {
+    flex: 1;
+    justify-content: space-between;
+    gap: 8px;
+    max-width: 19rem;
+    font-size: 15px;
+  }
+
+  .story > .site-header nav a {
+    padding: 12px 0;
+  }
+
+  .story > .site-header nav a::after {
+    bottom: 7px;
+  }
+
+  .story > .site-header .palette-button {
+    margin-left: auto;
+  }
+
+  .story > .site-header .palette-button__label {
+    display: none;
   }
 
   .now div {
@@ -704,19 +791,31 @@
     margin-bottom: 12px;
   }
 
+  .chapter__km::after {
+    content: none;
+  }
+
   .chapter {
-    scroll-margin-top: 34svh;
+    scroll-margin-top: calc(var(--panel-height) + 56px);
     min-height: 60svh;
     padding: 8vh 0;
   }
 
-  .chapter:last-child {
-    min-height: 66svh;
+  /* The first screen starts under the navigation, so the way on is in view without scrolling. */
+  .chapter.chapter--intro {
+    min-height: 0;
+    justify-content: flex-start;
+    padding: 3vh 0 8vh;
+  }
+
+  .chapter.chapter--outro {
+    min-height: 0;
+    padding: 4vh 0 8vh;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .chapter,
+  .chapter :is(h1, h2),
   .chapter__km {
     transition: none;
   }

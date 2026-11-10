@@ -62,13 +62,33 @@
 }
 
 .page-intro h1 {
-  font-size: clamp(4rem, 9vw, 8.5rem);
+  font-size: clamp(3.5rem, 7.2vw, 7rem);
   font-weight: 700;
   line-height: 0.9;
 }
 
 .page-intro .lede {
   margin-top: 26px;
+}
+
+/* Legal pages are reference, not announcements: a quieter title and the prose close beneath it. */
+.page-intro--legal {
+  padding-bottom: 56px;
+}
+
+.page-intro--legal + .prose h2 {
+  margin-top: 1.8em;
+  font-size: 1.75rem;
+  line-height: 1.1;
+}
+
+.page-intro--legal h1 {
+  font-size: clamp(3rem, 5.4vw, 4.75rem);
+  line-height: 0.95;
+}
+
+.site main > .prose {
+  max-width: 40rem;
 }
 
 .page-intro--center {
@@ -143,12 +163,11 @@
 
 .post-header {
   max-width: 50rem;
-  padding: 72px 0 64px;
+  padding: 72px 0 48px;
 }
 
 .post-header .tags {
   margin-bottom: 20px;
-  color: var(--accent);
 }
 
 .post-header h1 {
@@ -169,18 +188,23 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px 22px;
-  margin-top: 32px;
-  padding-top: 22px;
-  border-top: 1px solid var(--hairline);
+  margin-top: 28px;
   font-size: 14px;
   color: var(--muted);
 }
 
 .article-layout {
   display: grid;
-  grid-template-columns: 14rem minmax(0, 42rem);
+  grid-template-columns: 14rem minmax(0, 40rem);
   gap: clamp(40px, 6vw, 96px);
-  padding-top: 64px;
+  padding-top: 48px;
+  border-top: 1px solid var(--hairline);
+}
+
+/* The article opens on its screenshot; without this the figure's own margin doubles the gap under the header. */
+.prose > :first-child,
+.page-intro--legal + .prose > h2:first-child {
+  margin-top: 0;
 }
 
 .article-layout > aside {
@@ -215,9 +239,9 @@
   margin-left: -1px;
   padding: 5px 0 5px 16px;
   border-left: 1px solid transparent;
-  font-size: 13px;
+  font-size: 13.5px;
   line-height: 1.45;
-  color: var(--faint);
+  color: var(--muted);
   text-decoration: none;
   transition: color 0.2s ease, border-color 0.2s ease;
 }
@@ -264,7 +288,7 @@
 }
 
 .prose h2 {
-  margin-top: 2.4em;
+  margin-top: 2em;
   font-size: clamp(2.25rem, 3.4vw, 2.75rem);
   line-height: 1;
 }
@@ -394,7 +418,6 @@
 .prose figure img {
   width: 100%;
   max-width: 380px;
-  margin: 0 auto;
   border-radius: 20px;
   box-shadow: 0 0 0 1px var(--hairline), 0 30px 80px -40px rgb(0 0 0 / 0.9);
 }
@@ -403,7 +426,6 @@
   margin-top: 14px;
   font-size: 13.5px;
   color: var(--faint);
-  text-align: center;
 }
 
 .prose .summary {
@@ -477,8 +499,8 @@
 }
 
 .next-up {
-  margin-top: 120px;
-  padding: 48px 0;
+  margin-top: 88px;
+  padding: 40px 0 0;
   border-top: 1px solid var(--hairline);
 }
 
@@ -491,15 +513,17 @@
 .next-up__title {
   font-family: var(--display);
   font-stretch: var(--condensed);
-  font-size: clamp(3rem, 7vw, 6rem);
+  font-size: clamp(2.5rem, 4.6vw, 4rem);
   font-weight: 700;
-  line-height: 0.92;
+  line-height: 0.95;
   text-wrap: balance;
   transition: color 0.25s ease;
 }
 
 .next-up__tagline {
+  max-width: 34rem;
   color: var(--muted);
+  text-wrap: pretty;
 }
 
 .next-up:hover .next-up__title {
@@ -510,7 +534,7 @@
 
 @media (max-width: 1080px) {
   .article-layout {
-    grid-template-columns: minmax(0, 42rem);
+    grid-template-columns: minmax(0, 40rem);
     justify-content: center;
   }
 
@@ -528,13 +552,31 @@
     height: 76px;
   }
 
-  .site > .site-header nav {
-    display: none;
+  .site > .site-header {
+    gap: 16px;
   }
 
-  .site > .site-header .palette-button {
-    margin-left: auto;
+  .site > .site-header nav {
+    gap: 20px;
   }
+
+  .site > .site-header nav a {
+    padding: 12px 0;
+  }
+
+  .site > .site-header nav a::after {
+    bottom: 7px;
+  }
+}
+
+/* Four links, the brand and search don't fit a phone. Activity is the one that's also a scroll away from Work. */
+@media (max-width: 480px) {
+  .site > .site-header nav a[href='/#activity'] {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
 
   .page-intro {
     padding: 48px 0 48px;

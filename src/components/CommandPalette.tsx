@@ -12,7 +12,10 @@ type PaletteItem = {
 
 const ITEMS: PaletteItem[] = [
   { group: 'Pages', label: 'Home', href: '/', keywords: 'start ride intro' },
+  { group: 'Pages', label: 'Work', href: '/#work', keywords: 'projects apps portfolio' },
+  { group: 'Pages', label: 'Activity', href: '/#activity', keywords: 'github strava contributions training graph' },
   { group: 'Pages', label: 'Writing', href: '/blog/', keywords: 'blog posts articles' },
+  { group: 'Pages', label: 'Contact', href: '/#contact', keywords: 'get in touch reach email' },
   { group: 'Pages', label: 'Imprint', href: '/imprint/', keywords: 'impressum legal notice contact' },
   { group: 'Pages', label: 'Privacy', href: '/privacy/', keywords: 'privacy policy gdpr datenschutz' },
   ...POSTS.map((post) => ({
@@ -116,7 +119,7 @@ export default function CommandPalette() {
       onClick={(event) => event.target === event.currentTarget && event.currentTarget.close()}
     >
       <div className="palette__panel">
-        <label className="palette__search">
+        <div className="palette__search">
           <Search />
           <input
             type="text"
@@ -125,6 +128,7 @@ export default function CommandPalette() {
             autoComplete="off"
             spellCheck="false"
             role="combobox"
+            aria-label="Search posts and pages"
             aria-expanded="true"
             aria-controls={`${id}-list`}
             aria-activedescendant={results[selected] ? `${id}-${selected}` : undefined}
@@ -135,7 +139,10 @@ export default function CommandPalette() {
             onKeyDown={onKeyDown}
           />
           <kbd>esc</kbd>
-        </label>
+          <button type="button" className="palette__close" onClick={() => dialogRef.current?.close()}>
+            Close
+          </button>
+        </div>
 
         <ul className="palette__list" id={`${id}-list`} role="listbox" ref={listRef}>
           {results.map((item, index) => {
@@ -162,7 +169,7 @@ export default function CommandPalette() {
           {!results.length && <li className="palette__empty">Nothing matches “{query}”.</li>}
         </ul>
 
-        <div className="palette__footer" aria-live="polite">
+        <div className="palette__footer" aria-live="polite" data-notice={notice ? '' : undefined}>
           {notice || (
             <>
               <span>

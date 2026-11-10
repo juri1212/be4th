@@ -27,9 +27,12 @@ export interface NavLink {
   label: string;
 }
 
+// The same places as the start page's own navigation, reached from any other page.
 export const SITE_LINKS: NavLink[] = [
+  { id: 'work', href: '/#work', label: 'Work' },
+  { id: 'activity', href: '/#activity', label: 'Activity' },
   { id: 'writing', href: '/blog/', label: 'Writing' },
-  { id: 'github', href: SITE.github, label: 'GitHub' },
+  { id: 'contact', href: '/#contact', label: 'Contact' },
 ];
 
 // The activity graphs on the start page shade each day on one scale, so a dark square means an equally busy day in either.

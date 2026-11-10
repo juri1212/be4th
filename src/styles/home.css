@@ -808,6 +808,16 @@
     padding: 3vh 0 8vh;
   }
 
+  /* The footer slides up over the ride panel instead of scrolling underneath it, so nothing of it is hidden. */
+  .story > .site-footer {
+    position: relative;
+    z-index: 4;
+    max-width: none;
+    margin: 0 -24px;
+    padding: 24px 24px 40px;
+    background: var(--bg);
+  }
+
   .chapter.chapter--outro {
     min-height: 0;
     padding: 4vh 0 8vh;

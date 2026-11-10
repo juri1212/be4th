@@ -16,7 +16,7 @@ export const SITE = {
 // Provider details for the imprint (§ 5 DDG) and the privacy policy. Fill in before deploying.
 export const LEGAL = {
   name: 'Juri Beforth',
-  email: 'TODO@be4th.com',
+  email: 'code@be4th.com',
   hoster: 'GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA',
   updated: '2026-10-31',
 } as const;

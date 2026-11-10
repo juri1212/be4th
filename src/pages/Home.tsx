@@ -7,7 +7,7 @@ import Tags from '../components/Tags';
 import { ArrowDown, External } from '../components/icons';
 import { POSTS, PROJECTS, postUrl } from '../content';
 import { clamp } from '../ride/math';
-import { FINISH_X, kmAt } from '../ride/route';
+import { FINISH_X, kmAt, xAtKm } from '../ride/route';
 import { STAGES } from '../ride/stages';
 import { SITE, formatDate, type NavLink } from '../site';
 import type { Project } from '../types';
@@ -25,10 +25,17 @@ const HEADINGS = ['Juri Beforth', ...WORK.map((project) => project.title), 'Acti
 // The intro sits at the start line and contact a few metres past the finish. Every chapter in between stops at
 // the stage scenery closest to an even split of the route, so the spacing stays roughly even as chapters change.
 const ROUTE_KM = kmAt(FINISH_X);
+// Each stop is moved onto the nearest whole kilometre, so the HUD comes to rest on the same number as the gutter mark.
 const nearestStageAnchor = (km: number) =>
-  STAGES.reduce((best, stage) =>
-    Math.abs(kmAt(stage.anchor) - km) < Math.abs(kmAt(best.anchor) - km) ? stage : best,
-  ).anchor;
+  xAtKm(
+    Math.round(
+      kmAt(
+        STAGES.reduce((best, stage) =>
+          Math.abs(kmAt(stage.anchor) - km) < Math.abs(kmAt(best.anchor) - km) ? stage : best,
+        ).anchor,
+      ),
+    ),
+  );
 // The last chapter stops just over the line, with the gantry behind the rider rather than across them.
 const FINISH_CLEARANCE = 120;
 const ANCHORS = [
@@ -37,7 +44,7 @@ const ANCHORS = [
   FINISH_X + FINISH_CLEARANCE,
 ];
 // Where the rider is when each chapter is in focus, shown in the gutter like a road book.
-const KM_MARKS = ANCHORS.map((x) => (x >= FINISH_X ? 'Finish' : `Km ${Math.round(kmAt(x))}`));
+const KM_MARKS = ANCHORS.map((x) => (x >= FINISH_X ? 'Finish' : `${Math.round(kmAt(x))} km`));
 // Past the last chapter the rider rolls on through the finish while the footer comes up.
 const ROLL_OUT = 240;
 

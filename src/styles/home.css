@@ -506,6 +506,10 @@
   background: var(--accent-bright);
 }
 
+.activity-graph rect.activity-graph__days {
+  fill: var(--bg);
+}
+
 .activity-graph__label {
   font-family: var(--sans);
   font-size: 10px;

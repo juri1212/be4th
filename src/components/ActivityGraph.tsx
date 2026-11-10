@@ -101,6 +101,7 @@ function monthLabels(weeks: string[][]): { index: number; label: string }[] {
 export default function ActivityGraph({ kind }: { kind: ActivityKind }) {
   const config = KINDS[kind];
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const daysRef = useRef<SVGGElement>(null);
   const [data, setData] = useState<ActivityData | null>(null);
   const [failed, setFailed] = useState(false);
 
@@ -119,7 +120,23 @@ export default function ActivityGraph({ kind }: { kind: ActivityKind }) {
   useEffect(() => {
     const scroller = scrollerRef.current;
     if (scroller) scroller.scrollLeft = scroller.scrollWidth;
+    pinDays();
   }, [data]);
+
+  useEffect(() => {
+    window.addEventListener('resize', pinDays);
+    return () => window.removeEventListener('resize', pinDays);
+  }, []);
+
+  // Keep the weekday labels at the left edge while the grid scrolls underneath them.
+  function pinDays() {
+    const scroller = scrollerRef.current;
+    const days = daysRef.current;
+    const svg = days?.ownerSVGElement;
+    if (!scroller || !days || !svg) return;
+    const scale = svg.getBoundingClientRect().width / WIDTH;
+    days.setAttribute('transform', `translate(${scale ? scroller.scrollLeft / scale : 0} 0)`);
+  }
 
   const weeks = data ? weeksUntil(data.to) : null;
   const days = data && weeks ? weeks.flat().map((date) => ({ date, value: data.days[date] ?? 0 })) : [];
@@ -133,7 +150,7 @@ export default function ActivityGraph({ kind }: { kind: ActivityKind }) {
         <h3 id={titleId}>{config.title}</h3>
         <img className={`activity-graph__logo activity-graph__logo--${kind}`} {...config.logo} />
       </header>
-      <div className="activity-graph__scroller" ref={scrollerRef}>
+      <div className="activity-graph__scroller" ref={scrollerRef} onScroll={pinDays}>
         <svg
           viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
           role="img"
@@ -149,11 +166,6 @@ export default function ActivityGraph({ kind }: { kind: ActivityKind }) {
                 {label}
               </text>
             ))}
-          {DAY_LABELS.map(([weekday, label]) => (
-            <text key={weekday} x={0} y={LABEL_HEIGHT + weekday * STEP + CELL - 1} className="activity-graph__label">
-              {label}
-            </text>
-          ))}
           {(weeks ?? EMPTY_WEEKS).map((week, column) =>
             week.map((date, row) => {
               const value = data?.days[date] ?? 0;
@@ -172,6 +184,14 @@ export default function ActivityGraph({ kind }: { kind: ActivityKind }) {
               );
             }),
           )}
+          <g ref={daysRef}>
+            <rect className="activity-graph__days" width={LABEL_WIDTH - GAP} height={HEIGHT} />
+            {DAY_LABELS.map(([weekday, label]) => (
+              <text key={weekday} x={0} y={LABEL_HEIGHT + weekday * STEP + CELL - 1} className="activity-graph__label">
+                {label}
+              </text>
+            ))}
+          </g>
         </svg>
       </div>
       <figcaption>

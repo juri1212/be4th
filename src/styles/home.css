@@ -464,6 +464,10 @@
   height: 14px;
 }
 
+.activity-graph__plot {
+  position: relative;
+}
+
 .activity-graph__scroller {
   overflow-x: auto;
   scrollbar-width: none;
@@ -474,6 +478,16 @@
   width: 100%;
   min-width: 560px;
   height: auto;
+}
+
+.activity-graph svg.activity-graph__days {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: auto;
+  min-width: 0;
+  height: 100%;
+  background: var(--bg);
 }
 
 .activity-graph rect,
@@ -504,10 +518,6 @@
 .activity-legend [data-level='4'] {
   fill: var(--accent-bright);
   background: var(--accent-bright);
-}
-
-.activity-graph rect.activity-graph__days {
-  fill: var(--bg);
 }
 
 .activity-graph__label {

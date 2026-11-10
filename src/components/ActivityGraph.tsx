@@ -18,6 +18,7 @@ const DAY_LABELS: [weekday: number, label: string][] = [
   [5, 'Fri'],
 ];
 const WIDTH = LABEL_WIDTH + WEEKS * STEP - GAP;
+const DAYS_WIDTH = LABEL_WIDTH - GAP;
 const HEIGHT = LABEL_HEIGHT + 7 * STEP - GAP;
 
 const plural = (count: number, word: string) => `${count.toLocaleString('en-US')} ${word}${count === 1 ? '' : 's'}`;
@@ -101,7 +102,6 @@ function monthLabels(weeks: string[][]): { index: number; label: string }[] {
 export default function ActivityGraph({ kind }: { kind: ActivityKind }) {
   const config = KINDS[kind];
   const scrollerRef = useRef<HTMLDivElement>(null);
-  const daysRef = useRef<SVGGElement>(null);
   const [data, setData] = useState<ActivityData | null>(null);
   const [failed, setFailed] = useState(false);
 
@@ -120,23 +120,7 @@ export default function ActivityGraph({ kind }: { kind: ActivityKind }) {
   useEffect(() => {
     const scroller = scrollerRef.current;
     if (scroller) scroller.scrollLeft = scroller.scrollWidth;
-    pinDays();
   }, [data]);
-
-  useEffect(() => {
-    window.addEventListener('resize', pinDays);
-    return () => window.removeEventListener('resize', pinDays);
-  }, []);
-
-  // Keep the weekday labels at the left edge while the grid scrolls underneath them.
-  function pinDays() {
-    const scroller = scrollerRef.current;
-    const days = daysRef.current;
-    const svg = days?.ownerSVGElement;
-    if (!scroller || !days || !svg) return;
-    const scale = svg.getBoundingClientRect().width / WIDTH;
-    days.setAttribute('transform', `translate(${scale ? scroller.scrollLeft / scale : 0} 0)`);
-  }
 
   const weeks = data ? weeksUntil(data.to) : null;
   const days = data && weeks ? weeks.flat().map((date) => ({ date, value: data.days[date] ?? 0 })) : [];
@@ -150,48 +134,55 @@ export default function ActivityGraph({ kind }: { kind: ActivityKind }) {
         <h3 id={titleId}>{config.title}</h3>
         <img className={`activity-graph__logo activity-graph__logo--${kind}`} {...config.logo} />
       </header>
-      <div className="activity-graph__scroller" ref={scrollerRef} onScroll={pinDays}>
+      <div className="activity-graph__plot">
+        <div className="activity-graph__scroller" ref={scrollerRef}>
+          <svg
+            viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+            role="img"
+            aria-label={
+              data
+                ? `${config.total.format(sum)} ${config.total.label.toLowerCase()} on ${config.source} between ${formatDate(days[0].date)} and ${formatDate(data.to)}`
+                : `${config.title} on ${config.source}`
+            }
+          >
+            {weeks &&
+              monthLabels(weeks).map(({ index, label }) => (
+                <text key={index} x={LABEL_WIDTH + index * STEP} y={10} className="activity-graph__label">
+                  {label}
+                </text>
+              ))}
+            {(weeks ?? EMPTY_WEEKS).map((week, column) =>
+              week.map((date, row) => {
+                const value = data?.days[date] ?? 0;
+                return (
+                  <rect
+                    key={date}
+                    x={LABEL_WIDTH + column * STEP}
+                    y={LABEL_HEIGHT + (data ? new Date(`${date}T00:00:00Z`).getUTCDay() : row) * STEP}
+                    width={CELL}
+                    height={CELL}
+                    rx={2}
+                    data-level={levelOf(value, config.weight)}
+                  >
+                    {data && <title>{`${value ? config.format(value) : config.none} on ${formatDate(date)}`}</title>}
+                  </rect>
+                );
+              }),
+            )}
+          </svg>
+        </div>
+        {/* The weekdays sit outside the scroller, so they stay put however the grid scrolls (including iOS momentum and overscroll). */}
         <svg
-          viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-          role="img"
-          aria-label={
-            data
-              ? `${config.total.format(sum)} ${config.total.label.toLowerCase()} on ${config.source} between ${formatDate(days[0].date)} and ${formatDate(data.to)}`
-              : `${config.title} on ${config.source}`
-          }
+          className="activity-graph__days"
+          viewBox={`0 0 ${DAYS_WIDTH} ${HEIGHT}`}
+          style={{ aspectRatio: `${DAYS_WIDTH} / ${HEIGHT}` }}
+          aria-hidden="true"
         >
-          {weeks &&
-            monthLabels(weeks).map(({ index, label }) => (
-              <text key={index} x={LABEL_WIDTH + index * STEP} y={10} className="activity-graph__label">
-                {label}
-              </text>
-            ))}
-          {(weeks ?? EMPTY_WEEKS).map((week, column) =>
-            week.map((date, row) => {
-              const value = data?.days[date] ?? 0;
-              return (
-                <rect
-                  key={date}
-                  x={LABEL_WIDTH + column * STEP}
-                  y={LABEL_HEIGHT + (data ? new Date(`${date}T00:00:00Z`).getUTCDay() : row) * STEP}
-                  width={CELL}
-                  height={CELL}
-                  rx={2}
-                  data-level={levelOf(value, config.weight)}
-                >
-                  {data && <title>{`${value ? config.format(value) : config.none} on ${formatDate(date)}`}</title>}
-                </rect>
-              );
-            }),
-          )}
-          <g ref={daysRef}>
-            <rect className="activity-graph__days" width={LABEL_WIDTH - GAP} height={HEIGHT} />
-            {DAY_LABELS.map(([weekday, label]) => (
-              <text key={weekday} x={0} y={LABEL_HEIGHT + weekday * STEP + CELL - 1} className="activity-graph__label">
-                {label}
-              </text>
-            ))}
-          </g>
+          {DAY_LABELS.map(([weekday, label]) => (
+            <text key={weekday} x={0} y={LABEL_HEIGHT + weekday * STEP + CELL - 1} className="activity-graph__label">
+              {label}
+            </text>
+          ))}
         </svg>
       </div>
       <figcaption>

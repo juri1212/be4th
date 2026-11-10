@@ -6,7 +6,7 @@ export default function PaletteButton({ className = 'palette-button' }: { classN
   return (
     <button type="button" className={className} onClick={openPalette} aria-label="Search and jump to…">
       <Search />
-      <span className="palette-button__label">Jump to…</span>
+      <span className="palette-button__label">Search</span>
       <kbd>{shortcut}</kbd>
     </button>
   );

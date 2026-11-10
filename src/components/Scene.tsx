@@ -7,9 +7,12 @@ import { Gantry, Inspiration911, Lamp, Observatory, Prop, type SculptureColors }
 
 // Where the rider sits in the frame, as a fraction of the viewport.
 export const FOCUS_X = 0.42;
-export const FOCUS_Y = 0.6;
+export const FOCUS_Y = 0.67;
 // Without the HUD panel underneath, the stacked layout drops the road towards the bottom edge.
 export const FOCUS_Y_STACKED = 0.8;
+
+// The sun never climbs into the corner where the HUD names the stage.
+const SUN_CEILING = 175;
 
 const RIDER_SCALE = 0.92;
 const ACCENT: Rgb = [243, 195, 187];
@@ -67,7 +70,7 @@ export default function Scene({ x, width: W, height: H, focusY = FOCUS_Y }: Scen
   const horizon = focusY * H - 110;
 
   const sunArc = Math.sin(Math.PI * (t * 0.98 + 0.1));
-  const sun = { x: W * (0.84 - 0.28 * t), y: horizon - sunArc * (horizon - 90) };
+  const sun = { x: W * (0.84 - 0.28 * t), y: horizon - sunArc * (horizon - SUN_CEILING) };
 
   const ink = palette.ink;
   // Sails turn as you ride rather than on a timer, so an idle page never repaints.
@@ -228,7 +231,7 @@ export default function Scene({ x, width: W, height: H, focusY = FOCUS_Y }: Scen
           {SCENERY.kmTicks
             .filter((tick) => visibleWorld(tick.x, tick.x, 40))
             .map((tick) => (
-              <g key={tick.km} opacity="0.42">
+              <g key={tick.km} opacity="0.6">
                 <path d={`M${r2(tick.x)} ${r2(tick.y + 12)}V${r2(tick.y + 20)}`} fill="none" />
                 <text x={r2(tick.x)} y={r2(tick.y + 36)} textAnchor="middle" stroke="none" className="scene-tick">
                   {tick.km}

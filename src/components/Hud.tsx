@@ -82,9 +82,17 @@ export default function Hud({ x, chapter }: { x: number; chapter: Chapter }) {
         </div>
         <div className="hud-scale">
           <span>0 km</span>
-          <span>{Math.round(progress * 100)}%</span>
           <span>{formatNumber(TOTALS.distance)} km</span>
         </div>
+      </div>
+
+      {/* Stands in for the panel where there's no room for it: how far along the route the page is. */}
+      <div className="hud-progress" aria-hidden="true">
+        <span>{x >= FINISH_X ? 'Finish' : `${formatNumber(kmAt(position))} km`}</span>
+        <i>
+          <b style={{ transform: `scaleX(${progress})` }} />
+        </i>
+        <span>{formatNumber(TOTALS.distance)} km</span>
       </div>
     </div>
   );

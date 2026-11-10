@@ -21,7 +21,7 @@ export default function SiteFooter() {
             be4th
           </a>
           <p>
-            {SITE.author} — {SITE.role.toLowerCase()}.
+            {SITE.author}, {SITE.role.toLowerCase()}.
             <br />
             Apps, services and the pipelines that ship them.
           </p>
@@ -30,6 +30,8 @@ export default function SiteFooter() {
           <div>
             <h2>Site</h2>
             <a href="/">Home</a>
+            <a href="/#work">Work</a>
+            <a href="/#activity">Activity</a>
             <a href="/blog/">Writing</a>
           </div>
           <div>

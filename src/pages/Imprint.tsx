@@ -4,7 +4,7 @@ import { LEGAL } from '../site';
 export default function Imprint() {
   return (
     <PageLayout>
-      <header className="page-intro">
+      <header className="page-intro page-intro--legal">
         <h1>Imprint</h1>
         <p className="lede">Legal notice (Impressum) under German law.</p>
       </header>

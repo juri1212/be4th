@@ -77,7 +77,7 @@ export default function RidePanel({ anchorsRef, panelRef, stackedQuery, chapter 
     const observer = new ResizeObserver(([entry]) => {
       const { width, height } = entry.contentRect;
       if (!width || !height) return;
-      const viewHeight = clamp(height * 1.25, 480, 1000);
+      const viewHeight = clamp(height * 1.25, 420, 1000);
       setSize({ width: (viewHeight * width) / height, height: viewHeight });
     });
     observer.observe(frame);

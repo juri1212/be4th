@@ -7,7 +7,7 @@
   --surface-raised: #1d2431;
   --text: #ede8e2;
   --muted: #9aa3b2;
-  --faint: #626b7b;
+  --faint: #7d8696;
   --hairline: rgb(237 232 226 / 0.09);
   --hairline-strong: rgb(237 232 226 / 0.18);
   --accent: #f3c3bb;
@@ -322,10 +322,26 @@ kbd {
   padding: 1px 8px;
 }
 
+/* A keyboard shortcut means nothing on a touch screen, so there the button is the icon, sized for a thumb. */
+@media (hover: none) {
+  .palette-button kbd,
+  .palette kbd {
+    display: none;
+  }
+
+
+  .palette-button {
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 14px;
+  }
+}
+
 /* ========== FOOTER ========== */
 
 .site-footer {
-  margin-top: 140px;
+  margin-top: 104px;
   padding: 0 0 40px;
   color: var(--muted);
   font-size: 14px;
@@ -419,11 +435,16 @@ kbd {
   color: var(--muted);
 }
 
+.site-footer__bottom > span:nth-child(2) {
+  flex: 1 1 22rem;
+}
+
 .site-footer__top-link {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   margin-left: auto;
+  white-space: nowrap;
 }
 
 /* ========== COMMAND PALETTE ========== */
@@ -492,6 +513,14 @@ kbd {
   background: none;
   color: var(--text);
   font: 400 16px/1.4 var(--sans);
+}
+
+/* Touch screens have no Esc key, so they get a button for it. */
+.palette__close {
+  display: none;
+  padding: 6px 2px 6px 10px;
+  font-size: 14px;
+  color: var(--muted);
 }
 
 .palette__search input::placeholder {
@@ -576,6 +605,12 @@ kbd {
 
 /* ========== RESPONSIVE ========== */
 
+@media (hover: none) {
+  .palette__close {
+    display: block;
+  }
+}
+
 @media (max-width: 640px) {
   .palette-button__label {
     display: none;
@@ -593,7 +628,8 @@ kbd {
     margin-top: 10vh;
   }
 
-  .palette__footer {
+  /* No keys to explain on a phone, but the footer still has to say when a link was copied. */
+  .palette__footer:not([data-notice]) {
     display: none;
   }
 }

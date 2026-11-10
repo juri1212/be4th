@@ -1,14 +1,13 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ComponentProps } from 'react';
 import ActivityGraph, { ActivityLegend } from '../components/ActivityGraph';
-import PaletteButton from '../components/PaletteButton';
 import RidePanel, { type RideAnchor } from '../components/RidePanel';
 import SiteFooter from '../components/SiteFooter';
 import SiteHeader from '../components/SiteHeader';
 import Tags from '../components/Tags';
-import { ArrowDown, ArrowUp, External } from '../components/icons';
+import { ArrowDown, External } from '../components/icons';
 import { POSTS, PROJECTS, postUrl } from '../content';
 import { clamp } from '../ride/math';
-import { FINISH_X, kmAt } from '../ride/route';
+import { FINISH_X, kmAt, xAtKm } from '../ride/route';
 import { STAGES } from '../ride/stages';
 import { SITE, formatDate, type NavLink } from '../site';
 import type { Project } from '../types';
@@ -17,24 +16,37 @@ import '../styles/home.css';
 const STACKED_LAYOUT = '(max-width: 900px)';
 const WORK = PROJECTS.slice(0, 2);
 // The project write-ups have their own chapters, so the writing section lists the other posts.
-const WRITING = POSTS.filter((post) => !post.featured);
+// Until there are posts that aren't write-ups, it lists the write-ups rather than standing empty.
+const OTHER_POSTS = POSTS.filter((post) => !post.featured);
+const WRITING = OTHER_POSTS.length ? OTHER_POSTS : POSTS;
 const SECTIONS = { intro: 0, work: 1, activity: WORK.length + 1, writing: WORK.length + 2, contact: WORK.length + 3 };
 // Mirrors each chapter's heading, so the HUD can carry it once the real one scrolls under the ride panel.
 const HEADINGS = ['Juri Beforth', ...WORK.map((project) => project.title), 'Activity', 'Writing', 'Get in touch'];
 // The intro sits at the start line and contact a few metres past the finish. Every chapter in between stops at
 // the stage scenery closest to an even split of the route, so the spacing stays roughly even as chapters change.
 const ROUTE_KM = kmAt(FINISH_X);
+// Each stop is moved onto the nearest whole kilometre, so the HUD comes to rest on the same number as the gutter mark.
 const nearestStageAnchor = (km: number) =>
-  STAGES.reduce((best, stage) =>
-    Math.abs(kmAt(stage.anchor) - km) < Math.abs(kmAt(best.anchor) - km) ? stage : best,
-  ).anchor;
+  xAtKm(
+    Math.round(
+      kmAt(
+        STAGES.reduce((best, stage) =>
+          Math.abs(kmAt(stage.anchor) - km) < Math.abs(kmAt(best.anchor) - km) ? stage : best,
+        ).anchor,
+      ),
+    ),
+  );
+// The last chapter stops just over the line, with the gantry behind the rider rather than across them.
+const FINISH_CLEARANCE = 120;
 const ANCHORS = [
   0,
   ...HEADINGS.slice(1, -1).map((_, index) => nearestStageAnchor((ROUTE_KM * (index + 1)) / (HEADINGS.length - 1))),
-  FINISH_X + 240,
+  FINISH_X + FINISH_CLEARANCE,
 ];
 // Where the rider is when each chapter is in focus, shown in the gutter like a road book.
-const KM_MARKS = ANCHORS.map((x) => (x > FINISH_X ? 'Finish' : `Km ${Math.round(kmAt(x))}`));
+const KM_MARKS = ANCHORS.map((x) => (x >= FINISH_X ? 'Finish' : `${Math.round(kmAt(x))} km`));
+// Past the last chapter the rider rolls on through the finish while the footer comes up.
+const ROLL_OUT = 240;
 
 const NAV: NavLink[] = [
   { id: 'work', href: '#work', label: 'Work' },
@@ -104,16 +116,22 @@ export default function Home() {
   useLayoutEffect(() => {
     const measure = () => {
       const stacked = window.matchMedia(STACKED_LAYOUT).matches;
-      const panelHeight = stacked && panelRef.current ? panelRef.current.offsetHeight : 0;
-      const focusY = panelHeight + (window.innerHeight - panelHeight) / 2;
+      const header = document.querySelector<HTMLElement>('.story > .site-header');
+      // What the sticky header covers, plus the ride panel above it when the layout is stacked.
+      const sticky = (header?.offsetHeight ?? 0) + (stacked && panelRef.current ? panelRef.current.offsetHeight : 0);
+      // Side by side, the header is only a fading strip over the story, so chapters centre in the whole viewport.
+      const covered = stacked ? sticky : 0;
+      const room = window.innerHeight - covered;
       const maxScroll = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
-      const anchors = sectionRefs.current.map((section, index) => {
-        const rect = section.getBoundingClientRect();
-        const center = rect.top + window.scrollY + rect.height / 2;
-        return { scroll: clamp(center - focusY, 0, maxScroll), x: ANCHORS[index] };
+      const anchors: RideAnchor[] = sectionRefs.current.map((section, index) => {
+        const top = (section.firstElementChild ?? section).getBoundingClientRect().top + window.scrollY;
+        const bottom = (section.lastElementChild ?? section).getBoundingClientRect().bottom + window.scrollY;
+        // A chapter is in focus when it's centred in the free space. One too tall for that is in focus from its heading.
+        const scroll = bottom - top > window.innerHeight - sticky - 32 ? top - sticky - 12 : (top + bottom) / 2 - covered - room / 2;
+        return { scroll: clamp(scroll, 0, maxScroll), x: ANCHORS[index] };
       });
       anchors[0].scroll = 0;
-      anchors[anchors.length - 1].scroll = maxScroll;
+      if (maxScroll > anchors[anchors.length - 1].scroll) anchors.push({ scroll: maxScroll, x: FINISH_X + ROLL_OUT });
       anchorsRef.current = anchors;
     };
     measure();
@@ -133,7 +151,7 @@ export default function Home() {
       anchors.forEach((anchor, index) => {
         if (Math.abs(anchor.scroll - window.scrollY) < Math.abs(anchors[nearest].scroll - window.scrollY)) nearest = index;
       });
-      setActive(nearest);
+      setActive(Math.min(nearest, HEADINGS.length - 1));
     };
     update();
     window.addEventListener('scroll', update, { passive: true });
@@ -245,18 +263,15 @@ export default function Home() {
               <Km index={SECTIONS.contact} />
               Get in touch
             </h2>
-            <p className="lede">
-              Have a project, a question or an idea? The fastest way to reach me is on <a href={SITE.github}>GitHub</a>.
-            </p>
+            <p className="lede">Have a project, a question or an idea? The fastest way to reach me is on GitHub.</p>
             <div className="actions">
               <a className="button button--solid" href={SITE.github}>
                 GitHub
                 <External />
               </a>
-              <button type="button" className="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                Back to top
-                <ArrowUp />
-              </button>
+              <a className="button" href="/blog/">
+                Read the writing
+              </a>
             </div>
           </section>
         </main>
@@ -264,7 +279,6 @@ export default function Home() {
         <SiteFooter />
       </div>
 
-      <PaletteButton className="palette-button palette-fab" />
     </div>
   );
 }

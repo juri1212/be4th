@@ -69,6 +69,7 @@ export default function Post({ post }: { post: PostData }) {
             <a key={item.slug} className="next-up" href={postUrl(item)}>
               <span className="eyebrow">Read next</span>
               <span className="next-up__title">{item.title}</span>
+              <span className="next-up__tagline">{item.tagline ?? item.summary}</span>
             </a>
           ))}
         </section>

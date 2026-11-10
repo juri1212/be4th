@@ -4,7 +4,7 @@ import { LEGAL, formatDate } from '../site';
 export default function Privacy() {
   return (
     <PageLayout>
-      <header className="page-intro">
+      <header className="page-intro page-intro--legal">
         <h1>Privacy policy</h1>
         <p className="lede">In short: no cookies, no tracking, no third-party analytics and no third-party embeds.</p>
       </header>

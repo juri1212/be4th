@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import PageLayout from '../components/PageLayout';
-import { Pause, Play } from '../components/icons';
+import { Moon, Pause, Play, Sun } from '../components/icons';
 import type { Garage as GarageScene } from '../garage/scene';
 import { DURATION, STEPS } from '../garage/timeline';
 import '../styles/garage.css';
@@ -33,6 +33,7 @@ export default function Garage() {
   const [step, setStep] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [following, setFollowing] = useState(true);
+  const [night, setNight] = useState(false);
 
   useEffect(() => {
     const container = host.current!;
@@ -84,12 +85,30 @@ export default function Garage() {
   const current = STEPS[step]!;
   const ended = time >= DURATION;
   const toggle = () => (playing ? scene.current?.pause() : scene.current?.play());
+  const light = (on: boolean) => {
+    setNight(on);
+    scene.current?.night(on);
+  };
 
   return (
     <PageLayout>
       <article className="garage">
         <section className={`stage stage--${status}`} aria-label="Loading the bike onto the car, in 3D">
-          <div className="stage__view" ref={host} />
+          <div className="stage__view">
+            <div className="stage__canvas" ref={host} />
+            {status === 'ready' && (
+              <div className="stage__light" role="group" aria-label="Lighting">
+                <button type="button" aria-pressed={!night} onClick={() => light(false)}>
+                  <Sun />
+                  Day
+                </button>
+                <button type="button" aria-pressed={night} onClick={() => light(true)}>
+                  <Moon />
+                  Night
+                </button>
+              </div>
+            )}
+          </div>
           <header className="stage__intro">
             <h1>Loading up</h1>
             <p className="lede">The 911 has no roof rails. The Backroad travels on it anyway: front wheel off, fork onto a rack held by suction.</p>

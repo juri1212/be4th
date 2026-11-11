@@ -21,6 +21,10 @@
   inset: 0;
 }
 
+.stage__canvas {
+  height: 100%;
+}
+
 .stage__view canvas {
   display: block;
   width: 100%;
@@ -37,6 +41,50 @@
 
 .stage--ready .stage__view canvas {
   opacity: 1;
+}
+
+/* Day or night: two buttons in one pill, in the corner of the scene. */
+.stage__light {
+  position: absolute;
+  z-index: 2;
+  top: 12px;
+  right: var(--gutter);
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 999px;
+  background: rgb(14 19 27 / 0.55);
+  backdrop-filter: blur(10px);
+}
+
+.stage__light button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px 8px 11px;
+  border-radius: 999px;
+  font: 550 13px/1 var(--sans);
+  color: var(--faint);
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+.stage__light button:hover {
+  color: var(--text);
+}
+
+.stage__light button[aria-pressed='true'] {
+  background: var(--surface-raised);
+  color: var(--text);
+}
+
+.stage__light button[aria-pressed='true'] .icon {
+  color: var(--accent);
+}
+
+.stage__light button:focus-visible {
+  outline-offset: 1px;
+  border-radius: 999px;
 }
 
 /* Keeps the headline readable when the camera moves in close behind it, and leaves the rest of the scene alone. */

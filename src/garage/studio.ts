@@ -19,6 +19,7 @@ import {
   type Texture,
   type WebGLRenderer,
 } from 'three';
+import { lerp } from './timeline';
 
 // The site's background, so the floor can fade into the page.
 export const BACKDROP = 0x0e131b;
@@ -59,7 +60,8 @@ export function studioEnvironment(renderer: WebGLRenderer): Texture {
   return texture;
 }
 
-function gradient(stops: [number, string][], size = 512): CanvasTexture {
+// A round gradient, centre to edge, for surfaces and glows that fade out.
+export function gradient(stops: [number, string][], size = 512): CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = size;
   const context = canvas.getContext('2d')!;
@@ -72,7 +74,15 @@ function gradient(stops: [number, string][], size = 512): CanvasTexture {
   return texture;
 }
 
-export function buildStudio(scene: Scene): { key: DirectionalLight } {
+export interface Studio {
+  // Fades the room between the lit studio (0) and night (1), when the lamps are off and only moonlight is left.
+  dim(night: number): void;
+}
+
+const DAYLIGHT = new Color(0xfff4ea);
+const MOONLIGHT = new Color(0x9db3e8);
+
+export function buildStudio(scene: Scene): Studio {
   scene.background = new Color(BACKDROP);
   scene.fog = new Fog(BACKDROP, 9, 24);
 
@@ -98,7 +108,7 @@ export function buildStudio(scene: Scene): { key: DirectionalLight } {
   patch.renderOrder = -1;
   scene.add(patch);
 
-  const key = new DirectionalLight(0xfff4ea, 2.4);
+  const key = new DirectionalLight(DAYLIGHT, 2.4);
   key.position.set(5.5, 9, 6.5);
   key.castShadow = true;
   key.shadow.mapSize.set(2048, 2048);
@@ -112,5 +122,13 @@ export function buildStudio(scene: Scene): { key: DirectionalLight } {
   key.shadow.normalBias = 0.02;
   key.shadow.radius = 5;
   scene.add(key);
-  return { key };
+
+  return {
+    dim(night) {
+      key.intensity = lerp(2.4, 0.6, night);
+      key.color.lerpColors(DAYLIGHT, MOONLIGHT, night);
+      // The softboxes the paint reflects dim with the room.
+      scene.environmentIntensity = lerp(1, 0.24, night);
+    },
+  };
 }

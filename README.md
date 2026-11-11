@@ -22,7 +22,7 @@ npm run lint
 
 ## The garage
 
-`/garage/` is a 3D walkthrough of loading the bike onto the car, drawn with three.js in `src/garage/`. `scene.ts` runs the sequence as a function of time (`timeline.ts`), so it can be scrubbed as well as played. The bike (`bike.ts`) and the roof rack (`rack.ts`) are modelled in code; the rack is fitted to the car's roof at load time by casting rays onto it. The page loads three.js and the model only in the browser, after the prerendered text.
+`/garage/` is a 3D walkthrough of loading the bike onto the car, drawn with three.js in `src/garage/`. `scene.ts` runs the sequence as a function of time (`timeline.ts`), so it can be scrubbed as well as played. The bike (`bike.ts`) and the roof rack (`rack.ts`) are modelled in code; the rack is fitted to the car's roof at load time by casting rays onto it. A switch on the page turns the studio's lights off for night and the car's on: the headlights and the tail light's glow are lights fixed to the car in `car.ts`, and `studio.ts` dims the room. The page loads three.js and the model only in the browser, after the prerendered text.
 
 The car is `public/models/911.glb`, adapted from [Porsche 911 992](https://sketchfab.com/3d-models/porsche-911-992-dd10a7e346a645af8ba80be48b604854) by Márcio Meireles, licensed [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/), so it is credited on the page and must stay out of anything commercial. To rebuild it from the Sketchfab download:
 

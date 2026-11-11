@@ -8,6 +8,7 @@ import {
   Quaternion,
   SRGBColorSpace,
   Scene,
+  Sprite,
   Vector3,
   WebGLRenderer,
   type Material,
@@ -33,6 +34,8 @@ export interface Garage {
   follow(): void;
   // Puts the camera somewhere specific and leaves it there.
   view(position: [number, number, number], target: [number, number, number]): void;
+  // Night switches the studio's lights off and the car's on. The change fades rather than cuts.
+  night(on: boolean): void;
   dispose(): void;
 }
 
@@ -40,6 +43,8 @@ export interface Garage {
 const PARKED = new Vector3(1.78, 0, -0.25);
 const FORK_LIFT = -3.6 * (Math.PI / 180);
 const AXLE_PULL = 0.175;
+// Seconds the lights take to change between day and night.
+const NIGHTFALL = 1.3;
 
 // The camera's path: where it is and what it looks at, at each moment. Between shots it glides.
 interface Shot {
@@ -75,7 +80,7 @@ export async function createGarage(canvas: HTMLCanvasElement, events: GarageEven
 
   const scene = new Scene();
   scene.environment = studioEnvironment(renderer);
-  buildStudio(scene);
+  const studio = buildStudio(scene);
 
   const camera = new PerspectiveCamera(30, 1, 0.1, 80);
   const controls = new OrbitControls(camera, canvas);
@@ -191,6 +196,14 @@ export async function createGarage(canvas: HTMLCanvasElement, events: GarageEven
     (rack.strap.material as Material).opacity = strap;
   }
 
+  // ----- day and night -----
+  // The room goes dark first and the car's lights come up as it does; on the way back it is the other way round.
+  function light(night: number) {
+    studio.dim(ease(span(night, 0, 0.75)));
+    car.lights(ease(span(night, 0.4, 1)));
+  }
+  light(0);
+
   // ----- camera -----
   const shotPosition = new Vector3();
   const shotTarget = new Vector3();
@@ -214,6 +227,9 @@ export async function createGarage(canvas: HTMLCanvasElement, events: GarageEven
   let following = true;
   // 0 right after the visitor hands the camera back, rising to 1 as it rejoins the sequence.
   let rejoin = 1;
+  // 0 by day, 1 at night, and in between while the lights change.
+  let night = 0;
+  let nightGoal = 0;
   let dirty = true;
   let frame = 0;
   let last = 0;
@@ -281,6 +297,12 @@ export async function createGarage(canvas: HTMLCanvasElement, events: GarageEven
       rejoin = Math.min(1, rejoin + delta / 0.9);
       dirty = true;
     }
+    if (night !== nightGoal) {
+      const step = delta / NIGHTFALL;
+      night = nightGoal > night ? Math.min(nightGoal, night + step) : Math.max(nightGoal, night - step);
+      light(night);
+      dirty = true;
+    }
     // While the visitor holds the camera, the controls keep it gliding after they let go.
     if (!following && controls.update()) dirty = true;
     if (!dirty) return;
@@ -322,13 +344,16 @@ export async function createGarage(canvas: HTMLCanvasElement, events: GarageEven
       dirty = true;
       emitState();
     },
+    night(on) {
+      nightGoal = on ? 1 : 0;
+    },
     dispose() {
       disposed = true;
       cancelAnimationFrame(frame);
       observer.disconnect();
       controls.dispose();
       scene.traverse((object) => {
-        if (!(object instanceof Mesh)) return;
+        if (!(object instanceof Mesh || object instanceof Sprite)) return;
         object.geometry.dispose();
         for (const material of [object.material].flat() as Material[]) {
           for (const value of Object.values(material)) if (value && typeof value === 'object' && 'isTexture' in value) value.dispose();

@@ -389,7 +389,13 @@
   }
 
   .stage__panel {
+    position: relative;
     padding-bottom: 8px;
+  }
+
+  /* The count's line is as tall as a button, so the hint or "Follow the action" can sit beside it. */
+  .stage__count {
+    line-height: 38px;
   }
 
   .stage__controls {
@@ -398,9 +404,20 @@
   }
 
   .stage__controls > :last-child {
-    grid-column: 1 / -1;
-    justify-self: start;
+    position: absolute;
+    top: 0;
+    right: var(--gutter);
+  }
+
+  .stage__controls > .stage__hint {
+    display: flex;
+    align-items: center;
+    min-height: 38px;
     padding: 0;
+  }
+
+  .stage__controls > .button:last-child {
+    min-width: 0;
   }
 
   .specs {

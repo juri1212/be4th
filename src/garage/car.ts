@@ -1,17 +1,13 @@
 import {
   AdditiveBlending,
-  BufferGeometry,
   CanvasTexture,
   Color,
   DoubleSide,
-  Float32BufferAttribute,
   Group,
   Mesh,
-  MeshBasicMaterial,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
   PlaneGeometry,
-  Raycaster,
   SRGBColorSpace,
   SpotLight,
   Sprite,
@@ -75,11 +71,88 @@ export interface SurfaceHit {
   normal: Vector3;
 }
 
+// How wide a slice of the car each bin of a Surface covers, in metres.
+const BIN = 0.04;
+const AXES = ['x', 'y', 'z'] as const;
+
+// Triangles that rays along an axis are cast onto. Each ray is tested against every triangle by default, which for
+// the couple of hundred rays that fit the rack and the plates took most of the time the page needed to start. Here
+// the triangles are sorted into bins across each ray's path first, so a ray meets only the few it could hit.
+class Surface {
+  // Nine numbers per triangle.
+  private corners: Float32Array;
+  // Per axis a ray can travel along: the triangles overlapping each slice of the axis after it.
+  private bins = new Map<number, { from: number; slices: number[][] }>();
+
+  constructor(corners: Float32Array) {
+    this.corners = corners;
+  }
+
+  private slices(along: number) {
+    const existing = this.bins.get(along);
+    if (existing) return existing;
+    const across = (along + 1) % 3;
+    const { corners } = this;
+    let from = Infinity;
+    for (let i = across; i < corners.length; i += 3) from = Math.min(from, corners[i]!);
+    const slices: number[][] = [];
+    for (let triangle = 0; triangle < corners.length; triangle += 9) {
+      const a = corners[triangle + across]!;
+      const b = corners[triangle + 3 + across]!;
+      const c = corners[triangle + 6 + across]!;
+      const last = Math.floor((Math.max(a, b, c) - from) / BIN);
+      for (let slice = Math.floor((Math.min(a, b, c) - from) / BIN); slice <= last; slice++) (slices[slice] ??= []).push(triangle);
+    }
+    const bins = { from, slices };
+    this.bins.set(along, bins);
+    return bins;
+  }
+
+  // The first thing a ray meets that leaves `origin` along the axis numbered `along` (x, y, z), forwards or back.
+  cast(origin: Vector3, along: number, direction: number): SurfaceHit | null {
+    const across = (along + 1) % 3;
+    const other = (along + 2) % 3;
+    const p = origin.getComponent(across);
+    const q = origin.getComponent(other);
+    const start = origin.getComponent(along);
+    const { from, slices } = this.slices(along);
+    const { corners } = this;
+    let nearest = Infinity;
+    let found = -1;
+    for (const triangle of slices[Math.floor((p - from) / BIN)] ?? []) {
+      // Where the ray's line crosses the triangle, seen along the ray.
+      const ap = corners[triangle + across]! - p;
+      const aq = corners[triangle + other]! - q;
+      const bp = corners[triangle + 3 + across]! - p;
+      const bq = corners[triangle + 3 + other]! - q;
+      const cp = corners[triangle + 6 + across]! - p;
+      const cq = corners[triangle + 6 + other]! - q;
+      const u = bp * cq - bq * cp;
+      const v = cp * aq - cq * ap;
+      const w = ap * bq - aq * bp;
+      if ((u < 0 || v < 0 || w < 0) && (u > 0 || v > 0 || w > 0)) continue;
+      const area = u + v + w;
+      if (area === 0) continue;
+      const distance = ((u * corners[triangle + along]! + v * corners[triangle + 3 + along]! + w * corners[triangle + 6 + along]!) / area - start) * direction;
+      if (distance > 0 && distance < nearest) {
+        nearest = distance;
+        found = triangle;
+      }
+    }
+    if (found < 0) return null;
+    const point = origin.clone();
+    point[AXES[along]!] += nearest * direction;
+    const a = new Vector3().fromArray(corners, found);
+    const normal = new Vector3().fromArray(corners, found + 3).sub(a).cross(new Vector3().fromArray(corners, found + 6).sub(a)).normalize();
+    // Towards where the ray came from, whichever way the triangle is wound.
+    if (normal.getComponent(along) * direction > 0) normal.negate();
+    return { point, normal };
+  }
+}
+
 export interface Car {
   root: Group;
-  // The first thing a ray meets on the body or the glass, within STRIP of the centre line.
-  cast(origin: Vector3, direction: Vector3): SurfaceHit | null;
-  // The roof or glass under a point above the car.
+  // The roof or glass under a point above the car, within STRIP of the centre line.
   under(x: number, z: number): SurfaceHit | null;
   // Headlights and tail lights, from 0, when only the running lights glow, to 1 for fully on.
   lights(on: number): void;
@@ -145,38 +218,31 @@ export async function loadCar(url: string): Promise<Car> {
   });
   root.updateMatrixWorld(true);
 
-  // Everything fitted to the car sits near its centre line, so rays are cast against that strip of the body only.
-  // Testing every ray against the whole car would hold up the page for seconds.
+  // Everything fitted to the car sits near its centre line, so only that strip of the body is kept for rays to hit.
   const strip: number[] = [];
-  const corner = [new Vector3(), new Vector3(), new Vector3()] as const;
+  const corner = new Float32Array(9);
   for (const mesh of solid) {
     const position = mesh.geometry.getAttribute('position');
     const index = mesh.geometry.getIndex();
     const count = index ? index.count : position.count;
+    const m = mesh.matrixWorld.elements;
     for (let i = 0; i < count; i += 3) {
       let near = false;
       for (let k = 0; k < 3; k++) {
-        corner[k]!.fromBufferAttribute(position, index ? index.getX(i + k) : i + k).applyMatrix4(mesh.matrixWorld);
-        near ||= Math.abs(corner[k]!.x) < STRIP;
+        const vertex = index ? index.getX(i + k) : i + k;
+        const x = position.getX(vertex);
+        const y = position.getY(vertex);
+        const z = position.getZ(vertex);
+        corner[k * 3] = m[0]! * x + m[4]! * y + m[8]! * z + m[12]!;
+        corner[k * 3 + 1] = m[1]! * x + m[5]! * y + m[9]! * z + m[13]!;
+        corner[k * 3 + 2] = m[2]! * x + m[6]! * y + m[10]! * z + m[14]!;
+        near ||= Math.abs(corner[k * 3]!) < STRIP;
       }
-      if (near) for (const point of corner) strip.push(point.x, point.y, point.z);
+      if (near) strip.push(...corner);
     }
   }
-  const stripGeometry = new BufferGeometry();
-  stripGeometry.setAttribute('position', new Float32BufferAttribute(strip, 3));
-  const centre = new Mesh(stripGeometry, new MeshBasicMaterial({ side: DoubleSide }));
-
-  const raycaster = new Raycaster();
-  const cast = (origin: Vector3, direction: Vector3): SurfaceHit | null => {
-    raycaster.set(origin, direction);
-    const hit = raycaster.intersectObject(centre, false)[0];
-    if (!hit?.face) return null;
-    const normal = hit.face.normal.clone();
-    if (normal.dot(direction) > 0) normal.negate();
-    return { point: hit.point, normal };
-  };
-  const down = new Vector3(0, -1, 0);
-  const under = (x: number, z: number) => cast(new Vector3(x, 3, z), down);
+  const surface = new Surface(new Float32Array(strip));
+  const under = (x: number, z: number) => surface.cast(new Vector3(x, 3, z), 1, -1);
 
   // Plates stand just proud of the bumper: find the foremost point across the plate's width at its height.
   let rearPlate: MeshStandardMaterial | undefined;
@@ -184,7 +250,7 @@ export async function loadCar(url: string): Promise<Car> {
     let proud: number | null = null;
     for (let x = -0.24; x <= 0.241; x += 0.04) {
       for (const dy of [-0.045, 0, 0.045]) {
-        const hit = cast(new Vector3(x, height + dy, facing * 4), new Vector3(0, 0, -facing));
+        const hit = surface.cast(new Vector3(x, height + dy, facing * 4), 2, -facing);
         if (hit && (proud === null || hit.point.z * facing > proud * facing)) proud = hit.point.z;
       }
     }
@@ -249,5 +315,5 @@ export async function loadCar(url: string): Promise<Car> {
     for (const halo of halos) halo.visible = on > 0.001;
   };
 
-  return { root, cast, under, lights };
+  return { root, under, lights };
 }

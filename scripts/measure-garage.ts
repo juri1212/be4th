@@ -334,6 +334,7 @@ if (options.log) {
         '',
         'How much the garage page downloads and how long it takes until the sequence starts playing, measured with `npm run measure` after each change to how it loads. "Sequence starts" is the first frame drawn with the sequence playing, counted from the start of navigation. The columns after "First paint" are the stages `src/garage/scene.ts` marks on the way there.',
         '',
+        '',
       ].join('\n'),
     );
   }

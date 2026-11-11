@@ -46,6 +46,9 @@ const AXLE_PULL = 0.175;
 // Seconds the lights take to change between day and night.
 const NIGHTFALL = 1.3;
 
+// Marks on the page's performance timeline for each stage of loading, which scripts/measure-garage.ts reads.
+const mark = (stage: string) => performance.mark(`garage:${stage}`);
+
 // The camera's path: where it is and what it looks at, at each moment. Between shots it glides.
 interface Shot {
   at: number;
@@ -71,6 +74,7 @@ const SHOTS: Shot[] = [
 ];
 
 export async function createGarage(canvas: HTMLCanvasElement, events: GarageEvents): Promise<Garage> {
+  mark('code');
   const renderer = new WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.toneMapping = ACESFilmicToneMapping;
@@ -95,6 +99,7 @@ export async function createGarage(canvas: HTMLCanvasElement, events: GarageEven
   await Promise.race([document.fonts.load('700 20px "Archivo Variable"'), new Promise((resolve) => setTimeout(resolve, 1500))]).catch(() => {});
 
   const car = await loadCar('/models/911.glb');
+  mark('car');
   scene.add(car.root);
   const rack = buildRack(car);
   scene.add(rack.roof, rack.tail, rack.strap);
@@ -234,6 +239,8 @@ export async function createGarage(canvas: HTMLCanvasElement, events: GarageEven
   let frame = 0;
   let last = 0;
   let disposed = false;
+  // Whether a frame of the sequence playing has been drawn yet.
+  let animating = false;
 
   const emitState = () => events.onState({ playing, following });
 
@@ -308,11 +315,16 @@ export async function createGarage(canvas: HTMLCanvasElement, events: GarageEven
     if (!dirty) return;
     dirty = false;
     render();
+    if (playing && !animating) {
+      animating = true;
+      mark('animating');
+    }
   }
   frame = requestAnimationFrame((now) => {
     last = now;
     tick(now);
   });
+  mark('built');
 
   return {
     duration: DURATION,

@@ -31,6 +31,8 @@ npm install --no-save @gltf-transform/core @gltf-transform/extensions @gltf-tran
 node scripts/models/build-911.mjs <downloaded .glb> public/models/911.glb
 ```
 
+How the page loads is measured rather than guessed: `npm run measure`, after a build, opens it in headless Chrome with a cold cache, once as a desktop and once as a phone on 4G, and reports the bytes received and the time until the sequence starts playing. `npm run measure -- --log "<what changed>"` appends the result to `docs/garage-loading.md`, which has a section for every change to the loading so far.
+
 ## Activity data
 
 ```sh

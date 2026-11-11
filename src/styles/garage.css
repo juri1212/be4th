@@ -143,8 +143,9 @@
   pointer-events: auto;
 }
 
+/* Wide enough for "Play again", so the route doesn't shift when the label changes. */
 .stage__controls .button {
-  min-width: 7.25rem;
+  min-width: 8.5rem;
   justify-content: center;
 }
 
@@ -335,6 +336,16 @@
   .route__stops {
     height: 1.6rem;
   }
+
+  /* With only the number left, centre it under its tick. */
+  .route__stops li {
+    translate: -50%;
+  }
+
+  .route__stops button {
+    justify-items: center;
+    padding: 0 6px 4px;
+  }
 }
 
 /* Stacked: headline, then the scene, then the caption and controls. */
@@ -388,8 +399,10 @@
     top: 14rem;
   }
 
+  /* Relative, so it anchors the action button; the gutter offsets only apply when it floats over the scene. */
   .stage__panel {
     position: relative;
+    inset: auto;
     padding-bottom: 8px;
   }
 

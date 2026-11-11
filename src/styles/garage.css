@@ -1,0 +1,411 @@
+/* The garage page: a full-width 3D stage with the sequence's caption and controls laid over it. */
+
+.garage {
+  --gutter: max(24px, calc(50vw - 37rem));
+}
+
+/* Rules that restyle the page layout's headings and lede carry `.garage`, so they win whichever stylesheet loads last. */
+
+/* ========== STAGE ========== */
+
+/* Breaks out of the page column. The scene's backdrop is the page colour, so it has no visible edge. */
+.stage {
+  position: relative;
+  margin-inline: calc(50% - 50vw);
+  height: clamp(540px, calc(100svh - 96px), 1000px);
+  overflow: hidden;
+}
+
+.stage__view {
+  position: absolute;
+  inset: 0;
+}
+
+.stage__view canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: pan-y;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+
+.stage__view canvas:active {
+  cursor: grabbing;
+}
+
+.stage--ready .stage__view canvas {
+  opacity: 1;
+}
+
+/* Keeps the headline readable when the camera moves in close behind it, and leaves the rest of the scene alone. */
+.stage::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto auto 0;
+  z-index: 1;
+  width: min(100%, 62rem);
+  height: 62%;
+  background: radial-gradient(ellipse 100% 100% at 0 0, var(--bg) 26%, rgb(14 19 27 / 0.72) 48%, rgb(14 19 27 / 0) 72%);
+  pointer-events: none;
+}
+
+/* Darkens the floor behind the caption and controls. */
+.stage::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 46%;
+  background: linear-gradient(to top, var(--bg) 8%, rgb(14 19 27 / 0.72) 45%, rgb(14 19 27 / 0));
+  pointer-events: none;
+}
+
+.stage__intro,
+.stage__panel,
+.stage__status {
+  position: absolute;
+  z-index: 1;
+  left: var(--gutter);
+  right: var(--gutter);
+  /* Dragging anywhere that isn't a control turns the scene. */
+  pointer-events: none;
+}
+
+.stage__intro {
+  top: 8px;
+  max-width: 27rem;
+}
+
+.garage .stage__intro h1 {
+  font-size: clamp(3.5rem, 7vw, 6.5rem);
+  font-weight: 700;
+  line-height: 0.9;
+}
+
+.garage .stage__intro .lede {
+  margin-top: 20px;
+  font-size: 1.0625rem;
+  color: var(--muted);
+}
+
+.stage__status {
+  top: 50%;
+  text-align: center;
+  color: var(--muted);
+}
+
+.stage__panel {
+  bottom: 26px;
+  display: grid;
+  gap: 26px;
+}
+
+.stage__caption {
+  max-width: 26rem;
+}
+
+.stage__count {
+  font-family: var(--display);
+  font-stretch: var(--condensed);
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--accent);
+}
+
+.stage__count span {
+  font-weight: 500;
+  color: var(--faint);
+}
+
+.garage .stage__caption h2 {
+  margin-top: 6px;
+  font-size: clamp(2rem, 3.2vw, 2.75rem);
+  line-height: 1;
+}
+
+.stage__caption > p:last-child {
+  margin-top: 10px;
+  min-height: 3.2em;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+.stage__controls {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 28px;
+}
+
+.stage__controls > * {
+  pointer-events: auto;
+}
+
+.stage__controls .button {
+  min-width: 7.25rem;
+  justify-content: center;
+}
+
+.stage__controls .button .icon {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.stage__hint {
+  padding: 10px 0;
+  font-size: 14px;
+  line-height: 1.2;
+  color: var(--faint);
+  pointer-events: none;
+}
+
+/* ========== ROUTE: the scrubber, drawn as a road with a stop per step ========== */
+
+.route {
+  position: relative;
+  padding-top: 9px;
+}
+
+.route input {
+  display: block;
+  width: 100%;
+  height: 20px;
+  margin: 0;
+  background: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+.route input::-webkit-slider-runnable-track {
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(to right, var(--accent) calc(var(--progress) * 100%), var(--hairline-strong) 0);
+}
+
+.route input::-moz-range-track {
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(to right, var(--accent) calc(var(--progress) * 100%), var(--hairline-strong) 0);
+}
+
+.route input::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -6px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent-bright);
+  box-shadow: 0 0 0 4px rgb(243 195 187 / 0.18);
+}
+
+.route input::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent-bright);
+  box-shadow: 0 0 0 4px rgb(243 195 187 / 0.18);
+}
+
+.route__stops {
+  position: relative;
+  height: 2.6rem;
+  list-style: none;
+}
+
+/* The thumb's centre travels from 7px to 100% - 7px; the stops follow the same line. */
+.route__stops li {
+  position: absolute;
+  top: 0;
+  left: calc(7px + var(--at) * (100% - 14px));
+}
+
+.route__stops button {
+  display: grid;
+  justify-items: start;
+  gap: 3px;
+  padding: 0 12px 4px 0;
+  font-size: 13px;
+  line-height: 1.2;
+  color: var(--faint);
+  text-align: left;
+  transition: color 0.2s ease;
+}
+
+/* A tick up to the road. */
+.route__stops button::before {
+  content: '';
+  width: 1px;
+  height: 7px;
+  margin-top: -3px;
+  background: currentColor;
+}
+
+.route__stops button:hover,
+.route__stops button[aria-current] {
+  color: var(--text);
+}
+
+.route__number {
+  font-family: var(--display);
+  font-stretch: var(--condensed);
+  font-weight: 650;
+  font-size: 15px;
+}
+
+.route__stops button[aria-current] .route__number {
+  color: var(--accent);
+}
+
+.route__name {
+  max-width: 6.5rem;
+}
+
+/* ========== SPECS ========== */
+
+.specs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 40px;
+  padding: 72px 0 56px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.garage .specs h2 {
+  font-family: var(--sans);
+  font-stretch: 100%;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+
+.specs__model {
+  margin-top: 6px;
+  font-family: var(--display);
+  font-stretch: var(--condensed);
+  font-weight: 650;
+  font-size: clamp(1.75rem, 2.6vw, 2.25rem);
+  line-height: 1.05;
+}
+
+.specs ul {
+  margin-top: 18px;
+  list-style: none;
+  color: var(--muted);
+}
+
+.specs li {
+  padding: 9px 0;
+  border-top: 1px solid var(--hairline);
+  text-wrap: pretty;
+}
+
+.garage__credit {
+  max-width: 44rem;
+  padding: 28px 0 96px;
+  font-size: 14px;
+  color: var(--faint);
+}
+
+.garage__credit a {
+  color: var(--muted);
+  text-underline-offset: 3px;
+}
+
+.garage__credit a:hover {
+  color: var(--text);
+}
+
+/* ========== SMALLER SCREENS ========== */
+
+@media (max-width: 1100px) {
+  .route__name {
+    display: none;
+  }
+
+  .route__stops {
+    height: 1.6rem;
+  }
+}
+
+/* Stacked: headline, then the scene, then the caption and controls. */
+@media (max-width: 760px) {
+  .garage {
+    --gutter: 20px;
+  }
+
+  .stage {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+  }
+
+  .stage::before,
+  .stage::after {
+    content: none;
+  }
+
+  .stage__intro,
+  .stage__panel {
+    position: static;
+    padding-inline: var(--gutter);
+  }
+
+  .stage__intro {
+    order: -1;
+    max-width: none;
+    padding-top: 20px;
+  }
+
+  .stage__view {
+    position: relative;
+    inset: auto;
+    flex: none;
+    height: min(92vw, 62svh);
+  }
+
+  /* The floor fades into the page instead of ending at the canvas edge. */
+  .stage__view::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    height: 34%;
+    background: linear-gradient(to top, var(--bg), rgb(14 19 27 / 0));
+    pointer-events: none;
+  }
+
+  .stage__status {
+    top: 14rem;
+  }
+
+  .stage__panel {
+    padding-bottom: 8px;
+  }
+
+  .stage__controls {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 18px 20px;
+  }
+
+  .stage__controls > :last-child {
+    grid-column: 1 / -1;
+    justify-self: start;
+    padding: 0;
+  }
+
+  .specs {
+    grid-template-columns: 1fr;
+    gap: 44px;
+    padding-top: 56px;
+  }
+}

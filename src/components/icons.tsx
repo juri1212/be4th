@@ -42,3 +42,15 @@ export const Search = () => (
     <path d="m10.25 10.25 3.25 3.25" />
   </Icon>
 );
+
+export const Play = () => (
+  <Icon>
+    <path d="M5 3.5v9l7.5-4.5z" />
+  </Icon>
+);
+
+export const Pause = () => (
+  <Icon>
+    <path d="M5.5 3.5v9M10.5 3.5v9" />
+  </Icon>
+);

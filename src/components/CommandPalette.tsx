@@ -16,6 +16,7 @@ const ITEMS: PaletteItem[] = [
   { group: 'Pages', label: 'Activity', href: '/#activity', keywords: 'github strava contributions training graph' },
   { group: 'Pages', label: 'Writing', href: '/blog/', keywords: 'blog posts articles' },
   { group: 'Pages', label: 'Contact', href: '/#contact', keywords: 'get in touch reach email' },
+  { group: 'Pages', label: 'Loading up', href: '/garage/', keywords: 'garage 911 porsche bike rose backroad roof rack 3d' },
   { group: 'Pages', label: 'Imprint', href: '/imprint/', keywords: 'impressum legal notice contact' },
   { group: 'Pages', label: 'Privacy', href: '/privacy/', keywords: 'privacy policy gdpr datenschutz' },
   ...POSTS.map((post) => ({

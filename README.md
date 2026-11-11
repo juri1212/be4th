@@ -20,6 +20,17 @@ npm run lint
 - **Deploy:** pushing to `main` builds the site and publishes `dist/` to GitHub Pages at be4th.com (`.github/workflows/deploy.yml`). Pages serves the prerendered `404.html` for unknown paths. Old URLs get small pages that refresh to their new location, written by `scripts/prerender.ts` (`REDIRECTS`), because Pages can't send real redirects.
 - **Activity graphs:** the start page shows GitHub contributions and Strava training per day for the past year. Every deploy, and a scheduled one every night, runs `scripts/fetch-activity.ts` before building, and the build ships the JSON as `/data/`. If fetching fails, nothing is deployed and the live site keeps its current data. Visitors only load those files from be4th.com; their browsers never contact GitHub or Strava. Both graphs share one scale, set by `ACTIVITY` in `src/site.ts`.
 
+## The garage
+
+`/garage/` is a 3D walkthrough of loading the bike onto the car, drawn with three.js in `src/garage/`. `scene.ts` runs the sequence as a function of time (`timeline.ts`), so it can be scrubbed as well as played. The bike (`bike.ts`) and the roof rack (`rack.ts`) are modelled in code; the rack is fitted to the car's roof at load time by casting rays onto it. The page loads three.js and the model only in the browser, after the prerendered text.
+
+The car is `public/models/911.glb`, adapted from [Porsche 911 992](https://sketchfab.com/3d-models/porsche-911-992-dd10a7e346a645af8ba80be48b604854) by Márcio Meireles, licensed [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/), so it is credited on the page and must stay out of anything commercial. To rebuild it from the Sketchfab download:
+
+```sh
+npm install --no-save @gltf-transform/core @gltf-transform/extensions @gltf-transform/functions meshoptimizer
+node scripts/models/build-911.mjs <downloaded .glb> public/models/911.glb
+```
+
 ## Activity data
 
 ```sh

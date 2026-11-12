@@ -1,14 +1,16 @@
 // Turns the clay Sketchfab model "Porsche 911 992" by Márcio Meireles (CC BY-NC 4.0,
 // https://sketchfab.com/3d-models/porsche-911-992-dd10a7e346a645af8ba80be48b604854) into public/models/911.glb:
-// metres, wheels on y = 0, nose towards +z, one mesh per material, new tyres and a glass roof, meshopt-compressed.
+// metres, wheels on y = 0, nose towards +z, one mesh per material, new tyres and a glass roof. pack-911.mjs then
+// shares one wheel between the four corners and compresses the result.
 //
 //   npm install --no-save @gltf-transform/core @gltf-transform/extensions @gltf-transform/functions meshoptimizer
 //   node scripts/models/build-911.mjs <downloaded source .glb> public/models/911.glb
 import { NodeIO } from '@gltf-transform/core';
 import { EXTMeshoptCompression, KHRMaterialsClearcoat, KHRMaterialsEmissiveStrength, KHRMeshQuantization } from '@gltf-transform/extensions';
-import { clearNodeParent, clearNodeTransform, dedup, join, meshopt, prune, simplifyPrimitive, weldPrimitive } from '@gltf-transform/functions';
+import { clearNodeParent, clearNodeTransform, dedup, join, prune, simplifyPrimitive, weldPrimitive } from '@gltf-transform/functions';
 import { MeshoptEncoder, MeshoptSimplifier } from 'meshoptimizer';
 import * as THREE from 'three';
+import { describe, pack } from './pack-911.mjs';
 
 const [source, output] = process.argv.slice(2);
 if (!source || !output) throw new Error('usage: build-911.mjs <source.glb> <output.glb>');
@@ -230,14 +232,8 @@ for (const m of root.listMaterials()) if (!Object.values(MATERIALS).includes(m))
 root.getAsset().generator = 'be4th scripts/models/build-911.mjs (glTF-Transform)';
 root.getAsset().copyright = 'Porsche 911 992 by Márcio Meireles, CC BY-NC 4.0, https://sketchfab.com/3d-models/porsche-911-992-dd10a7e346a645af8ba80be48b604854. Adapted: materials, tyres, glass roof, fewer triangles.';
 root.getAsset().extras = undefined;
-await doc.transform(
-  prune(),
-  dedup(),
-  join({ keepNamed: false }),
-  meshopt({ encoder: MeshoptEncoder, level: 'medium', quantizePosition: 16, quantizeNormal: 12 }),
-);
+await doc.transform(prune(), dedup(), join({ keepNamed: false }));
 for (const node of root.listNodes()) { const name = node.getMesh()?.listPrimitives()[0].getMaterial().getName(); if (name) { node.setName(name); node.getMesh().setName(name); } }
+await pack(doc);
 await io.write(output, doc);
-let triangles = 0;
-for (const mesh of root.listMeshes()) for (const prim of mesh.listPrimitives()) triangles += prim.getIndices().getCount() / 3;
-console.log(`wrote ${output}: ${root.listMeshes().length} meshes, ${Math.round(triangles)} triangles (source parts kept: ${Math.round(kept)})`);
+console.log(`wrote ${output}: ${describe(doc)} (source parts kept: ${Math.round(kept)})`);

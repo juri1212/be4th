@@ -270,18 +270,21 @@
   list-style: none;
 }
 
-/* The thumb's centre travels from 7px to 100% - 7px; the stops follow the same line. */
+/* The thumb's centre travels from 7px to 100% - 7px; the stops follow the same line. Each is as wide as its stretch
+   of the road, so a name wraps before it reaches the next stop. */
 .route__stops li {
   position: absolute;
   top: 0;
   left: calc(7px + var(--at) * (100% - 14px));
+  width: calc(var(--span) * (100% - 14px));
 }
 
 .route__stops button {
   display: grid;
   justify-items: start;
   gap: 3px;
-  padding: 0 12px 4px 0;
+  max-width: 100%;
+  padding: 0 8px 4px 0;
   font-size: 13px;
   line-height: 1.2;
   color: var(--faint);
@@ -314,8 +317,14 @@
   color: var(--accent);
 }
 
+/* Condensed, like the headings, so that two lines are enough for the longest name on the shortest stretch. */
 .route__name {
   max-width: 6.5rem;
+  font-family: var(--display);
+  font-stretch: var(--condensed);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
 }
 
 /* ========== SPECS ========== */
@@ -376,7 +385,7 @@
 
 /* ========== SMALLER SCREENS ========== */
 
-@media (max-width: 1100px) {
+@media (max-width: 1240px) {
   .route__name {
     display: none;
   }
@@ -387,6 +396,7 @@
 
   /* With only the number left, centre it under its tick. */
   .route__stops li {
+    width: auto;
     translate: -50%;
   }
 

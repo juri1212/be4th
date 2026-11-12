@@ -13,7 +13,7 @@ import {
   type Material,
 } from 'three';
 import { FRONT_AXLE, REAR_AXLE, WHEEL_RADIUS } from './bike';
-import type { Car } from './car';
+import type { Body } from './car';
 import { loft, station, type Station } from './loft';
 
 // A vacuum-cup roof rack like the one in the photos: a white board on four cups with a thru-axle fork mount, and a
@@ -104,7 +104,7 @@ export interface Rack {
   pitch: number;
 }
 
-export function buildRack(car: Car): Rack {
+export function buildRack(car: Body): Rack {
   const materials = createMaterials();
 
   // ----- on the roof -----

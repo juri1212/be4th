@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import PageLayout from '../components/PageLayout';
 import { Moon, Pause, Play, Sun } from '../components/icons';
-import type { Garage as GarageScene } from '../garage/scene';
+import type { Garage as GarageScene, GarageState } from '../garage/scene';
 import { DURATION, STEPS } from '../garage/timeline';
 import '../styles/garage.css';
 
@@ -31,8 +31,7 @@ export default function Garage() {
   const [status, setStatus] = useState<Status>('loading');
   const [time, setTime] = useState(0);
   const [step, setStep] = useState(0);
-  const [playing, setPlaying] = useState(false);
-  const [following, setFollowing] = useState(true);
+  const [state, setState] = useState<GarageState>({ playing: false, following: true, car: 'loading', waiting: false });
   const [night, setNight] = useState(false);
 
   useEffect(() => {
@@ -49,10 +48,7 @@ export default function Garage() {
             setTime(now);
             setStep(current);
           },
-          onState: (state) => {
-            setPlaying(state.playing);
-            setFollowing(state.following);
-          },
+          onState: setState,
         }),
       )
       .then((garage) => {
@@ -65,6 +61,7 @@ export default function Garage() {
         setStatus('ready');
         if (import.meta.env.DEV) Object.assign(window, { __garage: garage });
         // ?t=12 opens on that second of the sequence. Visitors who ask for less motion get the loaded car, paused.
+        // Either shows the finished bike until the car has been downloaded.
         const start = Number(new URLSearchParams(window.location.search).get('t'));
         if (start > 0) garage.seek(start);
         else if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) garage.seek(garage.duration);
@@ -82,8 +79,12 @@ export default function Garage() {
     };
   }, []);
 
+  const { playing, following } = state;
   const current = STEPS[step]!;
   const ended = time >= DURATION;
+  // The bike is put together while the car is downloaded. Say so if the car is what the sequence is waiting for.
+  const caption =
+    state.car === 'failed' ? 'The car didn’t arrive: its model failed to download. Reload the page to try again.' : state.waiting ? 'The bike is ready. Rolling the car in…' : current.text;
   const toggle = () => (playing ? scene.current?.pause() : scene.current?.play());
   const light = (on: boolean) => {
     setNight(on);
@@ -114,7 +115,7 @@ export default function Garage() {
             <p className="lede">The 911 has no roof rails. The Backroad travels on it anyway: front wheel off, fork onto a rack held by suction.</p>
           </header>
 
-          {status === 'loading' && <p className="stage__status">Rolling the car in…</p>}
+          {status === 'loading' && <p className="stage__status">Opening the garage…</p>}
           {status === 'failed' && <p className="stage__status">The 3D scene couldn’t start. It needs WebGL, which this browser has switched off or doesn’t support.</p>}
 
           {status === 'ready' && (
@@ -125,7 +126,7 @@ export default function Garage() {
                   <span> of {STEPS.length}</span>
                 </p>
                 <h2>{current.title}</h2>
-                <p>{current.text}</p>
+                <p>{caption}</p>
               </div>
               <div className="stage__controls">
                 <button type="button" className="button button--solid" onClick={toggle}>
@@ -149,7 +150,7 @@ export default function Garage() {
                   />
                   <ol className="route__stops">
                     {STEPS.map((stop, index) => (
-                      <li key={stop.title} style={{ '--at': stop.from / DURATION } as CSSProperties}>
+                      <li key={stop.title} style={{ '--at': stop.from / DURATION, '--span': ((STEPS[index + 1]?.from ?? DURATION) - stop.from) / DURATION } as CSSProperties}>
                         <button type="button" aria-current={index === step ? 'step' : undefined} onClick={() => scene.current?.seek(stop.from + 0.01)}>
                           <span className="route__number">{index + 1}</span>
                           <span className="route__name">{stop.title}</span>

@@ -55,6 +55,12 @@ export function contentFile(route: Route): string | null {
   return null;
 }
 
+// Code the page imports only once it runs in the browser, which is worth fetching alongside the page all the same.
+export function lazyFile(route: Route): string | null {
+  if (route.page === 'garage') return 'src/garage/scene.ts';
+  return null;
+}
+
 export async function loadRoute(route: Route): Promise<LoadedRoute> {
   if (route.page === 'post') {
     const [page, post] = await Promise.all([PAGES.post(), loadPost(route.slug)]);

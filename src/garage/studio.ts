@@ -11,7 +11,6 @@ import {
   MeshBasicMaterial,
   MeshPhysicalMaterial,
   PMREMGenerator,
-  PlaneGeometry,
   SRGBColorSpace,
   Scene,
   SphereGeometry,
@@ -96,17 +95,6 @@ export function buildStudio(scene: Scene): Studio {
   floor.rotation.x = -Math.PI / 2;
   floor.receiveShadow = true;
   scene.add(floor);
-
-  // The soft dark patch under the car that a single shadow map doesn't give.
-  const patch = new Mesh(
-    new PlaneGeometry(3.3, 6.2),
-    new MeshBasicMaterial({ map: gradient([[0, 'rgb(0 0 0 / 0.78)'], [0.55, 'rgb(0 0 0 / 0.5)'], [1, 'rgb(0 0 0 / 0)']]), transparent: true, depthWrite: false }),
-  );
-  patch.name = 'contact-shadow';
-  patch.rotation.x = -Math.PI / 2;
-  patch.position.y = 0.004;
-  patch.renderOrder = -1;
-  scene.add(patch);
 
   const key = new DirectionalLight(DAYLIGHT, 2.4);
   key.position.set(5.5, 9, 6.5);

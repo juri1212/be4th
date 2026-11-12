@@ -10,6 +10,7 @@
     "lint": "oxlint",
     "fetch-activity": "node scripts/fetch-activity.ts",
     "strava-auth": "node scripts/strava-auth.ts",
+    "measure": "node scripts/measure-garage.ts",
     "preview": "vite preview"
   },
   "dependencies": {

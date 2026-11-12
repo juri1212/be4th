@@ -1,23 +1,21 @@
 import {
   AdditiveBlending,
-  BufferGeometry,
   CanvasTexture,
   Color,
   DoubleSide,
-  Float32BufferAttribute,
   Group,
   Mesh,
-  MeshBasicMaterial,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
+  MeshBasicMaterial,
   PlaneGeometry,
-  Raycaster,
   SRGBColorSpace,
   SpotLight,
   Sprite,
   SpriteMaterial,
   Vector3,
   type Material,
+  type Object3D,
 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
@@ -25,7 +23,8 @@ import { gradient } from './studio';
 import { clamp01, lerp } from './timeline';
 
 // The 911 Carrera (992) from public/models/911.glb, which scripts/models/build-911.mjs writes: metres, wheels on
-// y = 0, nose towards +z, +x is the driver's side, one mesh per material. The materials here replace the file's.
+// y = 0, nose towards +z, +x is the driver's side, one mesh per material, and one rim and brake disc that the file
+// places at all four corners. The materials here replace the file's.
 
 export const PLATE = 'S JB 911';
 
@@ -75,15 +74,107 @@ export interface SurfaceHit {
   normal: Vector3;
 }
 
-export interface Car {
-  root: Group;
-  // The first thing a ray meets on the body or the glass, within STRIP of the centre line.
-  cast(origin: Vector3, direction: Vector3): SurfaceHit | null;
-  // The roof or glass under a point above the car.
+// How wide a slice of the car each bin of a Surface covers, in metres.
+const BIN = 0.04;
+const AXES = ['x', 'y', 'z'] as const;
+
+// Triangles that rays along an axis are cast onto. Each ray is tested against every triangle by default, which for
+// the couple of hundred rays that fit the rack and the plates took most of the time the page needed to start. Here
+// the triangles are sorted into bins across each ray's path first, so a ray meets only the few it could hit.
+class Surface {
+  // Nine numbers per triangle.
+  private corners: Float32Array;
+  // Per axis a ray can travel along: the triangles overlapping each slice of the axis after it.
+  private bins = new Map<number, { from: number; slices: number[][] }>();
+
+  constructor(corners: Float32Array) {
+    this.corners = corners;
+  }
+
+  private slices(along: number) {
+    const existing = this.bins.get(along);
+    if (existing) return existing;
+    const across = (along + 1) % 3;
+    const { corners } = this;
+    let from = Infinity;
+    for (let i = across; i < corners.length; i += 3) from = Math.min(from, corners[i]!);
+    const slices: number[][] = [];
+    for (let triangle = 0; triangle < corners.length; triangle += 9) {
+      const a = corners[triangle + across]!;
+      const b = corners[triangle + 3 + across]!;
+      const c = corners[triangle + 6 + across]!;
+      const last = Math.floor((Math.max(a, b, c) - from) / BIN);
+      for (let slice = Math.floor((Math.min(a, b, c) - from) / BIN); slice <= last; slice++) (slices[slice] ??= []).push(triangle);
+    }
+    const bins = { from, slices };
+    this.bins.set(along, bins);
+    return bins;
+  }
+
+  // The first thing a ray meets that leaves `origin` along the axis numbered `along` (x, y, z), forwards or back.
+  cast(origin: Vector3, along: number, direction: number): SurfaceHit | null {
+    const across = (along + 1) % 3;
+    const other = (along + 2) % 3;
+    const p = origin.getComponent(across);
+    const q = origin.getComponent(other);
+    const start = origin.getComponent(along);
+    const { from, slices } = this.slices(along);
+    const { corners } = this;
+    let nearest = Infinity;
+    let found = -1;
+    for (const triangle of slices[Math.floor((p - from) / BIN)] ?? []) {
+      // Where the ray's line crosses the triangle, seen along the ray.
+      const ap = corners[triangle + across]! - p;
+      const aq = corners[triangle + other]! - q;
+      const bp = corners[triangle + 3 + across]! - p;
+      const bq = corners[triangle + 3 + other]! - q;
+      const cp = corners[triangle + 6 + across]! - p;
+      const cq = corners[triangle + 6 + other]! - q;
+      const u = bp * cq - bq * cp;
+      const v = cp * aq - cq * ap;
+      const w = ap * bq - aq * bp;
+      if ((u < 0 || v < 0 || w < 0) && (u > 0 || v > 0 || w > 0)) continue;
+      const area = u + v + w;
+      if (area === 0) continue;
+      const distance = ((u * corners[triangle + along]! + v * corners[triangle + 3 + along]! + w * corners[triangle + 6 + along]!) / area - start) * direction;
+      if (distance > 0 && distance < nearest) {
+        nearest = distance;
+        found = triangle;
+      }
+    }
+    if (found < 0) return null;
+    const point = origin.clone();
+    point[AXES[along]!] += nearest * direction;
+    const a = new Vector3().fromArray(corners, found);
+    const normal = new Vector3().fromArray(corners, found + 3).sub(a).cross(new Vector3().fromArray(corners, found + 6).sub(a)).normalize();
+    // Towards where the ray came from, whichever way the triangle is wound.
+    if (normal.getComponent(along) * direction > 0) normal.negate();
+    return { point, normal };
+  }
+}
+
+// The bodywork, for fitting things to it.
+export interface Body {
+  // The roof or glass under a point above the car, within STRIP of the centre line.
   under(x: number, z: number): SurfaceHit | null;
+}
+
+export interface Car {
+  // Holds the lamps from the start, and the body once it has been downloaded.
+  root: Group;
+  // Downloads the body and adds it, hidden. `lettering` resolves once the typeface the plates are drawn in is ready.
+  load(url: string, lettering: Promise<unknown>): Promise<Body>;
+  // Whether the body can be seen. Nothing to see until it has loaded.
+  show(visible: boolean): void;
   // Headlights and tail lights, from 0, when only the running lights glow, to 1 for fully on.
   lights(on: number): void;
+  // Turns the wheels as far as they turn while the car rolls this many metres forwards.
+  roll(distance: number): void;
 }
+
+const WHEELS = ['wheel_fl', 'wheel_fr', 'wheel_rl', 'wheel_rr'];
+// Tyre and all, in metres.
+const WHEEL_RADIUS = 0.366;
 
 // A German number plate, drawn rather than loaded.
 function plate(text: string): Mesh<PlaneGeometry, MeshStandardMaterial> {
@@ -122,84 +213,106 @@ function plate(text: string): Mesh<PlaneGeometry, MeshStandardMaterial> {
   return mesh;
 }
 
-export async function loadCar(url: string): Promise<Car> {
-  const gltf = await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(url);
-  const root = gltf.scene;
+// The car before its body has arrived: the lamps are in the scene from the start, so that the body turning up later
+// doesn't add lights, which would rebuild the shader of everything already on screen.
+export function buildCar(): Car {
+  const root = new Group();
   root.name = '911';
   const table = materials();
-  const solid: Mesh[] = [];
-  root.traverse((object) => {
-    if (!(object instanceof Mesh)) return;
-    const name = (object.material as Material).name;
-    const material = (table as Record<string, Material>)[name];
-    if (material) {
-      material.name = name;
-      object.material = material;
-    }
-    const seeThrough = name.startsWith('glass') ? name !== 'glass_roof' : name === 'lens';
-    object.castShadow = !seeThrough;
-    object.receiveShadow = !seeThrough;
-    // Glass after everything it covers, and the outer panes last.
-    if (seeThrough) object.renderOrder = name === 'lens' ? 1 : 2;
-    if (['paint', 'glass', 'glass_privacy', 'glass_roof', 'trim', 'light_red', 'light_red_lit'].includes(name)) solid.push(object);
-  });
-  root.updateMatrixWorld(true);
-
-  // Everything fitted to the car sits near its centre line, so rays are cast against that strip of the body only.
-  // Testing every ray against the whole car would hold up the page for seconds.
-  const strip: number[] = [];
-  const corner = [new Vector3(), new Vector3(), new Vector3()] as const;
-  for (const mesh of solid) {
-    const position = mesh.geometry.getAttribute('position');
-    const index = mesh.geometry.getIndex();
-    const count = index ? index.count : position.count;
-    for (let i = 0; i < count; i += 3) {
-      let near = false;
-      for (let k = 0; k < 3; k++) {
-        corner[k]!.fromBufferAttribute(position, index ? index.getX(i + k) : i + k).applyMatrix4(mesh.matrixWorld);
-        near ||= Math.abs(corner[k]!.x) < STRIP;
-      }
-      if (near) for (const point of corner) strip.push(point.x, point.y, point.z);
-    }
-  }
-  const stripGeometry = new BufferGeometry();
-  stripGeometry.setAttribute('position', new Float32BufferAttribute(strip, 3));
-  const centre = new Mesh(stripGeometry, new MeshBasicMaterial({ side: DoubleSide }));
-
-  const raycaster = new Raycaster();
-  const cast = (origin: Vector3, direction: Vector3): SurfaceHit | null => {
-    raycaster.set(origin, direction);
-    const hit = raycaster.intersectObject(centre, false)[0];
-    if (!hit?.face) return null;
-    const normal = hit.face.normal.clone();
-    if (normal.dot(direction) > 0) normal.negate();
-    return { point: hit.point, normal };
-  };
-  const down = new Vector3(0, -1, 0);
-  const under = (x: number, z: number) => cast(new Vector3(x, 3, z), down);
-
-  // Plates stand just proud of the bumper: find the foremost point across the plate's width at its height.
+  let body: Group | null = null;
+  let wheels: Object3D[] = [];
   let rearPlate: MeshStandardMaterial | undefined;
-  for (const [facing, height] of [[1, 0.37], [-1, 0.6]] as const) {
-    let proud: number | null = null;
-    for (let x = -0.24; x <= 0.241; x += 0.04) {
-      for (const dy of [-0.045, 0, 0.045]) {
-        const hit = cast(new Vector3(x, height + dy, facing * 4), new Vector3(0, 0, -facing));
-        if (hit && (proud === null || hit.point.z * facing > proud * facing)) proud = hit.point.z;
+
+  // The soft dark patch under the car that a single shadow map doesn't give.
+  const patch = new Mesh(
+    new PlaneGeometry(3.3, 6.2),
+    new MeshBasicMaterial({ map: gradient([[0, 'rgb(0 0 0 / 0.78)'], [0.55, 'rgb(0 0 0 / 0.5)'], [1, 'rgb(0 0 0 / 0)']]), transparent: true, depthWrite: false }),
+  );
+  patch.name = 'contact-shadow';
+  patch.rotation.x = -Math.PI / 2;
+  patch.position.y = 0.004;
+  patch.renderOrder = -1;
+  patch.visible = false;
+  root.add(patch);
+
+  async function load(url: string, lettering: Promise<unknown>): Promise<Body> {
+    const [gltf] = await Promise.all([new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(url), lettering]);
+    const model = gltf.scene;
+    const solid: Mesh[] = [];
+    model.traverse((object) => {
+      if (!(object instanceof Mesh)) return;
+      const name = (object.material as Material).name;
+      const material = (table as Record<string, Material>)[name];
+      if (material) {
+        material.name = name;
+        object.material = material;
+      }
+      const seeThrough = name.startsWith('glass') ? name !== 'glass_roof' : name === 'lens';
+      object.castShadow = !seeThrough;
+      object.receiveShadow = !seeThrough;
+      // Glass after everything it covers, and the outer panes last.
+      if (seeThrough) object.renderOrder = name === 'lens' ? 1 : 2;
+      if (['paint', 'glass', 'glass_privacy', 'glass_roof', 'trim', 'light_red', 'light_red_lit'].includes(name)) solid.push(object);
+    });
+    // Measured before the model joins the car, which may be anywhere on its way in: everything below is in the car's
+    // own coordinates.
+    model.updateMatrixWorld(true);
+
+    // Everything fitted to the car sits near its centre line, so only that strip of the body is kept for rays to hit.
+    const strip: number[] = [];
+    const corner = new Float32Array(9);
+    for (const mesh of solid) {
+      const position = mesh.geometry.getAttribute('position');
+      const index = mesh.geometry.getIndex();
+      const count = index ? index.count : position.count;
+      const m = mesh.matrixWorld.elements;
+      for (let i = 0; i < count; i += 3) {
+        let near = false;
+        for (let k = 0; k < 3; k++) {
+          const vertex = index ? index.getX(i + k) : i + k;
+          const x = position.getX(vertex);
+          const y = position.getY(vertex);
+          const z = position.getZ(vertex);
+          corner[k * 3] = m[0]! * x + m[4]! * y + m[8]! * z + m[12]!;
+          corner[k * 3 + 1] = m[1]! * x + m[5]! * y + m[9]! * z + m[13]!;
+          corner[k * 3 + 2] = m[2]! * x + m[6]! * y + m[10]! * z + m[14]!;
+          near ||= Math.abs(corner[k * 3]!) < STRIP;
+        }
+        if (near) strip.push(...corner);
       }
     }
-    if (proud === null) continue;
-    const mesh = plate(PLATE);
-    mesh.position.set(0, height, proud + facing * 0.014);
-    if (facing < 0) {
-      mesh.rotation.y = Math.PI;
-      rearPlate = mesh.material;
+    const surface = new Surface(new Float32Array(strip));
+    const under = (x: number, z: number) => surface.cast(new Vector3(x, 3, z), 1, -1);
+
+    // Plates stand just proud of the bumper: find the foremost point across the plate's width at its height.
+    for (const [facing, height] of [[1, 0.37], [-1, 0.6]] as const) {
+      let proud: number | null = null;
+      for (let x = -0.24; x <= 0.241; x += 0.04) {
+        for (const dy of [-0.045, 0, 0.045]) {
+          const hit = surface.cast(new Vector3(x, height + dy, facing * 4), 2, -facing);
+          if (hit && (proud === null || hit.point.z * facing > proud * facing)) proud = hit.point.z;
+        }
+      }
+      if (proud === null) continue;
+      const mesh = plate(PLATE);
+      mesh.position.set(0, height, proud + facing * 0.014);
+      if (facing < 0) {
+        mesh.rotation.y = Math.PI;
+        rearPlate = mesh.material;
+      }
+      model.add(mesh);
     }
-    root.add(mesh);
+
+    wheels = WHEELS.map((name) => model.getObjectByName(name)).filter((wheel) => wheel !== undefined);
+    model.visible = false;
+    root.add(model);
+    body = model;
+    lights(level);
+    return { under };
   }
 
   // ----- lights -----
-  // Always in the scene, at no brightness by day, so switching them on doesn't rebuild every material's shader.
+  // Always in the scene, at no brightness by day, so switching them on doesn't rebuild every material's shader either.
   // They cast no shadows, so each is a cone that points away from the car and can't shine through it.
   const beams = [-1, 1].map((side) => {
     const beam = new SpotLight(HEADLIGHT, 0, 30, 0.74, 1, 1.5);
@@ -249,5 +362,16 @@ export async function loadCar(url: string): Promise<Car> {
     for (const halo of halos) halo.visible = on > 0.001;
   };
 
-  return { root, cast, under, lights };
+  return {
+    root,
+    load,
+    lights,
+    show(visible) {
+      if (body) body.visible = visible;
+      patch.visible = visible && body !== null;
+    },
+    roll(distance) {
+      for (const wheel of wheels) wheel.rotation.x = distance / WHEEL_RADIUS;
+    },
+  };
 }

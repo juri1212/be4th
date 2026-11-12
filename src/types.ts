@@ -69,6 +69,8 @@ export interface Head {
   published?: string;
   modified?: string;
   jsonLd: object | null;
+  // Files the page's script fetches as soon as it runs. Naming them here starts the download with the page instead.
+  preload?: string[];
 }
 
 export interface Site {

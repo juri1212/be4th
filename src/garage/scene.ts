@@ -16,6 +16,7 @@ import {
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { FRONT_AXLE, REAR_AXLE, WHEEL_RADIUS, bikePose, buildBike } from './bike';
 import { loadCar } from './car';
+import { CAR_MODEL } from './model';
 import { buildRack } from './rack';
 import { buildStudio, studioEnvironment } from './studio';
 import { DURATION, MOVES, ease, easeInOut, easeOut, lerp, span, stepAt } from './timeline';
@@ -82,6 +83,13 @@ export async function createGarage(canvas: HTMLCanvasElement, events: GarageEven
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = PCFSoftShadowMap;
 
+  // Lettering on the bike and the plates is drawn with the site's typeface, so wait for it, but not for long.
+  const lettering = Promise.race([document.fonts.load('700 20px "Archivo Variable"'), new Promise((resolve) => setTimeout(resolve, 1500))]).catch(() => {});
+  // The car is the one thing here that has to be downloaded, so everything else is built while it is on its way.
+  const loading = loadCar(CAR_MODEL, lettering);
+  // If building the rest fails first, that is the error to report.
+  loading.catch(() => {});
+
   const scene = new Scene();
   scene.environment = studioEnvironment(renderer);
   const studio = buildStudio(scene);
@@ -95,16 +103,16 @@ export async function createGarage(canvas: HTMLCanvasElement, events: GarageEven
   controls.maxPolarAngle = Math.PI / 2 - 0.03;
   controls.enablePan = false;
 
-  // Lettering on the bike and the plates is drawn with the site's typeface, so wait for it, but not for long.
-  await Promise.race([document.fonts.load('700 20px "Archivo Variable"'), new Promise((resolve) => setTimeout(resolve, 1500))]).catch(() => {});
+  await lettering;
+  const bike = buildBike();
+  scene.add(bike.root);
+  mark('bike');
 
-  const car = await loadCar('/models/911.glb');
+  const car = await loading;
   mark('car');
   scene.add(car.root);
   const rack = buildRack(car);
   scene.add(rack.roof, rack.tail, rack.strap);
-  const bike = buildBike();
-  scene.add(bike.root);
   // The front wheel leaves the bike, so it lives in the scene and is moved alongside while it is attached.
   scene.add(bike.frontWheel);
   // Its own materials, so it can fade as it goes into the car without the rear wheel fading too.

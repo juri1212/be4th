@@ -35,3 +35,14 @@ Received in total, by kind: page 4 kB, styles 8 kB, scripts 252 kB, fonts 192 kB
 
 Median of 5 cold loads per profile; Desktop: no throttling, 1440 × 900; Phone on 4G: 9 Mbit/s down, 165 ms latency, 4× slower CPU, 390 × 844. Drawn by ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Unspecified Version).
 
+## Car and scene code fetched with the page, bike built meanwhile
+
+| Profile | Sequence starts | Received by then | Received in total | Requests | First paint | `code` | `bike` | `car` | `built` |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Desktop | **0.33 s** | **1,808 kB** | 1,808 kB | 18 | 0.08 s | 0.06 s | 0.15 s | 0.19 s | 0.20 s |
+| Phone on 4G | **2.52 s** | **1,808 kB** | 1,808 kB | 18 | 0.62 s | 1.16 s | 1.47 s | 2.28 s | 2.32 s |
+
+Received in total, by kind: page 4 kB, styles 8 kB, scripts 252 kB, fonts 192 kB, model 1,350 kB, other 1 kB.
+
+Median of 5 cold loads per profile; Desktop: no throttling, 1440 × 900; Phone on 4G: 9 Mbit/s down, 165 ms latency, 4× slower CPU, 390 × 844. Drawn by ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Unspecified Version).
+

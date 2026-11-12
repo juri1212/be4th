@@ -196,8 +196,9 @@ function plate(text: string): Mesh<PlaneGeometry, MeshStandardMaterial> {
   return mesh;
 }
 
-export async function loadCar(url: string): Promise<Car> {
-  const gltf = await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(url);
+// `lettering` resolves once the typeface the plates are drawn in is ready.
+export async function loadCar(url: string, lettering: Promise<unknown>): Promise<Car> {
+  const [gltf] = await Promise.all([new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(url), lettering]);
   const root = gltf.scene;
   root.name = '911';
   const table = materials();

@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react';
 import { POSTS, PROJECTS, loadPost, postUrl } from './content';
+import { CAR_MODEL } from './garage/model';
 import { SITE, absoluteUrl } from './site';
 import type { Head, Post, Project } from './types';
 
@@ -52,6 +53,12 @@ export const pageFile = (route: Route) => `src/pages/${PAGE_FILES[route.page]}.t
 
 export function contentFile(route: Route): string | null {
   if (route.page === 'post') return `content/posts/${route.slug}.md`;
+  return null;
+}
+
+// Code the page imports only once it runs in the browser, which is worth fetching alongside the page all the same.
+export function lazyFile(route: Route): string | null {
+  if (route.page === 'garage') return 'src/garage/scene.ts';
   return null;
 }
 
@@ -116,6 +123,7 @@ export function headFor(route: LoadedRoute): Head {
         ...base,
         title: `Loading up · ${SITE.name}`,
         description: 'A 3D walkthrough of how a gravel bike travels on a 911: front wheel off, fork onto a vacuum-cup rack on the roof.',
+        preload: [CAR_MODEL],
       };
     case 'imprint':
       return { ...base, title: `Imprint · ${SITE.name}`, description: `Legal notice and provider identification for ${SITE.name}.` };

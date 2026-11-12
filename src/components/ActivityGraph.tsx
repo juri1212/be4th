@@ -12,10 +12,11 @@ const LABEL_HEIGHT = 16;
 const LABEL_WIDTH = 28;
 const WEEKS = 53;
 const DAY_MS = 24 * 60 * 60 * 1000;
-const DAY_LABELS: [weekday: number, label: string][] = [
-  [1, 'Mon'],
-  [3, 'Wed'],
-  [5, 'Fri'],
+// Rows run Monday to Sunday.
+const DAY_LABELS: [row: number, label: string][] = [
+  [0, 'Mon'],
+  [2, 'Wed'],
+  [4, 'Fri'],
 ];
 const WIDTH = LABEL_WIDTH + WEEKS * STEP - GAP;
 const DAYS_WIDTH = LABEL_WIDTH - GAP;
@@ -72,13 +73,16 @@ const KINDS: Record<ActivityKind, KindConfig> = {
 
 const isoDate = (time: number) => new Date(time).toISOString().slice(0, 10);
 
-// Sunday-first weeks, like GitHub: the last column ends at `to`, the first starts on the Sunday a year before.
+// Monday is 0, Sunday is 6.
+const rowOf = (time: number) => (new Date(time).getUTCDay() + 6) % 7;
+
+// Monday-first weeks: the last column ends at `to`, the first starts on the Monday a year before.
 function weeksUntil(to: string): string[][] {
   const end = Date.parse(`${to}T00:00:00Z`);
-  const start = end - (WEEKS - 1) * 7 * DAY_MS - new Date(end).getUTCDay() * DAY_MS;
+  const start = end - (WEEKS - 1) * 7 * DAY_MS - rowOf(end) * DAY_MS;
   const weeks: string[][] = [];
   for (let time = start; time <= end; time += DAY_MS) {
-    if (new Date(time).getUTCDay() === 0) weeks.push([]);
+    if (rowOf(time) === 0) weeks.push([]);
     weeks.at(-1)?.push(isoDate(time));
   }
   return weeks;
@@ -158,7 +162,7 @@ export default function ActivityGraph({ kind }: { kind: ActivityKind }) {
                   <rect
                     key={date}
                     x={LABEL_WIDTH + column * STEP}
-                    y={LABEL_HEIGHT + (data ? new Date(`${date}T00:00:00Z`).getUTCDay() : row) * STEP}
+                    y={LABEL_HEIGHT + (data ? rowOf(Date.parse(`${date}T00:00:00Z`)) : row) * STEP}
                     width={CELL}
                     height={CELL}
                     rx={2}
@@ -178,8 +182,8 @@ export default function ActivityGraph({ kind }: { kind: ActivityKind }) {
           style={{ aspectRatio: `${DAYS_WIDTH} / ${HEIGHT}` }}
           aria-hidden="true"
         >
-          {DAY_LABELS.map(([weekday, label]) => (
-            <text key={weekday} x={0} y={LABEL_HEIGHT + weekday * STEP + CELL - 1} className="activity-graph__label">
+          {DAY_LABELS.map(([row, label]) => (
+            <text key={row} x={0} y={LABEL_HEIGHT + row * STEP + CELL - 1} className="activity-graph__label">
               {label}
             </text>
           ))}

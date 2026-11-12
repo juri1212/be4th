@@ -612,12 +612,17 @@ export function buildBike(): Bike {
   const frameset = kit.build('frameset');
 
   // The R on the head tube, on a patch that wraps the front of it.
+  // How far the R leans, as a share of its height. Archivo's own italic leans about as much.
+  const SLANT = 0.17;
   const badgeFrom = add(HEAD_TOP, STEER, 0.022);
   const badgeLength = 0.1;
   const badge = labelTexture(
     (context, width, height) => {
       context.fillStyle = '#4b3a3d';
-      context.font = `italic 800 ${height * 0.92}px "Archivo Variable", "Arial Narrow", sans-serif`;
+      // Slanted here rather than set in italics: the italic face is a file of its own, which nothing else on the page
+      // needs and which would arrive after this is drawn.
+      context.transform(1, 0, -SLANT, 1, (SLANT * height) / 2, 0);
+      context.font = `800 ${height * 0.92}px "Archivo Variable", "Arial Narrow", sans-serif`;
       context.textAlign = 'center';
       context.textBaseline = 'middle';
       context.fillText('R', width / 2, height / 2 + height * 0.05);

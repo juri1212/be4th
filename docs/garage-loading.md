@@ -46,3 +46,14 @@ Received in total, by kind: page 4 kB, styles 8 kB, scripts 252 kB, fonts 192 kB
 
 Median of 5 cold loads per profile; Desktop: no throttling, 1440 × 900; Phone on 4G: 9 Mbit/s down, 165 ms latency, 4× slower CPU, 390 × 844. Drawn by ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Unspecified Version).
 
+## Head-tube badge slanted from the upright typeface
+
+| Profile | Sequence starts | Received by then | Received in total | Requests | First paint | `code` | `bike` | `car` | `built` |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Desktop | **0.32 s** | **1,706 kB** | 1,706 kB | 17 | 0.08 s | 0.07 s | 0.15 s | 0.19 s | 0.20 s |
+| Phone on 4G | **2.43 s** | **1,706 kB** | 1,706 kB | 17 | 0.64 s | 1.16 s | 1.47 s | 2.19 s | 2.22 s |
+
+Received in total, by kind: page 4 kB, styles 8 kB, scripts 252 kB, fonts 90 kB, model 1,350 kB, other 1 kB.
+
+Median of 5 cold loads per profile; Desktop: no throttling, 1440 × 900; Phone on 4G: 9 Mbit/s down, 165 ms latency, 4× slower CPU, 390 × 844. Drawn by ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Unspecified Version).
+

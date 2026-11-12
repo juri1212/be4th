@@ -22,7 +22,7 @@ import {
   Vector3,
   type Material,
 } from 'three';
-import { mergeGeometries, mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { loft, station, type Station } from './loft';
 
 // A Rose Backroad FF in Rotten Candy, built from its geometry chart (size M/L) and photos of the real bike.
@@ -77,11 +77,17 @@ const rod = (from: Vector3, to: Vector3, radius: number, around = 8) =>
     side: Math.abs(from.clone().sub(to).normalize().x) > 0.9 ? v(0, 1, 0) : v(1, 0, 0),
   });
 
+// Numbers a geometry's vertices in the order they come, so it can be merged with geometry whose triangles share
+// theirs. Looking for the vertices it could share takes longer than building it did, and saves little to draw.
+function indexed(geometry: BufferGeometry): BufferGeometry {
+  if (!geometry.index) geometry.setIndex(Array.from({ length: geometry.getAttribute('position').count }, (_, vertex) => vertex));
+  return geometry;
+}
+
 // A flat part cut from sheet: a disc with teeth or windows, standing in the yz plane at x = 0.
 function plate(shape: Shape, thickness: number): BufferGeometry {
   const geometry = new ExtrudeGeometry(shape, { depth: thickness, bevelEnabled: false, curveSegments: 10 });
-  geometry.translate(0, 0, -thickness / 2).rotateY(Math.PI / 2);
-  return mergeVertices(geometry);
+  return indexed(geometry.translate(0, 0, -thickness / 2).rotateY(Math.PI / 2));
 }
 
 function sprocket(teeth: number, windows = 0, windowRadius = 0): Shape {
@@ -114,7 +120,7 @@ class Kit {
     if (move instanceof Vector3) geometry.translate(move.x, move.y, move.z);
     else if (move) geometry.applyMatrix4(move);
     const bin = this.bins.get(material) ?? [];
-    bin.push(geometry.index ? geometry : mergeVertices(geometry));
+    bin.push(indexed(geometry));
     this.bins.set(material, bin);
     return this;
   }
@@ -157,9 +163,11 @@ function paintTexture(): CanvasTexture {
   let seed = 7;
   const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
   const blot = (x: number, y: number, radius: number, color: string) => {
-    // Drawn nine times around the edges so the texture tiles.
+    // Drawn again across each edge it overlaps, so the texture tiles.
     for (const dx of [-size, 0, size]) {
+      if (x + dx + radius < 0 || x + dx - radius > size) continue;
       for (const dy of [-size, 0, size]) {
+        if (y + dy + radius < 0 || y + dy - radius > size) continue;
         const gradient = context.createRadialGradient(x + dx, y + dy, 0, x + dx, y + dy, radius);
         gradient.addColorStop(0, color);
         gradient.addColorStop(1, 'rgb(0 0 0 / 0)');

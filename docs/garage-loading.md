@@ -68,3 +68,14 @@ Received in total, by kind: page 4 kB, styles 8 kB, scripts 253 kB, fonts 90 kB,
 
 Median of 5 cold loads per profile; Desktop: no throttling, 1440 × 900; Phone on 4G: 9 Mbit/s down, 165 ms latency, 4× slower CPU, 390 × 844. Drawn by ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Unspecified Version).
 
+## Bike built without looking for shared vertices
+
+| Profile | Sequence starts | Received by then | Received in total | Requests | First paint | `code` | `bike` | `built` | `car` |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Desktop | **0.23 s** | **1,707 kB** | 1,707 kB | 16 | 0.08 s | 0.06 s | 0.13 s | 0.14 s | 0.32 s |
+| Phone on 4G | **1.28 s** | **355 kB** | 1,707 kB | 16 | 0.48 s | 0.87 s | 1.12 s | 1.13 s | 2.68 s |
+
+Received in total, by kind: page 4 kB, styles 8 kB, scripts 253 kB, fonts 90 kB, model 1,350 kB, other 1 kB.
+
+Median of 5 cold loads per profile; Desktop: no throttling, 1440 × 900; Phone on 4G: 9 Mbit/s down, 165 ms latency, 4× slower CPU, 390 × 844. Drawn by ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Unspecified Version).
+

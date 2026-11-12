@@ -57,8 +57,6 @@ function headTags(head: Head): string {
   if (!head.image) tags.push('<meta property="og:image:width" content="1200" />', '<meta property="og:image:height" content="630" />');
   if (head.published) tags.push(`<meta property="article:published_time" content="${head.published}" />`);
   if (head.modified) tags.push(`<meta property="article:modified_time" content="${head.modified}" />`);
-  // Fetched the way the page's own fetch() will ask for them, so that request finds the download already under way.
-  for (const href of head.preload ?? []) tags.push(`<link rel="preload" href="${href}" as="fetch" crossorigin fetchpriority="low" />`);
   if (head.jsonLd) tags.push(`<script type="application/ld+json">${JSON.stringify(head.jsonLd).replace(/</g, '\\u003c')}</script>`);
   if (!head.url) tags.push('<meta name="robots" content="noindex" />');
   return tags.join('\n  ');

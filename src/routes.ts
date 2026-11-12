@@ -1,6 +1,5 @@
 import type { ComponentType } from 'react';
 import { POSTS, PROJECTS, loadPost, postUrl } from './content';
-import { CAR_MODEL } from './garage/model';
 import { SITE, absoluteUrl } from './site';
 import type { Head, Post, Project } from './types';
 
@@ -123,7 +122,6 @@ export function headFor(route: LoadedRoute): Head {
         ...base,
         title: `Loading up · ${SITE.name}`,
         description: 'A 3D walkthrough of how a gravel bike travels on a 911: front wheel off, fork onto a vacuum-cup rack on the roof.',
-        preload: [CAR_MODEL],
       };
     case 'imprint':
       return { ...base, title: `Imprint · ${SITE.name}`, description: `Legal notice and provider identification for ${SITE.name}.` };

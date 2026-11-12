@@ -370,11 +370,22 @@ function chainPath(pulleys: Pulley[]): Station[] {
 
 // ---------- the bike ----------
 
+// Something that goes onto the frame on its own when the bike is put together.
+export interface Part {
+  group: Group;
+  // Where it sits on the finished bike.
+  home: Vector3;
+  // Where it waits before it is fitted, measured from home. It travels the same line back.
+  apart: Vector3;
+}
+
+export const PARTS = ['fork', 'cockpit', 'seat', 'cranks', 'gears', 'rearWheel'] as const;
+
 export interface Bike {
   // Everything, as it stands on the ground.
   root: Group;
-  // Frame, fork, cockpit, drivetrain and rear wheel.
-  frameset: Group;
+  // Fork, bar and stem, saddle and post, cranks, derailleur and chain, and the rear wheel, which is centred on its axle.
+  parts: Record<(typeof PARTS)[number], Part>;
   // Centred on its axle.
   frontWheel: Group;
   // The front thru-axle, centred on the hub.
@@ -382,13 +393,22 @@ export interface Bike {
   materials: Material[];
 }
 
+// How far from its dropouts each wheel stands before it is rolled in.
+export const WHEEL_APART = 0.55;
+
 export function buildBike(): Bike {
   const materials = createMaterials();
-  const kit = new Kit();
+  // One kit per part that goes onto the bike on its own when it is put together.
+  const frame = new Kit();
+  const fork = new Kit();
+  const cockpit = new Kit();
+  const seat = new Kit();
+  const cranks = new Kit();
+  const gears = new Kit();
   const { paint, carbon, gloss, rubber, steel, alloy } = materials;
 
   // ----- frame -----
-  kit.add(
+  frame.add(
     paint,
     loft([{ at: add(HEAD_TOP, STEER, -0.004), width: 0.05, depth: 0.066 }, { at: add(HEAD_TOP, STEER, 0.065), width: 0.047, depth: 0.061 }, { at: add(HEAD_BOTTOM, STEER, 0.008), width: 0.06, depth: 0.082 }], {
       smooth: 6,
@@ -398,12 +418,12 @@ export function buildBike(): Bike {
   );
   const topFront = add(HEAD_TOP, STEER, 0.03);
   const topRear = seatTube(0.487);
-  kit.add(
+  frame.add(
     paint,
     loft([{ at: topFront, width: 0.052, depth: 0.046 }, { at: mix(topFront, topRear, 0.45), width: 0.042, depth: 0.034 }, { at: topRear, width: 0.034, depth: 0.036 }], { power: 2.8, around: 24, smooth: 5 }),
   );
   const downFront = add(add(HEAD_BOTTOM, STEER, -0.04), AHEAD, -0.004);
-  kit.add(
+  frame.add(
     paint,
     loft(
       [
@@ -416,7 +436,7 @@ export function buildBike(): Bike {
     ),
   );
   // The seat tube bows forward in the middle to clear the rear tyre.
-  kit.add(
+  frame.add(
     paint,
     loft(
       [
@@ -428,11 +448,11 @@ export function buildBike(): Bike {
       { power: 2.6, around: 22, smooth: 6 },
     ),
   );
-  kit.add(paint, cylinderX(0.037, -0.044, 0.044, 32), BB);
-  kit.add(alloy, cylinderX(0.024, -0.0465, 0.0465, 24), BB);
+  frame.add(paint, cylinderX(0.037, -0.044, 0.044, 32), BB);
+  frame.add(alloy, cylinderX(0.024, -0.0465, 0.0465, 24), BB);
 
   // Dropped seat stays and chainstays, both sides.
-  kit.pair(paint, (side) =>
+  frame.pair(paint, (side) =>
     loft(
       [
         station(side * 0.012, seatTube(0.34).y, seatTube(0.34).z - 0.004, 0.016, 0.024),
@@ -443,7 +463,7 @@ export function buildBike(): Bike {
       { smooth: 6, around: 14, power: 2.4 },
     ),
   );
-  kit.pair(paint, (side) =>
+  frame.pair(paint, (side) =>
     loft(
       [
         station(side * 0.033, BB.y, -0.012, 0.015, 0.032),
@@ -454,8 +474,8 @@ export function buildBike(): Bike {
       { smooth: 6, around: 14, power: 2.6 },
     ),
   );
-  kit.pair(paint, (side) => cylinderX(0.017, side * 0.0625, side * 0.0745, 20).translate(0, REAR_AXLE.y, REAR_AXLE.z));
-  kit.add(alloy, cylinderX(0.008, 0.0745, 0.081, 16), REAR_AXLE);
+  frame.pair(paint, (side) => cylinderX(0.017, side * 0.0625, side * 0.0745, 20).translate(0, REAR_AXLE.y, REAR_AXLE.z));
+  frame.add(alloy, cylinderX(0.008, 0.0745, 0.081, 16), REAR_AXLE);
 
   // ----- fork -----
   const forkAt = (t: number) => mix(HEAD_BOTTOM, FRONT_AXLE, t);
@@ -468,15 +488,15 @@ export function buildBike(): Bike {
     blade(0.11, side * 0.057, 0.06, 0.024),
     blade(0.035, side * 0.039, 0.07, 0.034),
   ];
-  kit.add(paint, loft([...half(1), blade(0, 0, 0.076, 0.04), ...half(-1).reverse()], { side: AHEAD, smooth: 6, around: 18, power: 2.7 }));
-  kit.pair(paint, (side) => cylinderX(0.0125, side * 0.05, side * 0.0625, 20).translate(0, FRONT_AXLE.y, FRONT_AXLE.z));
+  fork.add(paint, loft([...half(1), blade(0, 0, 0.076, 0.04), ...half(-1).reverse()], { side: AHEAD, smooth: 6, around: 18, power: 2.7 }));
+  fork.pair(paint, (side) => cylinderX(0.0125, side * 0.05, side * 0.0625, 20).translate(0, FRONT_AXLE.y, FRONT_AXLE.z));
 
   // ----- cockpit -----
-  kit.add(carbon, loft([{ at: add(HEAD_TOP, STEER, -0.004), width: 0.046, depth: 0.06 }, { at: add(HEAD_TOP, STEER, -0.016), width: 0.042, depth: 0.052 }], { power: 2.6, around: 24 }));
+  cockpit.add(carbon, loft([{ at: add(HEAD_TOP, STEER, -0.004), width: 0.046, depth: 0.06 }, { at: add(HEAD_TOP, STEER, -0.016), width: 0.042, depth: 0.052 }], { power: 2.6, around: 24 }));
   const stemBase = add(HEAD_TOP, STEER, -0.03);
   const STEM = v(0, Math.sin(11 * DEG), Math.cos(11 * DEG));
   const clamp = add(stemBase, STEM, 0.1);
-  kit.add(
+  cockpit.add(
     carbon,
     loft(
       [
@@ -501,10 +521,10 @@ export function buildBike(): Bike {
     [0.223, -0.127, -0.012, 0.03, 0.03],
   ];
   const barStation = (side: number, [out, up, forward, thickness, depth]: (typeof BAR)[number]): Station => ({ at: v(clamp.x + side * out, clamp.y + up, clamp.z + forward), width: thickness, depth });
-  kit.add(carbon, loft([...BAR.slice(1).reverse().map((point) => barStation(1, point)), ...BAR.map((point) => barStation(-1, point))], { side: v(0, 1, 0), smooth: 6, around: 14, power: 2.3 }));
+  cockpit.add(carbon, loft([...BAR.slice(1).reverse().map((point) => barStation(1, point)), ...BAR.map((point) => barStation(-1, point))], { side: v(0, 1, 0), smooth: 6, around: 14, power: 2.3 }));
   // Hoods and brake levers.
   const hoodBase = v(0.2, clamp.y - 0.008, clamp.z + 0.072);
-  kit.pair(rubber, (side) => {
+  cockpit.pair(rubber, (side) => {
     const at = (up: number, forward: number, width: number, depth: number) => station(side * (hoodBase.x - forward * 0.14), hoodBase.y + up, hoodBase.z + forward, width, depth);
     return loft([at(-0.004, -0.05, 0.03, 0.032), at(0.007, -0.01, 0.034, 0.042), at(0.017, 0.028, 0.034, 0.046), at(0.036, 0.052, 0.031, 0.048), at(0.058, 0.062, 0.027, 0.034), at(0.07, 0.064, 0.02, 0.018)], {
       smooth: 5,
@@ -512,18 +532,18 @@ export function buildBike(): Bike {
       power: 2.8,
     });
   });
-  kit.pair(gloss, (side) => {
+  cockpit.pair(gloss, (side) => {
     const at = (up: number, forward: number, out: number, width: number, depth: number) => station(side * (hoodBase.x - 0.01 + out), hoodBase.y + up, hoodBase.z + forward, width, depth);
     return loft([at(0.034, 0.06, 0, 0.012, 0.016), at(-0.012, 0.07, 0.002, 0.014, 0.022), at(-0.06, 0.066, 0.008, 0.013, 0.02), at(-0.1, 0.05, 0.016, 0.011, 0.013)], { smooth: 5, around: 10, power: 2.4 });
   });
 
   // ----- seatpost and saddle -----
-  kit.add(carbon, loft([{ at: seatTube(0.47), width: 0.026, depth: 0.039 }, { at: seatTube(0.7), width: 0.026, depth: 0.039 }], { power: 2.2, around: 18 }));
+  seat.add(carbon, loft([{ at: seatTube(0.47), width: 0.026, depth: 0.039 }, { at: seatTube(0.7), width: 0.026, depth: 0.039 }], { power: 2.2, around: 18 }));
   const saddleY = seatTube(0.745).y;
   const saddleZ = seatTube(0.745).z;
-  kit.add(carbon, cylinderX(0.013, -0.024, 0.024, 16), v(0, saddleY - 0.04, saddleZ + 0.004));
-  kit.pair(steel, (side) => rod(v(side * 0.021, saddleY - 0.034, saddleZ - 0.08), v(side * 0.018, saddleY - 0.03, saddleZ + 0.095), 0.0035));
-  kit.add(
+  seat.add(carbon, cylinderX(0.013, -0.024, 0.024, 16), v(0, saddleY - 0.04, saddleZ + 0.004));
+  seat.pair(steel, (side) => rod(v(side * 0.021, saddleY - 0.034, saddleZ - 0.08), v(side * 0.018, saddleY - 0.03, saddleZ + 0.095), 0.0035));
+  seat.add(
     rubber,
     loft(
       [
@@ -540,36 +560,36 @@ export function buildBike(): Bike {
 
   // ----- drivetrain -----
   const crank = v(0, -Math.sin(18 * DEG), Math.cos(18 * DEG));
-  kit.add(alloy, cylinderX(0.015, -0.072, 0.072, 20), BB);
-  kit.add(gloss, plate(sprocket(40, 8, 0.0065), 0.003), v(CHAINLINE, BB.y, BB.z));
-  kit.add(gloss, cylinderX(0.03, CHAINLINE - 0.004, CHAINLINE + 0.004, 28), BB);
+  cranks.add(alloy, cylinderX(0.015, -0.072, 0.072, 20), BB);
+  cranks.add(gloss, plate(sprocket(40, 8, 0.0065), 0.003), v(CHAINLINE, BB.y, BB.z));
+  cranks.add(gloss, cylinderX(0.03, CHAINLINE - 0.004, CHAINLINE + 0.004, 28), BB);
   for (const side of [1, -1] as const) {
     const direction = crank.clone().multiplyScalar(-side);
     const x = side * 0.066;
     const arm = (distance: number, width: number, depth: number): Station => ({ at: add(BB, direction, distance).setX(x), width, depth });
-    kit.add(gloss, loft([arm(-0.022, 0.016, 0.034), arm(0, 0.016, 0.042), arm(0.08, 0.014, 0.03), arm(0.1725, 0.014, 0.027), arm(0.186, 0.014, 0.02)], { smooth: 4, around: 14, power: 3 }));
+    cranks.add(gloss, loft([arm(-0.022, 0.016, 0.034), arm(0, 0.016, 0.042), arm(0.08, 0.014, 0.03), arm(0.1725, 0.014, 0.027), arm(0.186, 0.014, 0.02)], { smooth: 4, around: 14, power: 3 }));
     const pedal = add(BB, direction, 0.1725);
-    kit.add(steel, cylinderX(0.006, x, x + side * 0.03, 12), v(0, pedal.y, pedal.z));
-    kit.add(alloy, new BoxGeometry(0.058, 0.017, 0.062), v(x + side * 0.05, pedal.y, pedal.z));
+    cranks.add(steel, cylinderX(0.006, x, x + side * 0.03, 12), v(0, pedal.y, pedal.z));
+    cranks.add(alloy, new BoxGeometry(0.058, 0.017, 0.062), v(x + side * 0.05, pedal.y, pedal.z));
   }
 
   // Rear derailleur: mount, battery, cage and two pulleys.
   const guide: Pulley = { at: [REAR_AXLE.z + 0.022, REAR_AXLE.y - 0.078], radius: 0.0235, wrap: 1, x: -0.043 };
   const tension: Pulley = { at: [REAR_AXLE.z + 0.062, REAR_AXLE.y - 0.168], radius: 0.029, wrap: -1, x: -0.043 };
   for (const pulley of [guide, tension]) {
-    kit.add(alloy, plate(sprocket(Math.round(pulley.radius / TEETH), 0, 0), 0.002), v(pulley.x, pulley.at[1], pulley.at[0]));
+    gears.add(alloy, plate(sprocket(Math.round(pulley.radius / TEETH), 0, 0), 0.002), v(pulley.x, pulley.at[1], pulley.at[0]));
   }
-  kit.pair(alloy, (side) =>
+  gears.pair(alloy, (side) =>
     loft([station(guide.x + side * 0.006, guide.at[1] + 0.012, guide.at[0] - 0.006, 0.002, 0.03), station(tension.x + side * 0.006, tension.at[1] - 0.014, tension.at[0] + 0.006, 0.002, 0.036)], { power: 3, around: 8 }),
   );
-  kit.add(
+  gears.add(
     alloy,
     loft([station(-0.079, REAR_AXLE.y - 0.004, REAR_AXLE.z - 0.004, 0.02, 0.03), station(-0.074, REAR_AXLE.y - 0.045, REAR_AXLE.z - 0.012, 0.024, 0.044), station(-0.06, guide.at[1] + 0.004, guide.at[0] - 0.004, 0.022, 0.034)], { smooth: 4, around: 12, power: 3 }),
   );
-  kit.add(gloss, new BoxGeometry(0.02, 0.026, 0.036).rotateX(20 * DEG), v(-0.083, REAR_AXLE.y - 0.038, REAR_AXLE.z - 0.04));
+  gears.add(gloss, new BoxGeometry(0.02, 0.026, 0.036).rotateX(20 * DEG), v(-0.083, REAR_AXLE.y - 0.038, REAR_AXLE.z - 0.04));
 
   // Chain: over the chainring, around the 19-tooth sprocket and through the cage.
-  kit.add(
+  gears.add(
     alloy,
     loft(
       chainPath([
@@ -583,16 +603,16 @@ export function buildBike(): Bike {
   );
 
   // Brake calipers, both on the left.
-  kit.add(alloy, new BoxGeometry(0.03, 0.05, 0.03).rotateX(-18 * DEG), v(0.047, FRONT_AXLE.y + 0.062, FRONT_AXLE.z - 0.056));
-  kit.add(alloy, new BoxGeometry(0.03, 0.03, 0.05).rotateX(12 * DEG), v(0.056, REAR_AXLE.y + 0.043, REAR_AXLE.z + 0.074));
+  fork.add(alloy, new BoxGeometry(0.03, 0.05, 0.03).rotateX(-18 * DEG), v(0.047, FRONT_AXLE.y + 0.062, FRONT_AXLE.z - 0.056));
+  frame.add(alloy, new BoxGeometry(0.03, 0.03, 0.05).rotateX(12 * DEG), v(0.056, REAR_AXLE.y + 0.043, REAR_AXLE.z + 0.074));
 
   // ----- bottle cages, on the down tube and the seat tube -----
   const cage = (base: Vector3, axis: Vector3, out: Vector3) => {
     // Local frame: y runs up the tube, z points away from it.
-    const frame = new Matrix4().makeBasis(new Vector3().crossVectors(axis, out), axis, out).setPosition(base);
-    const place = (geometry: BufferGeometry) => geometry.applyMatrix4(frame);
-    kit.add(carbon, place(new BoxGeometry(0.024, 0.15, 0.005).translate(0, 0, 0.003)));
-    kit.add(carbon, place(new BoxGeometry(0.034, 0.008, 0.052).translate(0, -0.073, 0.028)));
+    const local = new Matrix4().makeBasis(new Vector3().crossVectors(axis, out), axis, out).setPosition(base);
+    const place = (geometry: BufferGeometry) => geometry.applyMatrix4(local);
+    frame.add(carbon, place(new BoxGeometry(0.024, 0.15, 0.005).translate(0, 0, 0.003)));
+    frame.add(carbon, place(new BoxGeometry(0.034, 0.008, 0.052).translate(0, -0.073, 0.028)));
     // Two bands around the bottle, open at the front, the upper one dipping forwards.
     for (const [height, dip, width] of [[0.03, 0.03, 0.016], [-0.035, 0, 0.02]] as const) {
       const band: Station[] = [];
@@ -601,7 +621,7 @@ export function buildBike(): Bike {
         const angle = 0.62 + (i / 16) * (Math.PI * 2 - 1.24);
         band.push(station(Math.sin(angle) * 0.0385, height - (dip * (1 + Math.cos(angle))) / 2, 0.041 + Math.cos(angle) * 0.0385, width, 0.0034));
       }
-      kit.add(carbon, place(loft(band, { side: v(0, 1, 0), around: 8, power: 3 })));
+      frame.add(carbon, place(loft(band, { side: v(0, 1, 0), around: 8, power: 3 })));
     }
   };
   const downAxis = downFront.clone().sub(BB).normalize();
@@ -609,7 +629,7 @@ export function buildBike(): Bike {
   cage(add(mix(BB, downFront, 0.42), downOut, 0.032), downAxis, downOut);
   cage(add(seatTube(0.27), SEAT_AHEAD, 0.021), SEAT, SEAT_AHEAD);
 
-  const frameset = kit.build('frameset');
+  const frameGroup = frame.build('frame');
 
   // The R on the head tube, on a patch that wraps the front of it.
   // How far the R leans, as a share of its height. Archivo's own italic leans about as much.
@@ -646,11 +666,22 @@ export function buildBike(): Bike {
     badgeMaterial,
   );
   badgeMesh.name = 'badge';
-  frameset.add(badgeMesh);
+  frameGroup.add(badgeMesh);
 
-  const rearWheel = buildWheel(materials, true);
-  rearWheel.position.copy(REAR_AXLE);
-  frameset.add(rearWheel);
+  const part = (group: Group, apart: Vector3, home = v(0, 0, 0)): Part => {
+    group.position.copy(home);
+    return { group, home, apart };
+  };
+  const parts = {
+    // Up into the head tube from below, and the bar down onto it from above.
+    fork: part(fork.build('fork'), STEER.clone().multiplyScalar(0.3)),
+    cockpit: part(cockpit.build('cockpit'), STEER.clone().multiplyScalar(-0.24)),
+    seat: part(seat.build('seat'), SEAT.clone().multiplyScalar(0.3)),
+    // Through the bottom bracket from the drive side, and the chain over chainring and sprocket from the same side.
+    cranks: part(cranks.build('cranks'), v(-0.34, 0, 0)),
+    gears: part(gears.build('gears'), v(-0.24, 0, 0)),
+    rearWheel: part(buildWheel(materials, true), v(0, 0, -WHEEL_APART), REAR_AXLE.clone()),
+  };
 
   const frontWheel = buildWheel(materials, false);
   frontWheel.position.copy(FRONT_AXLE);
@@ -664,8 +695,8 @@ export function buildBike(): Bike {
 
   const root = new Group();
   root.name = 'backroad-ff';
-  root.add(frameset, frontWheel, axle);
-  return { root, frameset, frontWheel, axle, materials: Object.values(materials) };
+  root.add(frameGroup, ...PARTS.map((name) => parts[name].group), frontWheel, axle);
+  return { root, parts, frontWheel, axle, materials: Object.values(materials) };
 }
 
 // Where a point of the bike ends up when the bike is pitched about its x axis and its front dropout sits at `dropout`.

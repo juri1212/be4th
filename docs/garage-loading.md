@@ -1,6 +1,6 @@
 # Garage loading
 
-How much the garage page downloads and how long it takes until the sequence starts playing, measured with `npm run measure` after each change to how it loads. "Sequence starts" is the first frame drawn with the sequence playing, counted from the start of navigation. The columns after "First paint" are the stages `src/garage/scene.ts` marks on the way there.
+How much the garage page downloads and how long it takes until the sequence starts playing, measured with `npm run measure` after each change to how it loads. "Sequence starts" is the first frame drawn with the sequence playing, counted from the start of navigation. The columns after "First paint" are the stages `src/garage/scene.ts` marks along the way. Since the sequence opens with the bike being put together, it starts before the car has arrived: `car` is when the car is in the scene, which it has to be 5 s after the sequence starts.
 
 ## Baseline
 
@@ -54,6 +54,17 @@ Median of 5 cold loads per profile; Desktop: no throttling, 1440 × 900; Phone o
 | Phone on 4G | **2.43 s** | **1,706 kB** | 1,706 kB | 17 | 0.64 s | 1.16 s | 1.47 s | 2.19 s | 2.22 s |
 
 Received in total, by kind: page 4 kB, styles 8 kB, scripts 252 kB, fonts 90 kB, model 1,350 kB, other 1 kB.
+
+Median of 5 cold loads per profile; Desktop: no throttling, 1440 × 900; Phone on 4G: 9 Mbit/s down, 165 ms latency, 4× slower CPU, 390 × 844. Drawn by ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Unspecified Version).
+
+## Bike put together first, car downloaded meanwhile
+
+| Profile | Sequence starts | Received by then | Received in total | Requests | First paint | `code` | `bike` | `built` | `car` |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Desktop | **0.25 s** | **1,707 kB** | 1,707 kB | 16 | 0.08 s | 0.06 s | 0.15 s | 0.15 s | 0.33 s |
+| Phone on 4G | **1.29 s** | **356 kB** | 1,707 kB | 16 | 0.66 s | 0.80 s | 1.14 s | 1.15 s | 2.61 s |
+
+Received in total, by kind: page 4 kB, styles 8 kB, scripts 253 kB, fonts 90 kB, model 1,350 kB, other 1 kB.
 
 Median of 5 cold loads per profile; Desktop: no throttling, 1440 × 900; Phone on 4G: 9 Mbit/s down, 165 ms latency, 4× slower CPU, 390 × 844. Drawn by ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Unspecified Version).
 

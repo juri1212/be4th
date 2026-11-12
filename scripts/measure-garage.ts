@@ -21,8 +21,10 @@ import { preview } from 'vite';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const LOG = join(root, 'docs', 'garage-loading.md');
 const PAGE = '/garage/';
-// The mark that says a frame of the playing sequence has been drawn.
+// The mark that says a frame of the playing sequence has been drawn, and the one that says the car, which is
+// downloaded while the sequence is already playing, is in the scene.
 const STARTED = 'garage:animating';
+const COMPLETE = 'garage:car';
 const TIMEOUT = 120_000;
 
 interface Profile {
@@ -225,31 +227,37 @@ async function load(browser: Browser, origin: string, profile: Profile): Promise
     if (profile.cpu > 1) await send('Emulation.setCPUThrottlingRate', { rate: profile.cpu });
     await send('Page.navigate', { url: origin + PAGE });
 
-    // Resolves in the page once the sequence has started, or says why it won't.
-    const wait = `new Promise((resolve) => {
-      const check = () => {
-        const mark = performance.getEntriesByName(${JSON.stringify(STARTED)})[0];
-        const failed = document.querySelector('.stage--failed');
-        if (!mark && !failed) return void setTimeout(check, 10);
-        const canvas = document.createElement('canvas').getContext('webgl2');
-        const info = canvas?.getExtension('WEBGL_debug_renderer_info');
-        resolve(JSON.stringify({
-          failed: Boolean(failed),
-          started: mark?.startTime,
-          paint: performance.getEntriesByName('first-contentful-paint')[0]?.startTime,
-          marks: Object.fromEntries(performance.getEntriesByType('mark').filter((entry) => entry.name.startsWith('garage:')).map((entry) => [entry.name, entry.startTime])),
-          renderer: info ? canvas.getParameter(info.UNMASKED_RENDERER_WEBGL) : 'unknown',
-        }));
-      };
-      check();
-    })`;
-    const { result, exceptionDetails } = await send('Runtime.evaluate', { expression: wait, awaitPromise: true, returnByValue: true, timeout: TIMEOUT });
-    if (exceptionDetails) throw new Error(`The page never started the sequence: ${exceptionDetails.text}`);
-    const page = JSON.parse(result.value);
-    if (page.failed) throw new Error('The 3D scene failed to start in this browser.');
-
+    // Resolves in the page once the given mark is there, or says that the scene failed.
+    const reached = async (mark: string): Promise<void> => {
+      const wait = `new Promise((resolve) => {
+        const check = () => {
+          if (document.querySelector('.stage--failed')) return resolve('failed');
+          if (performance.getEntriesByName(${JSON.stringify(mark)}).length) return resolve('reached');
+          setTimeout(check, 10);
+        };
+        check();
+      })`;
+      const { result, exceptionDetails } = await send('Runtime.evaluate', { expression: wait, awaitPromise: true, returnByValue: true, timeout: TIMEOUT });
+      if (exceptionDetails) throw new Error(`The page never reached ${mark}: ${exceptionDetails.text}`);
+      if (result.value === 'failed') throw new Error('The 3D scene failed to start in this browser.');
+    };
+    await reached(STARTED);
+    await reached(COMPLETE);
     // Let whatever is still loading finish, so the total is the whole page.
     while (Date.now() - lastActivity < 1500 || [...requests.values()].some((request) => request.finished === null)) await sleep(100);
+
+    const read = `(() => {
+      const canvas = document.createElement('canvas').getContext('webgl2');
+      const info = canvas?.getExtension('WEBGL_debug_renderer_info');
+      const marks = Object.fromEntries(performance.getEntriesByType('mark').filter((entry) => entry.name.startsWith('garage:')).map((entry) => [entry.name, entry.startTime]));
+      return JSON.stringify({
+        started: marks[${JSON.stringify(STARTED)}],
+        paint: performance.getEntriesByName('first-contentful-paint')[0]?.startTime,
+        marks,
+        renderer: info ? canvas.getParameter(info.UNMASKED_RENDERER_WEBGL) : 'unknown',
+      });
+    })()`;
+    const page = JSON.parse((await send('Runtime.evaluate', { expression: read, returnByValue: true })).result.value);
 
     const startedAt = navigationStart! + page.started / 1000;
     const byKind = Object.fromEntries(KINDS.map((kind) => [kind, 0])) as Record<Kind, number>;
@@ -297,8 +305,11 @@ try {
     results.push({ profile, runs });
   }
 
-  const stages = [...new Set(results.flatMap(({ runs }) => runs.flatMap((run) => Object.keys(run.marks))))].filter((name) => name !== STARTED);
   const of = (runs: Run[], pick: (run: Run) => number | undefined) => median(runs.map(pick).filter((value) => value !== undefined));
+  // In the order they happen.
+  const stages = [...new Set(results.flatMap(({ runs }) => runs.flatMap((run) => Object.keys(run.marks))))]
+    .filter((name) => name !== STARTED)
+    .sort((a, b) => of(results[0]!.runs, (run) => run.marks[a]) - of(results[0]!.runs, (run) => run.marks[b]));
   lines.push(
     `| Profile | Sequence starts | Received by then | Received in total | Requests | First paint | ${stages.map((name) => `\`${name.replace('garage:', '')}\``).join(' | ')} |`,
     `| --- | --- | --- | --- | --- | --- | ${stages.map(() => '---').join(' | ')} |`,
@@ -332,7 +343,7 @@ if (options.log) {
       [
         '# Garage loading',
         '',
-        'How much the garage page downloads and how long it takes until the sequence starts playing, measured with `npm run measure` after each change to how it loads. "Sequence starts" is the first frame drawn with the sequence playing, counted from the start of navigation. The columns after "First paint" are the stages `src/garage/scene.ts` marks on the way there.',
+        'How much the garage page downloads and how long it takes until the sequence starts playing, measured with `npm run measure` after each change to how it loads. "Sequence starts" is the first frame drawn with the sequence playing, counted from the start of navigation. The columns after "First paint" are the stages `src/garage/scene.ts` marks along the way. Since the sequence opens with the bike being put together, it starts before the car has arrived: `car` is when the car is in the scene, which it has to be 5 s after the sequence starts.',
         '',
         '',
       ].join('\n'),

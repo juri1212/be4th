@@ -7,6 +7,7 @@ import {
   Mesh,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
+  MeshBasicMaterial,
   PlaneGeometry,
   SRGBColorSpace,
   SpotLight,
@@ -14,6 +15,7 @@ import {
   SpriteMaterial,
   Vector3,
   type Material,
+  type Object3D,
 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
@@ -151,13 +153,28 @@ class Surface {
   }
 }
 
-export interface Car {
-  root: Group;
+// The bodywork, for fitting things to it.
+export interface Body {
   // The roof or glass under a point above the car, within STRIP of the centre line.
   under(x: number, z: number): SurfaceHit | null;
+}
+
+export interface Car {
+  // Holds the lamps from the start, and the body once it has been downloaded.
+  root: Group;
+  // Downloads the body and adds it, hidden. `lettering` resolves once the typeface the plates are drawn in is ready.
+  load(url: string, lettering: Promise<unknown>): Promise<Body>;
+  // Whether the body can be seen. Nothing to see until it has loaded.
+  show(visible: boolean): void;
   // Headlights and tail lights, from 0, when only the running lights glow, to 1 for fully on.
   lights(on: number): void;
+  // Turns the wheels as far as they turn while the car rolls this many metres forwards.
+  roll(distance: number): void;
 }
+
+const WHEELS = ['wheel_fl', 'wheel_fr', 'wheel_rl', 'wheel_rr'];
+// Tyre and all, in metres.
+const WHEEL_RADIUS = 0.366;
 
 // A German number plate, drawn rather than loaded.
 function plate(text: string): Mesh<PlaneGeometry, MeshStandardMaterial> {
@@ -196,78 +213,106 @@ function plate(text: string): Mesh<PlaneGeometry, MeshStandardMaterial> {
   return mesh;
 }
 
-// `lettering` resolves once the typeface the plates are drawn in is ready.
-export async function loadCar(url: string, lettering: Promise<unknown>): Promise<Car> {
-  const [gltf] = await Promise.all([new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(url), lettering]);
-  const root = gltf.scene;
+// The car before its body has arrived: the lamps are in the scene from the start, so that the body turning up later
+// doesn't add lights, which would rebuild the shader of everything already on screen.
+export function buildCar(): Car {
+  const root = new Group();
   root.name = '911';
   const table = materials();
-  const solid: Mesh[] = [];
-  root.traverse((object) => {
-    if (!(object instanceof Mesh)) return;
-    const name = (object.material as Material).name;
-    const material = (table as Record<string, Material>)[name];
-    if (material) {
-      material.name = name;
-      object.material = material;
-    }
-    const seeThrough = name.startsWith('glass') ? name !== 'glass_roof' : name === 'lens';
-    object.castShadow = !seeThrough;
-    object.receiveShadow = !seeThrough;
-    // Glass after everything it covers, and the outer panes last.
-    if (seeThrough) object.renderOrder = name === 'lens' ? 1 : 2;
-    if (['paint', 'glass', 'glass_privacy', 'glass_roof', 'trim', 'light_red', 'light_red_lit'].includes(name)) solid.push(object);
-  });
-  root.updateMatrixWorld(true);
-
-  // Everything fitted to the car sits near its centre line, so only that strip of the body is kept for rays to hit.
-  const strip: number[] = [];
-  const corner = new Float32Array(9);
-  for (const mesh of solid) {
-    const position = mesh.geometry.getAttribute('position');
-    const index = mesh.geometry.getIndex();
-    const count = index ? index.count : position.count;
-    const m = mesh.matrixWorld.elements;
-    for (let i = 0; i < count; i += 3) {
-      let near = false;
-      for (let k = 0; k < 3; k++) {
-        const vertex = index ? index.getX(i + k) : i + k;
-        const x = position.getX(vertex);
-        const y = position.getY(vertex);
-        const z = position.getZ(vertex);
-        corner[k * 3] = m[0]! * x + m[4]! * y + m[8]! * z + m[12]!;
-        corner[k * 3 + 1] = m[1]! * x + m[5]! * y + m[9]! * z + m[13]!;
-        corner[k * 3 + 2] = m[2]! * x + m[6]! * y + m[10]! * z + m[14]!;
-        near ||= Math.abs(corner[k * 3]!) < STRIP;
-      }
-      if (near) strip.push(...corner);
-    }
-  }
-  const surface = new Surface(new Float32Array(strip));
-  const under = (x: number, z: number) => surface.cast(new Vector3(x, 3, z), 1, -1);
-
-  // Plates stand just proud of the bumper: find the foremost point across the plate's width at its height.
+  let body: Group | null = null;
+  let wheels: Object3D[] = [];
   let rearPlate: MeshStandardMaterial | undefined;
-  for (const [facing, height] of [[1, 0.37], [-1, 0.6]] as const) {
-    let proud: number | null = null;
-    for (let x = -0.24; x <= 0.241; x += 0.04) {
-      for (const dy of [-0.045, 0, 0.045]) {
-        const hit = surface.cast(new Vector3(x, height + dy, facing * 4), 2, -facing);
-        if (hit && (proud === null || hit.point.z * facing > proud * facing)) proud = hit.point.z;
+
+  // The soft dark patch under the car that a single shadow map doesn't give.
+  const patch = new Mesh(
+    new PlaneGeometry(3.3, 6.2),
+    new MeshBasicMaterial({ map: gradient([[0, 'rgb(0 0 0 / 0.78)'], [0.55, 'rgb(0 0 0 / 0.5)'], [1, 'rgb(0 0 0 / 0)']]), transparent: true, depthWrite: false }),
+  );
+  patch.name = 'contact-shadow';
+  patch.rotation.x = -Math.PI / 2;
+  patch.position.y = 0.004;
+  patch.renderOrder = -1;
+  patch.visible = false;
+  root.add(patch);
+
+  async function load(url: string, lettering: Promise<unknown>): Promise<Body> {
+    const [gltf] = await Promise.all([new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(url), lettering]);
+    const model = gltf.scene;
+    const solid: Mesh[] = [];
+    model.traverse((object) => {
+      if (!(object instanceof Mesh)) return;
+      const name = (object.material as Material).name;
+      const material = (table as Record<string, Material>)[name];
+      if (material) {
+        material.name = name;
+        object.material = material;
+      }
+      const seeThrough = name.startsWith('glass') ? name !== 'glass_roof' : name === 'lens';
+      object.castShadow = !seeThrough;
+      object.receiveShadow = !seeThrough;
+      // Glass after everything it covers, and the outer panes last.
+      if (seeThrough) object.renderOrder = name === 'lens' ? 1 : 2;
+      if (['paint', 'glass', 'glass_privacy', 'glass_roof', 'trim', 'light_red', 'light_red_lit'].includes(name)) solid.push(object);
+    });
+    // Measured before the model joins the car, which may be anywhere on its way in: everything below is in the car's
+    // own coordinates.
+    model.updateMatrixWorld(true);
+
+    // Everything fitted to the car sits near its centre line, so only that strip of the body is kept for rays to hit.
+    const strip: number[] = [];
+    const corner = new Float32Array(9);
+    for (const mesh of solid) {
+      const position = mesh.geometry.getAttribute('position');
+      const index = mesh.geometry.getIndex();
+      const count = index ? index.count : position.count;
+      const m = mesh.matrixWorld.elements;
+      for (let i = 0; i < count; i += 3) {
+        let near = false;
+        for (let k = 0; k < 3; k++) {
+          const vertex = index ? index.getX(i + k) : i + k;
+          const x = position.getX(vertex);
+          const y = position.getY(vertex);
+          const z = position.getZ(vertex);
+          corner[k * 3] = m[0]! * x + m[4]! * y + m[8]! * z + m[12]!;
+          corner[k * 3 + 1] = m[1]! * x + m[5]! * y + m[9]! * z + m[13]!;
+          corner[k * 3 + 2] = m[2]! * x + m[6]! * y + m[10]! * z + m[14]!;
+          near ||= Math.abs(corner[k * 3]!) < STRIP;
+        }
+        if (near) strip.push(...corner);
       }
     }
-    if (proud === null) continue;
-    const mesh = plate(PLATE);
-    mesh.position.set(0, height, proud + facing * 0.014);
-    if (facing < 0) {
-      mesh.rotation.y = Math.PI;
-      rearPlate = mesh.material;
+    const surface = new Surface(new Float32Array(strip));
+    const under = (x: number, z: number) => surface.cast(new Vector3(x, 3, z), 1, -1);
+
+    // Plates stand just proud of the bumper: find the foremost point across the plate's width at its height.
+    for (const [facing, height] of [[1, 0.37], [-1, 0.6]] as const) {
+      let proud: number | null = null;
+      for (let x = -0.24; x <= 0.241; x += 0.04) {
+        for (const dy of [-0.045, 0, 0.045]) {
+          const hit = surface.cast(new Vector3(x, height + dy, facing * 4), 2, -facing);
+          if (hit && (proud === null || hit.point.z * facing > proud * facing)) proud = hit.point.z;
+        }
+      }
+      if (proud === null) continue;
+      const mesh = plate(PLATE);
+      mesh.position.set(0, height, proud + facing * 0.014);
+      if (facing < 0) {
+        mesh.rotation.y = Math.PI;
+        rearPlate = mesh.material;
+      }
+      model.add(mesh);
     }
-    root.add(mesh);
+
+    wheels = WHEELS.map((name) => model.getObjectByName(name)).filter((wheel) => wheel !== undefined);
+    model.visible = false;
+    root.add(model);
+    body = model;
+    lights(level);
+    return { under };
   }
 
   // ----- lights -----
-  // Always in the scene, at no brightness by day, so switching them on doesn't rebuild every material's shader.
+  // Always in the scene, at no brightness by day, so switching them on doesn't rebuild every material's shader either.
   // They cast no shadows, so each is a cone that points away from the car and can't shine through it.
   const beams = [-1, 1].map((side) => {
     const beam = new SpotLight(HEADLIGHT, 0, 30, 0.74, 1, 1.5);
@@ -317,5 +362,16 @@ export async function loadCar(url: string, lettering: Promise<unknown>): Promise
     for (const halo of halos) halo.visible = on > 0.001;
   };
 
-  return { root, under, lights };
+  return {
+    root,
+    load,
+    lights,
+    show(visible) {
+      if (body) body.visible = visible;
+      patch.visible = visible && body !== null;
+    },
+    roll(distance) {
+      for (const wheel of wheels) wheel.rotation.x = distance / WHEEL_RADIUS;
+    },
+  };
 }

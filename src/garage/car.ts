@@ -21,7 +21,8 @@ import { gradient } from './studio';
 import { clamp01, lerp } from './timeline';
 
 // The 911 Carrera (992) from public/models/911.glb, which scripts/models/build-911.mjs writes: metres, wheels on
-// y = 0, nose towards +z, +x is the driver's side, one mesh per material. The materials here replace the file's.
+// y = 0, nose towards +z, +x is the driver's side, one mesh per material, and one rim and brake disc that the file
+// places at all four corners. The materials here replace the file's.
 
 export const PLATE = 'S JB 911';
 

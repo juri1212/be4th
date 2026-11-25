@@ -35,7 +35,7 @@ export default function Adventskalender() {
   // Prerendered without a date: the visitor's clock decides which doors are due.
   const [now, setNow] = useState<Date | null>(null);
   const [opened, setOpened] = useState<number[]>([]);
-  const [reading, setReading] = useState<{ door: Door; from: DOMRect | null } | null>(null);
+  const [reading, setReading] = useState<{ door: Door; again: boolean } | null>(null);
   const [locked, setLocked] = useState<{ day: number; count: number } | null>(null);
 
   useEffect(() => {
@@ -74,73 +74,84 @@ export default function Adventskalender() {
       return;
     }
     setLocked(null);
-    const frame = document.querySelector(`#tuerchen-${door.day} .advent-door__room`);
-    setReading({ door, from: frame?.getBoundingClientRect() ?? null });
-    if (opened.includes(door.day)) return;
+    setReading({ door, again: opened.includes(door.day) });
+  };
+
+  const markOpened = ({ day }: Door) => {
+    if (!key || opened.includes(day)) return;
     // Read again, so a door opened in another tab meanwhile isn't lost.
-    const days = [...new Set([...opened, ...loadOpened(key), door.day])].sort((a, b) => a - b);
+    const days = [...new Set([...opened, ...loadOpened(key), day])].sort((a, b) => a - b);
     setOpened(days);
     saveOpened(key, days);
+  };
+
+  const finishReading = (door: Door) => {
+    // Also when it was closed again before the leaves could move.
+    markOpened(door);
+    setReading(null);
   };
 
   const status = now && (locked ? `Türchen ${locked.day} geht erst am ${locked.day}. Dezember auf. ${sleeps(daysUntil(locked.day, now))}` : statusFor(due, opened, now));
   const openedNow = opened.filter((day) => day <= due).length;
 
   return (
-    <PageLayout>
-      <article className="advent" lang="de">
-        <header className="advent__intro">
-          <h1>Adventskalender</h1>
-          <p className="lede">Jeden Tag im Dezember leuchtet am Bocholter Rathaus ein Fenster mehr. Dahinter steckt Wissen aus Geschichte und Sport, das niemand braucht.</p>
-          <div className="advent__status">
-            <p aria-live="polite">{status}</p>
-            {next && (
-              <button type="button" className="button button--solid" onClick={() => press(DOORS[next - 1]!)}>
-                Türchen {next} öffnen
-              </button>
-            )}
-            {openedNow > 0 && (
-              <p className="advent__count">
-                {openedNow} von {DOOR_COUNT} geöffnet
-              </p>
-            )}
-          </div>
-        </header>
+    <>
+      <PageLayout>
+        <article className="advent" lang="de">
+          <header className="advent__intro">
+            <h1>Adventskalender</h1>
+            <p className="lede">Jeden Tag im Dezember leuchtet am Bocholter Rathaus ein Fenster mehr. Dahinter steckt Wissen aus Geschichte und Sport, das niemand braucht.</p>
+            <div className="advent__status">
+              <p aria-live="polite">{status}</p>
+              {next && (
+                <button type="button" className="button button--solid" onClick={() => press(DOORS[next - 1]!)}>
+                  Türchen {next} öffnen
+                </button>
+              )}
+              {openedNow > 0 && (
+                <p className="advent__count">
+                  {openedNow} von {DOOR_COUNT} geöffnet
+                </p>
+              )}
+            </div>
+          </header>
 
-        <section className="advent__scene" aria-label="Das Bocholter Rathaus mit 24 Türchen">
-          <div className="hall">
-            <TownHall />
-            <ol className="hall__doors">
-              {DOORS.map((door) => {
-                const { day } = door;
-                const state = day > due ? 'locked' : opened.includes(day) ? 'opened' : 'due';
-                const label = { locked: `Türchen ${day}, geht am ${day}. Dezember auf`, due: `Türchen ${day} öffnen`, opened: `Türchen ${day}, schon geöffnet, noch einmal lesen` }[state];
-                const shaking = locked?.day === day;
-                return (
-                  <li key={day} style={place(door)}>
-                    <button
-                      type="button"
-                      id={`tuerchen-${day}`}
-                      className={`advent-door advent-door--${door.kind}`}
-                      data-state={state}
-                      data-today={day === today || undefined}
-                      data-shake={shaking ? locked.count % 2 : undefined}
-                      style={{ '--day': day } as CSSProperties}
-                      aria-label={label}
-                      aria-disabled={state === 'locked'}
-                      onClick={() => press(door)}
-                    >
-                      <AdventDoor door={door} />
-                    </button>
-                  </li>
-                );
-              })}
-            </ol>
-          </div>
-        </section>
-        <Snow />
-      </article>
-      {reading && <AdventWindow key={reading.door.day} door={reading.door} from={reading.from} onClose={() => setReading(null)} />}
-    </PageLayout>
+          <section className="advent__scene" aria-label="Das Bocholter Rathaus mit 24 Türchen">
+            <div className="hall">
+              <TownHall />
+              <ol className="hall__doors">
+                {DOORS.map((door) => {
+                  const { day } = door;
+                  const state = day > due ? 'locked' : opened.includes(day) ? 'opened' : 'due';
+                  const label = { locked: `Türchen ${day}, geht am ${day}. Dezember auf`, due: `Türchen ${day} öffnen`, opened: `Türchen ${day}, schon geöffnet, noch einmal lesen` }[state];
+                  const shaking = locked?.day === day;
+                  return (
+                    <li key={day} style={place(door)}>
+                      <button
+                        type="button"
+                        id={`tuerchen-${day}`}
+                        className={`advent-door advent-door--${door.kind}`}
+                        data-state={state}
+                        data-today={day === today || undefined}
+                        data-shake={shaking ? locked.count % 2 : undefined}
+                        style={{ '--day': day } as CSSProperties}
+                        aria-label={label}
+                        aria-disabled={state === 'locked'}
+                        onClick={() => press(door)}
+                      >
+                        <AdventDoor door={door} />
+                      </button>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
+          </section>
+          <Snow />
+        </article>
+      </PageLayout>
+      {/* Not in the page, which is what the camera moves. */}
+      {reading && <AdventWindow key={reading.door.day} door={reading.door} again={reading.again} onOpen={() => markOpened(reading.door)} onClose={() => finishReading(reading.door)} />}
+    </>
   );
 }

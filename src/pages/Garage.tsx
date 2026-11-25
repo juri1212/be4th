@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from 'react';
 import PageLayout from '../components/PageLayout';
 import { FairyLights, Moon, Pause, Play, Sun } from '../components/icons';
 import type { Garage as GarageScene, GarageState } from '../garage/scene';
@@ -26,6 +26,15 @@ const SPECS = [
   },
 ];
 
+// It is night in the garage when the visitor's system is in dark mode, until they pick day or night themselves.
+const DARK_MODE = '(prefers-color-scheme: dark)';
+const isDarkMode = () => window.matchMedia(DARK_MODE).matches;
+function onDarkModeChange(listener: () => void) {
+  const query = window.matchMedia(DARK_MODE);
+  query.addEventListener('change', listener);
+  return () => query.removeEventListener('change', listener);
+}
+
 export default function Garage() {
   const host = useRef<HTMLDivElement>(null);
   const scene = useRef<GarageScene | null>(null);
@@ -33,7 +42,9 @@ export default function Garage() {
   const [time, setTime] = useState(0);
   const [step, setStep] = useState(0);
   const [state, setState] = useState<GarageState>({ playing: false, following: true, car: 'loading', waiting: false });
-  const [night, setNight] = useState(false);
+  const darkMode = useSyncExternalStore(onDarkModeChange, isDarkMode, () => false);
+  const [picked, setPicked] = useState<'day' | 'night' | null>(null);
+  const night = picked ? picked === 'night' : darkMode;
   const [christmas, setChristmas] = useState(CHRISTMAS);
 
   useEffect(() => {
@@ -45,13 +56,17 @@ export default function Garage() {
     let created: GarageScene | undefined;
     import('../garage/scene')
       .then(({ createGarage }) =>
-        createGarage(canvas, {
-          onTime: (now, current) => {
-            setTime(now);
-            setStep(current);
+        createGarage(
+          canvas,
+          {
+            onTime: (now, current) => {
+              setTime(now);
+              setStep(current);
+            },
+            onState: setState,
           },
-          onState: setState,
-        }),
+          isDarkMode(),
+        ),
       )
       .then((garage) => {
         if (cancelled) {
@@ -82,6 +97,10 @@ export default function Garage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (status === 'ready') scene.current?.night(night);
+  }, [status, night]);
+
   const { playing, following } = state;
   const current = STEPS[step]!;
   const ended = time >= DURATION;
@@ -89,10 +108,6 @@ export default function Garage() {
   const caption =
     state.car === 'failed' ? 'The car didn’t arrive: its model failed to download. Reload the page to try again.' : state.waiting ? 'The bike is ready. Rolling the car in…' : current.text;
   const toggle = () => (playing ? scene.current?.pause() : scene.current?.play());
-  const light = (on: boolean) => {
-    setNight(on);
-    scene.current?.night(on);
-  };
   const decorate = (on: boolean) => {
     setChristmas(on);
     scene.current?.christmas(on);
@@ -115,11 +130,11 @@ export default function Garage() {
                   </div>
                 )}
                 <div className="stage__switch" role="group" aria-label="Lighting">
-                  <button type="button" aria-pressed={!night} onClick={() => light(false)}>
+                  <button type="button" aria-pressed={!night} onClick={() => setPicked('day')}>
                     <Sun />
                     Day
                   </button>
-                  <button type="button" aria-pressed={night} onClick={() => light(true)}>
+                  <button type="button" aria-pressed={night} onClick={() => setPicked('night')}>
                     <Moon />
                     Night
                   </button>

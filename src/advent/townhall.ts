@@ -35,15 +35,18 @@ interface Floor {
 }
 
 // The numbers hang where they do in Bocholt, as far as the Christmas tree in the photo lets you see them. The others are
-// spread over the windows behind it, and the last one is the portal.
+// spread over the windows behind it, and the last one is the portal. The birthday is the exception: it has the bottom left
+// corner to itself.
 const FLOORS: Floor[] = [
   { y: 300, width: 54, height: 68, hit: { top: 284, bottom: 386 }, doors: [[3, 10], [4, 11]] },
-  { y: 414, width: 60, height: 76, hit: { top: 386, bottom: 500 }, doors: [[0, 17], [1, 2], [2, 15], [3, 8], [4, 20], [5, 23], [6, 12], [7, 6]] },
+  { y: 414, width: 60, height: 76, hit: { top: 386, bottom: 500 }, doors: [[0, 17], [1, 3], [2, 15], [3, 8], [4, 20], [5, 23], [6, 12], [7, 6]] },
   { y: 534, width: 60, height: 88, hit: { top: 500, bottom: 640 }, doors: [[0, 7], [1, 1], [2, 13], [3, 19], [4, 22], [5, 4], [6, 9], [7, 16]] },
-  { y: 714, width: 56, height: 84, hit: { top: 664, bottom: 840 }, doors: [[0, 3], [1, 21], [2, 14], [4, 5], [6, 18]] },
+  { y: 714, width: 56, height: 84, hit: { top: 664, bottom: 840 }, doors: [[0, 2], [1, 21], [2, 14], [4, 5], [6, 18]] },
 ];
 
 const ARCHED_DAY = 1;
+// Its number has a cake on it.
+export const BIRTHDAY = 2;
 
 export const DOORS: Door[] = [
   ...FLOORS.flatMap(({ doors, ...floor }) => doors.map(([bay, day]): Door => ({ ...floor, day, x: bayX(bay), kind: day === ARCHED_DAY ? 'arched' : 'window' }))),

@@ -470,6 +470,39 @@
   opacity: 1;
 }
 
+/* The cake on the birthday's number. Its candles burn from that day on. */
+.advent-cake__plate {
+  fill: #e9eef7;
+}
+
+.advent-cake__sponge {
+  fill: #a8622f;
+}
+
+.advent-cake__cream {
+  fill: #fff3dc;
+}
+
+.advent-cake__icing {
+  fill: #ff8fb4;
+}
+
+.advent-cake__candle {
+  fill: #7fd6ff;
+}
+
+.advent-cake__flames ellipse {
+  fill: url('#hall-pool');
+}
+
+.advent-cake__flames path {
+  fill: #fff0b4;
+}
+
+[data-state='locked'] .advent-cake__flames {
+  opacity: 0;
+}
+
 /* Lit windows come on one after the other when the page has read the calendar. */
 :is([data-state='due'], [data-state='opened']) .led {
   animation: switch-on 0.5s steps(1, end) calc(var(--day) * 70ms) backwards;

@@ -1,7 +1,7 @@
-import { digitsOf, type Door } from '../advent/townhall';
+import { BIRTHDAY, digitsOf, type Door } from '../advent/townhall';
 
 interface LeafProps {
-  door: Pick<Door, 'kind' | 'width' | 'height'>;
+  door: Pick<Door, 'day' | 'kind' | 'width' | 'height'>;
   side: 'left' | 'right';
   digit: string;
 }
@@ -15,6 +15,23 @@ const pane = (x: number, y: number, width: number, height: number, arch?: 'left'
     ? `M${x} ${y + height}V${y + r}A${r} ${r} 0 0 1 ${x + width} ${y}V${y + height}z`
     : `M${x} ${y + height}V${y}A${r} ${r} 0 0 1 ${x + width} ${y + r}V${y + height}z`;
 };
+
+// A birthday cake with three candles, standing at 0,0.
+const Cake = ({ x, y }: { x: number; y: number }) => (
+  <g className="advent-cake" transform={`translate(${x} ${y})`}>
+    <path className="advent-cake__plate" d="M-12-1.4h24l-2 1.8h-20z" />
+    <path className="advent-cake__sponge" d="M-10-10.5h20v9.1h-20z" />
+    <path className="advent-cake__cream" d="M-10-6h20v1.4h-20z" />
+    <path className="advent-cake__icing" d="M-10.6-9.4q0-2.6 2.6-2.6h16q2.6 0 2.6 2.6v1.6a1.5 1.5 0 0 1-3 0 1.5 1.5 0 0 1-3 0v.9a1.5 1.5 0 0 1-3 0v-.9a1.6 1.6 0 0 1-3.2 0v1.3a1.5 1.5 0 0 1-3 0v-1.3a1.5 1.5 0 0 1-3 0 1.5 1.5 0 0 1-3 0z" />
+    <path className="advent-cake__candle" d="M-7-11.6v-6.2h2v6.2zM-1-11.6v-6.2h2v6.2zM5-11.6v-6.2h2v6.2z" />
+    <g className="advent-cake__flames">
+      <ellipse cy="-20.4" rx="15" ry="9" />
+      {[-6, 0, 6].map((x) => (
+        <path key={x} d={`M${x}-24q2.6 3.2 1.4 5a1.7 1.7 0 0 1-2.8 0q-1.2-1.8 1.4-5z`} />
+      ))}
+    </g>
+  </g>
+);
 
 // One leaf of a window or of the portal, with its string of lights and its digit. Drawn from 0,0 at the leaf's top left.
 export function AdventLeaf({ door, side, digit }: LeafProps) {
@@ -53,6 +70,7 @@ export function AdventLeaf({ door, side, digit }: LeafProps) {
           </>
         )}
       </g>
+      {digit && door.day === BIRTHDAY && <Cake x={width / 2} y={digitY - 16.2} />}
     </g>
   );
 }
@@ -69,6 +87,11 @@ export default function AdventDoor({ door }: { door: Door }) {
         <text className="advent-door__inside" x={width / 2} y={height * 0.6}>
           {door.day}
         </text>
+        {door.day === BIRTHDAY && (
+          <g className="advent-door__inside">
+            <Cake x={width / 2} y={height * 0.6 - 15} />
+          </g>
+        )}
         <g className="advent-door__leaf advent-door__leaf--left">
           <AdventLeaf door={door} side="left" digit={left} />
         </g>

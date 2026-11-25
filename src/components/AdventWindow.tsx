@@ -3,6 +3,7 @@ import { FACTS } from '../advent/facts';
 import { digitsOf, type Door } from '../advent/townhall';
 import { zoomIn } from '../advent/zoom';
 import { AdventLeaf } from './AdventDoor';
+import AdventDrawing from './AdventDrawing';
 
 interface AdventWindowProps {
   door: Door;
@@ -112,6 +113,7 @@ export default function AdventWindow({ door, again, onOpen, onClose }: AdventWin
                 <span>{door.day}. Dezember</span>
                 <span>{fact.topic}</span>
               </p>
+              <AdventDrawing day={door.day} label={fact.drawing} />
               <h2 id="advent-title">{fact.title}</h2>
               <p className="advent-window__fact">{fact.text}</p>
               <p className="advent-window__sources">

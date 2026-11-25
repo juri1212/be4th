@@ -5,6 +5,7 @@ import PageLayout from '../components/PageLayout';
 import Snow from '../components/Snow';
 import TownHall from '../components/TownHall';
 import { DOOR_COUNT, currentDate, daysUntil, doorsDue, loadOpened, saveOpened, storageKey } from '../advent/calendar';
+import { loadDrawings } from '../advent/drawings/load';
 import { DOORS, VIEW, type Door } from '../advent/townhall';
 import '../styles/advent.css';
 
@@ -51,6 +52,11 @@ export default function Adventskalender() {
       window.clearInterval(timer);
       document.removeEventListener('visibilitychange', update);
     };
+  }, []);
+
+  // Before a door is opened, so the drawing is there by the time it has swung open.
+  useEffect(() => {
+    void loadDrawings();
   }, []);
 
   const key = now && storageKey(now);

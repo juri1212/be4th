@@ -1,0 +1,902 @@
+/* The Advent calendar: Bocholt's town hall at blue hour, with a window lit for every day of December. */
+
+.advent {
+  --gutter: max(24px, calc(50vw - 37rem));
+  /* The LED strings are a cool yellow-green, the rooms behind them amber, as in Bocholt. */
+  --led: #f4ffd2;
+  --led-halo: #cfe88a;
+  --stone: #9b8168;
+  --stone-light: #b79b7d;
+  position: relative;
+  margin-inline: calc(50% - 50vw);
+  height: clamp(620px, calc(100svh - 96px), 1060px);
+  overflow: hidden;
+  background: linear-gradient(to bottom, #0e131b, #0e1d5c 9%, #12298a 26%, #15329f 58%, #2d4fb8 84%);
+}
+
+.advent__intro {
+  position: absolute;
+  z-index: 2;
+  top: clamp(16px, 4svh, 56px);
+  left: var(--gutter);
+  width: min(27rem, 34vw);
+}
+
+.advent .advent__intro h1 {
+  font-size: clamp(3.25rem, 5.4vw, 5.5rem);
+  font-weight: 700;
+  line-height: 0.92;
+}
+
+.advent .advent__intro .lede {
+  margin-top: 18px;
+  font-size: 1.125rem;
+  line-height: 1.5;
+}
+
+.advent__status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 20px;
+  /* Room for the status before the browser has told us the date. */
+  min-height: 7.5rem;
+  align-content: flex-start;
+  margin-top: 22px;
+}
+
+.advent__status > p:first-child {
+  flex: 1 0 100%;
+  font-weight: 600;
+  text-wrap: pretty;
+}
+
+.advent__count {
+  font-size: 14px;
+  color: #c9d2f0;
+}
+
+.advent__scene {
+  position: absolute;
+  inset: 0;
+}
+
+.advent-snow {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* The square fades into the page below it. */
+.advent::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 1;
+  height: 40px;
+  background: linear-gradient(to top, var(--bg), rgb(14 19 27 / 0));
+  pointer-events: none;
+}
+
+/* Stands at the bottom right, as tall as the stage allows. */
+.hall {
+  position: absolute;
+  right: max(16px, calc(50vw - 53rem));
+  bottom: 0;
+  height: min(100%, 920px, calc(64vw * 880 / 928));
+  aspect-ratio: 928 / 880;
+}
+
+.hall__drawing {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* ========== DRAWING ========== */
+
+.hall-stone {
+  fill: var(--stone);
+}
+
+.hall-stone--light {
+  fill: var(--stone-light);
+}
+
+.hall-stone--end {
+  fill: #7f6956;
+}
+
+.hall-stone--sill {
+  fill: #c9ae8e;
+}
+
+.hall-belt {
+  fill: var(--stone);
+  opacity: 0.75;
+}
+
+.hall-quoin,
+.hall-niche {
+  fill: #5a3329;
+}
+
+.hall-line {
+  fill: none;
+  stroke: #5b4938;
+  stroke-width: 1.4;
+}
+
+.hall-relief {
+  fill: none;
+  stroke: #6b563f;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.hall-arch {
+  fill: #7c4434;
+}
+
+.hall-arch--stroke {
+  fill: none;
+  stroke: #7c4434;
+  stroke-width: 9;
+  stroke-dasharray: 3.4 0.8;
+}
+
+.hall-arch--stone {
+  fill: none;
+  stroke: var(--stone-light);
+  stroke-width: 7;
+}
+
+.hall-shade {
+  fill: #2c2018;
+  opacity: 0.3;
+}
+
+.hall-wainscot {
+  fill: #9a7740;
+}
+
+.hall-overlight {
+  fill: #ffd98a;
+  stroke: #5b4528;
+  stroke-width: 2;
+}
+
+.hall-panel {
+  fill: none;
+  stroke: #4b3327;
+  stroke-width: 1.6;
+}
+
+.hall-copper {
+  fill: #5f8f7d;
+}
+
+.hall-copper--shade {
+  fill: #22342f;
+}
+
+.hall-iron {
+  fill: none;
+  stroke: #11121c;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+/* The floodlights hardly reach up here. */
+.hall-gable {
+  --stone: #84705e;
+  --stone-light: #9d8670;
+}
+
+.hall-iron--thin {
+  stroke-width: 1.3;
+}
+
+.hall-neighbours__light {
+  fill: #e0a653;
+  opacity: 0.75;
+}
+
+.hall-figure {
+  fill: #2b2630;
+}
+
+.hall-figure--lit {
+  fill: #8c745c;
+}
+
+.hall-vane {
+  fill: #11121c;
+  animation: vane 9s ease-in-out infinite alternate;
+}
+
+@keyframes vane {
+  0% {
+    transform: scaleX(1);
+  }
+  40% {
+    transform: scaleX(0.72);
+  }
+  70% {
+    transform: scaleX(0.94);
+  }
+  100% {
+    transform: scaleX(0.55);
+  }
+}
+
+.hall-garland {
+  fill: none;
+  stroke: #24361f;
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+.hall-neighbours {
+  fill: #0c1533;
+}
+
+.hall-branches {
+  fill: none;
+  stroke: #0c1230;
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+.hall-sign {
+  font: 700 30px var(--sans);
+  font-stretch: 100%;
+  letter-spacing: 0.14em;
+}
+
+.hall-tree {
+  transform: translate(-28px, 868px);
+}
+
+.hall-star {
+  fill: #fff1cf;
+  stroke: #ff6a3a;
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+.fairy {
+  fill: none;
+  stroke: #fff0b4;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.fairy--halo {
+  stroke: #ffc95a;
+  stroke-width: 9;
+  stroke-opacity: 0.26;
+}
+
+.fairy-string {
+  animation: twinkle 5.2s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.bauble {
+  fill: none;
+  stroke: #ff4a3d;
+  stroke-width: 9;
+  stroke-linecap: round;
+}
+
+.bauble--halo {
+  stroke: #ff2c20;
+  stroke-width: 22;
+  stroke-opacity: 0.28;
+}
+
+/* ========== LIGHT STRINGS ========== */
+
+.led__tube,
+.led__halo {
+  fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* Unlit: a string of bulbs you can just make out. */
+.led__tube {
+  stroke: #a9ad9a;
+  stroke-opacity: 0.62;
+  stroke-width: 1.3;
+}
+
+.led__halo {
+  stroke: var(--led-halo);
+  stroke-opacity: 0;
+  stroke-width: 6;
+}
+
+.led--on.led__tube {
+  stroke: var(--led);
+  stroke-opacity: 1;
+  stroke-width: 2.4;
+}
+
+.led--on.led__halo {
+  stroke-opacity: 0.3;
+  stroke-width: 9;
+}
+
+.hall-sign.led__tube {
+  stroke-width: 1.6;
+}
+
+.hall-sign.led__halo {
+  stroke-width: 7;
+}
+
+.led__digit {
+  font-family: var(--display);
+  font-stretch: 82%;
+  font-size: 44px;
+  font-weight: 800;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.led__digit.led__tube {
+  stroke-width: 1.7;
+}
+
+/* ========== DOORS ========== */
+
+.hall__doors {
+  position: absolute;
+  inset: 0;
+  list-style: none;
+}
+
+.hall__doors li {
+  position: absolute;
+}
+
+.advent-door {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: manipulation;
+}
+
+.advent-door:focus-visible {
+  outline-color: #fff;
+  outline-offset: -2px;
+}
+
+.advent-door__drawing {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* The light a window throws on the wall around it. */
+.advent-door::before {
+  content: '';
+  position: absolute;
+  inset: -12%;
+  background: radial-gradient(closest-side, rgb(240 255 190 / 0.42), rgb(240 255 190 / 0));
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.advent-leaf__frame {
+  fill: #2a241c;
+}
+
+.advent-leaf__pane {
+  fill: #10141f;
+}
+
+.advent-leaf__lead {
+  fill: none;
+  stroke: #5f6670;
+  stroke-opacity: 0.4;
+  stroke-width: 0.5;
+}
+
+.advent-leaf--wood .advent-leaf__frame {
+  fill: #2a1a15;
+}
+
+.advent-leaf--wood .advent-leaf__pane {
+  fill: #3a251c;
+}
+
+.advent-leaf__carving {
+  fill: none;
+  stroke: #1c110d;
+  stroke-width: 1.6;
+}
+
+.advent-door__room {
+  fill: url('#hall-room');
+}
+
+.advent-door__inside {
+  font-family: var(--display);
+  font-stretch: var(--condensed);
+  font-size: 40px;
+  font-weight: 800;
+  text-anchor: middle;
+  dominant-baseline: central;
+  fill: #6f3606;
+  opacity: 0;
+}
+
+.advent-door__leaf {
+  transition: transform 0.9s var(--ease-out);
+}
+
+[data-state='opened'] .advent-door__leaf--left {
+  transform: scaleX(-0.36) skewY(-13deg);
+}
+
+[data-state='opened'] .advent-door__leaf--right {
+  transform: scaleX(-0.36) skewY(13deg);
+}
+
+[data-state='opened'] .advent-door__inside {
+  opacity: 1;
+}
+
+[data-state='opened']::before {
+  background: radial-gradient(closest-side, rgb(255 196 92 / 0.6), rgb(255 196 92 / 0));
+  opacity: 1;
+}
+
+/* Lit windows come on one after the other when the page has read the calendar. */
+:is([data-state='due'], [data-state='opened']) .led {
+  animation: switch-on 0.5s steps(1, end) calc(var(--day) * 70ms) backwards;
+}
+
+@keyframes switch-on {
+  0%,
+  40%,
+  70% {
+    opacity: 0.12;
+  }
+  25%,
+  60% {
+    opacity: 0.8;
+  }
+}
+
+[data-state='due'] .led__tube {
+  stroke: var(--led);
+  stroke-opacity: 1;
+  stroke-width: 2;
+}
+
+[data-state='due'] .led__halo {
+  stroke-opacity: 0.32;
+}
+
+[data-state='due']::before {
+  opacity: 0.8;
+}
+
+[data-state='due'] .advent-leaf--glass .advent-leaf__pane {
+  fill: #272e28;
+}
+
+[data-state='due'][data-today]::before {
+  inset: -30%;
+  animation: today 2.4s ease-in-out infinite;
+}
+
+@keyframes today {
+  from,
+  to {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (hover: hover) {
+  .advent-door:hover::before {
+    opacity: 1;
+  }
+
+  .advent-door[data-state='locked']:hover::before {
+    opacity: 0.35;
+  }
+
+  .advent-door[data-state='locked'] {
+    cursor: default;
+  }
+
+  /* Ajar: it can be opened. */
+  .advent-door[data-state='due']:hover .advent-door__leaf--left {
+    transform: scaleX(0.86) skewY(-4deg);
+  }
+
+  .advent-door[data-state='due']:hover .advent-door__leaf--right {
+    transform: scaleX(0.86) skewY(4deg);
+  }
+}
+
+/* Two names for one movement, so pressing a locked door again shakes it again. */
+[data-shake='0'] .advent-door__drawing {
+  animation: shake-a 0.42s ease;
+}
+
+[data-shake='1'] .advent-door__drawing {
+  animation: shake-b 0.42s ease;
+}
+
+@keyframes shake-a {
+  20%,
+  60% {
+    transform: translateX(-3%);
+  }
+  40%,
+  80% {
+    transform: translateX(3%);
+  }
+}
+
+@keyframes shake-b {
+  20%,
+  60% {
+    transform: translateX(-3%);
+  }
+  40%,
+  80% {
+    transform: translateX(3%);
+  }
+}
+
+/* ========== WINDOW ========== */
+
+.advent-reading {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+}
+
+.advent-window {
+  --led: #f4ffd2;
+  --led-halo: #cfe88a;
+  width: min(30rem, calc(100vw - 40px));
+  max-height: none;
+  margin: auto;
+  border: 0;
+  background: none;
+  overflow: visible;
+}
+
+.advent-window::backdrop {
+  background: radial-gradient(circle at center, rgb(20 22 52 / 0.62), rgb(5 8 20 / 0.88));
+}
+
+.advent-window[open]::backdrop {
+  animation: fade-in 0.5s ease both;
+}
+
+/* Sandstone surround, and the sill below it. */
+.advent-window__frame {
+  position: relative;
+  padding: clamp(10px, 2.4vw, 16px);
+  border-radius: 3px;
+  background: linear-gradient(to right, #7f6956, #b79b7d 12%, #c4a887 50%, #b79b7d 88%, #7f6956);
+  box-shadow: 0 30px 80px rgb(0 0 0 / 0.5);
+}
+
+.advent-window__frame::after {
+  content: '';
+  position: absolute;
+  inset: 100% -14px auto;
+  height: 18px;
+  border-radius: 2px;
+  background: linear-gradient(#dcc3a2, #8b735b);
+}
+
+.advent-window--portal .advent-window__frame::after {
+  inset-inline: -26px;
+}
+
+.advent-window__opening {
+  position: relative;
+  perspective: 1500px;
+  box-shadow: 0 0 140px rgb(255 184 77 / 0);
+  animation: spill 1.1s ease 0.6s forwards;
+}
+
+@keyframes spill {
+  to {
+    box-shadow: 0 0 140px rgb(255 184 77 / 0.55);
+  }
+}
+
+.advent-window__room {
+  display: grid;
+  min-height: min(36rem, calc(100svh - 150px));
+  max-height: calc(100svh - 110px);
+  overflow-y: auto;
+  background: radial-gradient(ellipse 90% 80% at 50% 34%, #fff0c4, #ffd57c 62%, #f3ac45);
+  box-shadow: inset 0 0 50px rgb(120 58 8 / 0.5);
+  color: #2b1608;
+}
+
+.advent-window__text {
+  display: flex;
+  flex-direction: column;
+  padding: clamp(24px, 6vw, 40px);
+}
+
+.advent-window__day {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 16px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #7a3f0c;
+}
+
+.advent-window__text h2 {
+  margin: auto 0 0;
+  padding-top: 24px;
+  font-family: var(--display);
+  font-stretch: var(--condensed);
+  font-size: clamp(2.5rem, 9vw, 3.5rem);
+  font-weight: 700;
+  line-height: 0.95;
+  text-wrap: balance;
+  hyphens: auto;
+}
+
+.advent-window__fact {
+  margin: 18px 0 auto;
+  font-size: 1.125rem;
+  line-height: 1.5;
+  text-wrap: pretty;
+  hyphens: auto;
+}
+
+.advent-window__sources {
+  padding: 20px 0 22px;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: #643208;
+}
+
+.advent-window__sources a {
+  color: inherit;
+  text-underline-offset: 2px;
+}
+
+.advent-window__sources a:hover {
+  color: #2b1608;
+}
+
+.advent-window__sources a:focus-visible {
+  outline-color: #2b1608;
+}
+
+.advent-window__close {
+  align-self: flex-start;
+  padding: 13px 20px;
+  border-radius: 999px;
+  background: #2b1608;
+  color: #ffe7b5;
+  font: 550 14px/1 var(--sans);
+  transition: background 0.2s ease;
+}
+
+.advent-window__close:hover {
+  background: #4d2a10;
+}
+
+.advent-window__close:focus-visible {
+  outline-color: #2b1608;
+  border-radius: 999px;
+}
+
+.advent-window__leaf {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.advent-window__leaf--left {
+  left: 0;
+  transform-origin: left;
+  animation: swing-left 1.25s cubic-bezier(0.5, 0, 0.15, 1) 0.6s forwards;
+}
+
+.advent-window__leaf--right {
+  right: 0;
+  transform-origin: right;
+  animation: swing-right 1.25s cubic-bezier(0.5, 0, 0.15, 1) 0.68s forwards;
+}
+
+@keyframes swing-left {
+  to {
+    transform: rotateY(-118deg);
+  }
+}
+
+@keyframes swing-right {
+  to {
+    transform: rotateY(118deg);
+  }
+}
+
+.advent-window .advent-leaf__pane {
+  fill: #171d25;
+}
+
+.advent-window .advent-leaf--wood .advent-leaf__pane {
+  fill: #3a251c;
+}
+
+.advent-window .advent-leaf__lead {
+  stroke-width: 0.3;
+}
+
+/* Close up, the strings turn out to be rows of bulbs. */
+.advent-window .led__tube {
+  stroke: var(--led);
+  stroke-opacity: 1;
+  stroke-width: 0.8;
+  stroke-dasharray: 0 1.35;
+}
+
+.advent-window .led__halo {
+  stroke: #e9ff9e;
+  stroke-opacity: 0.15;
+  stroke-width: 4.4;
+}
+
+/* ========== SMALLER SCREENS ========== */
+
+/* The building takes the full width, with the words in the sky above it. */
+@media (max-width: 860px) {
+  .advent {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    min-height: calc(100svh - 96px);
+  }
+
+  .advent__intro {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: auto;
+    padding: 16px 24px 0;
+  }
+
+  .advent .advent__intro h1 {
+    font-size: clamp(2.5rem, 14.2vw, 6rem);
+  }
+
+  .advent__scene {
+    position: relative;
+    inset: auto;
+    margin-top: auto;
+    padding: 28px 0 13vw;
+  }
+
+  .hall {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    width: 100%;
+    height: auto;
+  }
+
+  /* There is no room beside the building, so the tree stands in front of the one arch without a door. */
+  .hall-tree {
+    transform: translate(948px, 880px) scale(0.44);
+  }
+}
+
+/* Small phones, low windows and phones held sideways: keep as much of the text as possible in view. */
+@media (max-width: 360px), (max-height: 700px) {
+  .advent-window__room {
+    min-height: min(36rem, calc(100svh - 110px));
+    max-height: calc(100svh - 72px);
+  }
+
+  .advent-window__text {
+    padding: 18px 20px;
+  }
+
+  .advent-window__text h2 {
+    padding-top: 14px;
+    font-size: 2.125rem;
+  }
+
+  .advent-window__fact {
+    margin-top: 12px;
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+
+  .advent-window__sources {
+    padding: 12px 0 14px;
+    font-size: 0.8125rem;
+  }
+}
+
+@media (max-height: 520px) and (min-width: 600px) {
+  .advent-window {
+    width: min(44rem, calc(100vw - 80px));
+  }
+
+  .advent-window__room {
+    min-height: 0;
+    max-height: calc(100svh - 70px);
+  }
+
+  .advent-window__text {
+    padding: 18px 28px;
+  }
+
+  .advent-window__text h2 {
+    padding-top: 10px;
+    font-size: 2.25rem;
+  }
+
+  .advent-window__fact {
+    margin-top: 10px;
+    font-size: 1.0625rem;
+    line-height: 1.45;
+  }
+
+  .advent-window__sources {
+    padding: 10px 0 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hall-vane,
+  .fairy-string,
+  [data-state] .led,
+  [data-state='due'][data-today]::before,
+  [data-shake] .advent-door__drawing,
+  .advent-window[open]::backdrop {
+    animation: none;
+  }
+
+  .advent-door__leaf {
+    transition: none;
+  }
+
+  .advent-window__opening,
+  .advent-window__leaf {
+    animation-delay: 0s;
+    animation-duration: 0.01s;
+  }
+}

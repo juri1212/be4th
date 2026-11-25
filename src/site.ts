@@ -18,7 +18,7 @@ export const LEGAL = {
   name: 'Juri Beforth',
   email: 'code@be4th.com',
   hoster: 'GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA',
-  updated: '2026-10-31',
+  updated: '2026-11-25',
 } as const;
 
 export interface NavLink {

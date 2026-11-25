@@ -65,6 +65,8 @@ export interface Head {
   type: 'website' | 'article';
   title: string;
   description: string;
+  // Of the page's content, where it isn't English.
+  locale?: string;
   image?: string | null;
   published?: string;
   modified?: string;

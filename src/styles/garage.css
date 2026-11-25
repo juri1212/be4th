@@ -43,12 +43,19 @@
   opacity: 1;
 }
 
-/* Day or night: two buttons in one pill, in the corner of the scene. */
-.stage__light {
+/* In the corner of the scene: the Christmas lights, and day or night. Each switch is a pill with its buttons in it. */
+.stage__switches {
   position: absolute;
   z-index: 2;
   top: 12px;
   right: var(--gutter);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.stage__switch {
   display: flex;
   gap: 2px;
   padding: 3px;
@@ -58,7 +65,7 @@
   backdrop-filter: blur(10px);
 }
 
-.stage__light button {
+.stage__switch button {
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -69,20 +76,20 @@
   transition: background 0.25s ease, color 0.25s ease;
 }
 
-.stage__light button:hover {
+.stage__switch button:hover {
   color: var(--text);
 }
 
-.stage__light button[aria-pressed='true'] {
+.stage__switch button[aria-pressed='true'] {
   background: var(--surface-raised);
   color: var(--text);
 }
 
-.stage__light button[aria-pressed='true'] .icon {
+.stage__switch button[aria-pressed='true'] .icon {
   color: var(--accent);
 }
 
-.stage__light button:focus-visible {
+.stage__switch button:focus-visible {
   outline-offset: 1px;
   border-radius: 999px;
 }

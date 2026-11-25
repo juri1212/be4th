@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import PageLayout from '../components/PageLayout';
-import { Moon, Pause, Play, Sun } from '../components/icons';
+import { FairyLights, Moon, Pause, Play, Sun } from '../components/icons';
 import type { Garage as GarageScene, GarageState } from '../garage/scene';
 import { DURATION, STEPS } from '../garage/timeline';
+import { CHRISTMAS } from '../site';
 import '../styles/garage.css';
 
 type Status = 'loading' | 'ready' | 'failed';
@@ -33,6 +34,7 @@ export default function Garage() {
   const [step, setStep] = useState(0);
   const [state, setState] = useState<GarageState>({ playing: false, following: true, car: 'loading', waiting: false });
   const [night, setNight] = useState(false);
+  const [christmas, setChristmas] = useState(CHRISTMAS);
 
   useEffect(() => {
     const container = host.current!;
@@ -58,6 +60,7 @@ export default function Garage() {
         }
         created = garage;
         scene.current = garage;
+        garage.christmas(CHRISTMAS);
         setStatus('ready');
         if (import.meta.env.DEV) Object.assign(window, { __garage: garage });
         // ?t=12 opens on that second of the sequence. Visitors who ask for less motion get the loaded car, paused.
@@ -90,6 +93,10 @@ export default function Garage() {
     setNight(on);
     scene.current?.night(on);
   };
+  const decorate = (on: boolean) => {
+    setChristmas(on);
+    scene.current?.christmas(on);
+  };
 
   return (
     <PageLayout>
@@ -98,15 +105,25 @@ export default function Garage() {
           <div className="stage__view">
             <div className="stage__canvas" ref={host} />
             {status === 'ready' && (
-              <div className="stage__light" role="group" aria-label="Lighting">
-                <button type="button" aria-pressed={!night} onClick={() => light(false)}>
-                  <Sun />
-                  Day
-                </button>
-                <button type="button" aria-pressed={night} onClick={() => light(true)}>
-                  <Moon />
-                  Night
-                </button>
+              <div className="stage__switches">
+                {CHRISTMAS && (
+                  <div className="stage__switch">
+                    <button type="button" aria-pressed={christmas} title={christmas ? 'Turn the fairy lights off' : 'Turn the fairy lights on'} onClick={() => decorate(!christmas)}>
+                      <FairyLights />
+                      Christmas
+                    </button>
+                  </div>
+                )}
+                <div className="stage__switch" role="group" aria-label="Lighting">
+                  <button type="button" aria-pressed={!night} onClick={() => light(false)}>
+                    <Sun />
+                    Day
+                  </button>
+                  <button type="button" aria-pressed={night} onClick={() => light(true)}>
+                    <Moon />
+                    Night
+                  </button>
+                </div>
               </div>
             )}
           </div>

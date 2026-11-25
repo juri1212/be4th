@@ -143,6 +143,8 @@ export function loft(stations: Station[], options: LoftOptions = {}): BufferGeom
   geometry.setAttribute('normal', new Float32BufferAttribute(normals, 3));
   geometry.setAttribute('uv', new Float32BufferAttribute(uvs, 2));
   geometry.setIndex(index);
+  // How its vertices are laid out, for whatever has to find its way around the tube's surface.
+  geometry.userData = { rings: n, stride };
   return geometry;
 }
 

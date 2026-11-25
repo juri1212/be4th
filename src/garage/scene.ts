@@ -5,6 +5,7 @@ import {
   Mesh,
   PCFSoftShadowMap,
   PerspectiveCamera,
+  Points,
   Quaternion,
   SRGBColorSpace,
   Scene,
@@ -15,7 +16,9 @@ import {
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { FRONT_AXLE, PARTS, REAR_AXLE, WHEEL_APART, WHEEL_RADIUS, bikePose, buildBike } from './bike';
+import { CHRISTMAS } from '../site';
 import { buildCar } from './car';
+import { buildFairyLights } from './fairylights';
 import { buildRack, type Rack } from './rack';
 import { buildStudio, studioEnvironment } from './studio';
 import { CAR_DUE, DURATION, MOVES, ease, easeInOut, easeOut, easeOutQuad, lerp, span, stepAt } from './timeline';
@@ -46,6 +49,8 @@ export interface Garage {
   view(position: [number, number, number], target: [number, number, number]): void;
   // Night switches the studio's lights off and the car's on. The change fades rather than cuts.
   night(on: boolean): void;
+  // The Christmas theme: fairy lights on the bike, which fade in and out too. Out of season it does nothing.
+  christmas(on: boolean): void;
   dispose(): void;
 }
 
@@ -60,6 +65,11 @@ const RACK_DROP = 3.4;
 const CAR_MODEL = '/models/911.glb';
 // Seconds the lights take to change between day and night.
 const NIGHTFALL = 1.3;
+// And the fairy lights to come on or go off.
+const GLOW_UP = 0.9;
+
+// A value on its way to a goal, one step further.
+const towards = (value: number, goal: number, step: number) => (goal > value ? Math.min(goal, value + step) : Math.max(goal, value - step));
 
 // Marks on the page's performance timeline for each stage of loading, which scripts/measure-garage.ts reads.
 const mark = (stage: string) => performance.mark(`garage:${stage}`);
@@ -151,6 +161,7 @@ export async function createGarage(canvas: HTMLCanvasElement, events: GarageEven
     object.material = material;
     wheelMaterials.push(material);
   });
+  const fairyLights = CHRISTMAS ? buildFairyLights(bike) : null;
   mark('bike');
 
   // ----- poses the sequence moves between -----
@@ -257,6 +268,7 @@ export async function createGarage(canvas: HTMLCanvasElement, events: GarageEven
   function light() {
     studio.dim(ease(span(night, 0, 0.75)));
     car.lights(carHere ? ease(span(night, 0.4, 1)) : 0);
+    fairyLights?.glow(ease(christmas), ease(night));
   }
 
   // ----- camera -----
@@ -285,6 +297,9 @@ export async function createGarage(canvas: HTMLCanvasElement, events: GarageEven
   // 0 by day, 1 at night, and in between while the lights change.
   let night = 0;
   let nightGoal = 0;
+  // The same for the fairy lights: 0 off, 1 on.
+  let christmas = 0;
+  let christmasGoal = 0;
   let dirty = true;
   let frame = 0;
   let last = 0;
@@ -372,9 +387,9 @@ export async function createGarage(canvas: HTMLCanvasElement, events: GarageEven
       rejoin = Math.min(1, rejoin + delta / 0.9);
       dirty = true;
     }
-    if (night !== nightGoal) {
-      const step = delta / NIGHTFALL;
-      night = nightGoal > night ? Math.min(nightGoal, night + step) : Math.max(nightGoal, night - step);
+    if (night !== nightGoal || christmas !== christmasGoal) {
+      night = towards(night, nightGoal, delta / NIGHTFALL);
+      christmas = towards(christmas, christmasGoal, delta / GLOW_UP);
       light();
       dirty = true;
     }
@@ -489,13 +504,16 @@ export async function createGarage(canvas: HTMLCanvasElement, events: GarageEven
     night(on) {
       nightGoal = on ? 1 : 0;
     },
+    christmas(on) {
+      christmasGoal = on ? 1 : 0;
+    },
     dispose() {
       disposed = true;
       cancelAnimationFrame(frame);
       observer.disconnect();
       controls.dispose();
       scene.traverse((object) => {
-        if (!(object instanceof Mesh || object instanceof Sprite)) return;
+        if (!(object instanceof Mesh || object instanceof Sprite || object instanceof Points)) return;
         object.geometry.dispose();
         for (const material of [object.material].flat() as Material[]) {
           for (const value of Object.values(material)) if (value && typeof value === 'object' && 'isTexture' in value) value.dispose();

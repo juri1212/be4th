@@ -56,6 +56,16 @@ export const Moon = () => (
   </Icon>
 );
 
+export const FairyLights = () => (
+  <Icon>
+    <path d="M1.5 3.5C3 6.5 5.5 7 8 7s5-.5 6.5-3.5" />
+    <path d="M3.75 6.25 3 9.25M8 7v3.25M12.25 6.25 13 9.25" />
+    <circle cx="2.75" cy="10.75" r="1.25" />
+    <circle cx="8" cy="12" r="1.25" />
+    <circle cx="13.25" cy="10.75" r="1.25" />
+  </Icon>
+);
+
 export const Play = () => (
   <Icon>
     <path d="M5 3.5v9l7.5-4.5z" />

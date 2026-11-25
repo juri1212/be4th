@@ -356,8 +356,18 @@
   dominant-baseline: central;
 }
 
+.led__digit--narrow {
+  font-stretch: 62%;
+  font-size: 33px;
+}
+
 .led__digit.led__tube {
   stroke-width: 1.7;
+}
+
+/* Each leaf has half of the string, and the halves meet without overlapping. */
+.advent-door--arched :is(.led__tube, .led__halo) {
+  stroke-linecap: butt;
 }
 
 /* ========== DOORS ========== */
@@ -420,20 +430,6 @@
   stroke-width: 0.5;
 }
 
-.advent-leaf--wood .advent-leaf__frame {
-  fill: #2a1a15;
-}
-
-.advent-leaf--wood .advent-leaf__pane {
-  fill: #3a251c;
-}
-
-.advent-leaf__carving {
-  fill: none;
-  stroke: #1c110d;
-  stroke-width: 1.6;
-}
-
 .advent-door__room {
   fill: url('#hall-room');
 }
@@ -447,6 +443,10 @@
   dominant-baseline: central;
   fill: #6f3606;
   opacity: 0;
+}
+
+.advent-door--arched .advent-door__inside {
+  font-size: 32px;
 }
 
 .advent-door__leaf {
@@ -468,6 +468,39 @@
 [data-state='opened']::before {
   background: radial-gradient(closest-side, rgb(255 196 92 / 0.6), rgb(255 196 92 / 0));
   opacity: 1;
+}
+
+/* The cake on the birthday's number. Its candles burn from that day on. */
+.advent-cake__plate {
+  fill: #e9eef7;
+}
+
+.advent-cake__sponge {
+  fill: #a8622f;
+}
+
+.advent-cake__cream {
+  fill: #fff3dc;
+}
+
+.advent-cake__icing {
+  fill: #ff8fb4;
+}
+
+.advent-cake__candle {
+  fill: #7fd6ff;
+}
+
+.advent-cake__flames ellipse {
+  fill: url('#hall-pool');
+}
+
+.advent-cake__flames path {
+  fill: #fff0b4;
+}
+
+[data-state='locked'] .advent-cake__flames {
+  opacity: 0;
 }
 
 /* Lit windows come on one after the other when the page has read the calendar. */
@@ -501,7 +534,7 @@
   opacity: 0.8;
 }
 
-[data-state='due'] .advent-leaf--glass .advent-leaf__pane {
+[data-state='due'] .advent-leaf__pane {
   fill: #272e28;
 }
 
@@ -616,10 +649,6 @@
   height: 18px;
   border-radius: 2px;
   background: linear-gradient(#dcc3a2, #8b735b);
-}
-
-.advent-window--portal .advent-window__frame::after {
-  inset-inline: -26px;
 }
 
 .advent-window__opening {
@@ -754,10 +783,6 @@
 
 .advent-window .advent-leaf__pane {
   fill: #171d25;
-}
-
-.advent-window .advent-leaf--wood .advent-leaf__pane {
-  fill: #3a251c;
 }
 
 .advent-window .advent-leaf__lead {

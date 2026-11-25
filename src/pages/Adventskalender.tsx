@@ -10,10 +10,10 @@ import '../styles/advent.css';
 
 const percent = (value: number) => `${(value * 100).toFixed(3)}%`;
 
-const place = ({ x, hit }: Door): CSSProperties => ({
-  left: percent((x - 52 - VIEW.x) / VIEW.width),
+const place = ({ hit }: Door): CSSProperties => ({
+  left: percent((hit.left - VIEW.x) / VIEW.width),
   top: percent((hit.top - VIEW.y) / VIEW.height),
-  width: percent(104 / VIEW.width),
+  width: percent((hit.right - hit.left) / VIEW.width),
   height: percent((hit.bottom - hit.top) / VIEW.height),
 });
 

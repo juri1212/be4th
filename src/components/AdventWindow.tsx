@@ -11,6 +11,8 @@ interface AdventWindowProps {
 }
 
 const LEAVES = ['left', 'right'] as const;
+// Up close every window is rectangular, with the proportions of those in the facade.
+const WINDOW_WIDTH = 60;
 
 // A door seen up close. It flies in closed, swings open, and what's behind it can be read in the light.
 export default function AdventWindow({ door, from, onClose }: AdventWindowProps) {
@@ -47,7 +49,7 @@ export default function AdventWindow({ door, from, onClose }: AdventWindowProps)
   };
 
   return (
-    <dialog ref={dialog} className={`advent-window advent-window--${door.kind}`} lang="de" aria-labelledby="advent-title" onClose={onClose} onClick={closeOutside}>
+    <dialog ref={dialog} className="advent-window" lang="de" aria-labelledby="advent-title" onClose={onClose} onClick={closeOutside}>
       <div className="advent-window__frame" ref={frame}>
         <div className="advent-window__opening">
           <div className="advent-window__room">
@@ -76,8 +78,8 @@ export default function AdventWindow({ door, from, onClose }: AdventWindowProps)
             </div>
           </div>
           {LEAVES.map((side, index) => (
-            <svg key={side} className={`advent-window__leaf advent-window__leaf--${side}`} viewBox={`0 0 ${door.width / 2} ${door.height}`} preserveAspectRatio="none" aria-hidden="true">
-              <AdventLeaf door={{ ...door, kind: door.kind === 'portal' ? 'portal' : 'window' }} side={side} digit={digits[index]!} />
+            <svg key={side} className={`advent-window__leaf advent-window__leaf--${side}`} viewBox={`0 0 ${WINDOW_WIDTH / 2} ${door.height}`} preserveAspectRatio="none" aria-hidden="true">
+              <AdventLeaf door={{ ...door, kind: 'window', width: WINDOW_WIDTH }} side={side} digit={digits[index]!} />
             </svg>
           ))}
         </div>

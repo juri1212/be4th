@@ -116,10 +116,11 @@ function Surround({ door }: { door: Door }) {
   const { x, y, width, height, kind } = door;
   const w = width / 2;
   const arch = y < 700 && y > 400;
+  const sill = kind === 'arched' ? 5 : 8;
   return (
     <g>
       {kind === 'arched' ? (
-        <path className="hall-stone hall-stone--light" d={`M${x - w - 6} ${y + height + 3}V${y + w}A${w + 6} ${w + 6} 0 0 1 ${x + w + 6} ${y + w}V${y + height + 3}z`} />
+        <path className="hall-stone hall-stone--light" d={`M${x - w - 4} ${y + height + 3}V${y + w}A${w + 4} ${w + 4} 0 0 1 ${x + w + 4} ${y + w}V${y + height + 3}z`} />
       ) : (
         <path className="hall-stone hall-stone--light" d={`M${x - w - 5} ${y - 5}h${width + 10}v${height + 8}h${-width - 10}z`} />
       )}
@@ -130,7 +131,7 @@ function Surround({ door }: { door: Door }) {
           <path className="hall-stone hall-stone--light" d={`M${x - 6} ${y - 24}h12l-2 14h-8zM${x - 45} ${y - 5}q2 -11 14 -10l-4 10zM${x + 45} ${y - 5}q-2 -11 -14 -10l4 10z`} />
         </>
       )}
-      <path className="hall-stone hall-stone--sill" d={`M${x - w - 8} ${y + height + 3}h${width + 16}v4h${-width - 16}z`} />
+      <path className="hall-stone hall-stone--sill" d={`M${x - w - sill} ${y + height + 3}h${width + sill * 2}v4h${-width - sill * 2}z`} />
     </g>
   );
 }
@@ -172,13 +173,15 @@ function Arcade() {
         </g>
       ))}
 
-      {/* The portal's surround, the plain door and the notice board in the bays without a window. */}
-      <path className="hall-stone hall-stone--light" d="M476 734h72v106h-72z" />
-      <path className="hall-overlight" d="M490 714h44v18h-44z" />
-      <path className="hall-stone hall-stone--light" d="M684 734h72v106h-72z" />
-      <path fill="#2a1a15" d="M692 742h56v98h-56z" />
-      <path className="hall-panel" d="M696 748h22v34h-22zM722 748h22v34h-22zM696 788h22v46h-22zM722 788h22v46h-22zM696 748l22 34M718 748l-22 34M722 748l22 34M744 748l-22 34M696 788l22 46M718 788l-22 46M722 788l22 46M744 788l-22 46" />
-      <path className="hall-overlight" d="M698 714h44v18h-44z" />
+      {/* The portal, the plain door and the notice board in the bays without a window. */}
+      {[512, 720].map((x) => (
+        <g key={x} transform={`translate(${x} 0)`}>
+          <path className="hall-stone hall-stone--light" d="M-36 734h72v106h-72z" />
+          <path fill="#2a1a15" d="M-28 742h56v98h-56z" />
+          <path className="hall-panel" d="M-24 748h22v34h-22zM2 748h22v34h-22zM-24 788h22v46h-22zM2 788h22v46h-22zM-24 748l22 34M-2 748l-22 34M2 748l22 34M24 748l-22 34M-24 788l22 46M-2 788l-22 46M2 788l22 46M24 788l-22 46" />
+          <path className="hall-overlight" d="M-22 714h44v18h-44z" />
+        </g>
+      ))}
       <path fill="#6f4d2c" d="M894 742h68v98h-68zM900 742q28-26 56 0z" />
       <path fill="#d9dfd2" opacity="0.85" d="M902 758h52v42h-52z" />
       <path fill="#6f4d2c" d="M927 758h2v42h-2zM906 764h16v12h-16zM934 768h14v20h-14z" opacity="0.5" />
@@ -369,7 +372,9 @@ function TownHall() {
       <Gable />
       <Floors />
       <Arcade />
-      {DOORS.map((door) => (door.kind === 'portal' ? null : <Surround key={door.day} door={door} />))}
+      {DOORS.map((door) => (
+        <Surround key={door.day} door={door} />
+      ))}
       {/* The floodlights on the square fade out towards the eaves. */}
       <path fill="url(#hall-dusk)" d={`M${LEFT} 386H${RIGHT}V${GROUND_Y}H${LEFT}z`} />
       <Garlands />

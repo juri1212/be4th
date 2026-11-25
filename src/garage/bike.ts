@@ -389,6 +389,17 @@ export interface Part {
 
 export const PARTS = ['fork', 'cockpit', 'seat', 'cranks', 'gears', 'rearWheel'] as const;
 
+// A tube that a string of lights can be wound around.
+export interface Winding {
+  // As loft() made it, in the coordinates of the part it belongs to.
+  tube: BufferGeometry;
+  // The stretch that is free to wind around, as shares of its length: clear of the joints, the chain and the fork mount.
+  from: number;
+  to: number;
+  // Metres along the tube for every time around it.
+  pitch: number;
+}
+
 export interface Bike {
   // Everything, as it stands on the ground.
   root: Group;
@@ -398,6 +409,8 @@ export interface Bike {
   frontWheel: Group;
   // The front thru-axle, centred on the hub.
   axle: Group;
+  // The tubes of the frame, which `root` carries, and of the fork, which is a part of its own.
+  windings: { frame: Winding[]; fork: Winding[] };
   materials: Material[];
 }
 
@@ -414,6 +427,11 @@ export function buildBike(): Bike {
   const cranks = new Kit();
   const gears = new Kit();
   const { paint, carbon, gloss, rubber, steel, alloy } = materials;
+  const windings: Bike['windings'] = { frame: [], fork: [] };
+  const wind = (part: keyof Bike['windings'], from: number, to: number, pitch: number, tube: BufferGeometry) => {
+    windings[part].push({ tube, from, to, pitch });
+    return tube;
+  };
 
   // ----- frame -----
   frame.add(
@@ -428,32 +446,44 @@ export function buildBike(): Bike {
   const topRear = seatTube(0.487);
   frame.add(
     paint,
-    loft([{ at: topFront, width: 0.052, depth: 0.046 }, { at: mix(topFront, topRear, 0.45), width: 0.042, depth: 0.034 }, { at: topRear, width: 0.034, depth: 0.036 }], { power: 2.8, around: 24, smooth: 5 }),
+    wind('frame', 0.07, 0.94, 0.1, loft([{ at: topFront, width: 0.052, depth: 0.046 }, { at: mix(topFront, topRear, 0.45), width: 0.042, depth: 0.034 }, { at: topRear, width: 0.034, depth: 0.036 }], { power: 2.8, around: 24, smooth: 5 })),
   );
   const downFront = add(add(HEAD_BOTTOM, STEER, -0.04), AHEAD, -0.004);
   frame.add(
     paint,
-    loft(
-      [
-        { at: downFront, width: 0.05, depth: 0.076 },
-        { at: mix(downFront, BB, 0.45), width: 0.054, depth: 0.066 },
-        { at: mix(downFront, BB, 0.86), width: 0.064, depth: 0.06 },
-        { at: BB, width: 0.07, depth: 0.056 },
-      ],
-      { power: 2.8, around: 24, smooth: 5 },
+    wind(
+      'frame',
+      0.08,
+      0.9,
+      0.12,
+      loft(
+        [
+          { at: downFront, width: 0.05, depth: 0.076 },
+          { at: mix(downFront, BB, 0.45), width: 0.054, depth: 0.066 },
+          { at: mix(downFront, BB, 0.86), width: 0.064, depth: 0.06 },
+          { at: BB, width: 0.07, depth: 0.056 },
+        ],
+        { power: 2.8, around: 24, smooth: 5 },
+      ),
     ),
   );
   // The seat tube bows forward in the middle to clear the rear tyre.
   frame.add(
     paint,
-    loft(
-      [
-        { at: BB, width: 0.062, depth: 0.05 },
-        { at: add(seatTube(0.19), SEAT_AHEAD, 0.007), width: 0.036, depth: 0.034 },
-        { at: seatTube(0.36), width: 0.034, depth: 0.036 },
-        { at: seatTube(0.508), width: 0.033, depth: 0.042 },
-      ],
-      { power: 2.6, around: 22, smooth: 6 },
+    wind(
+      'frame',
+      0.14,
+      0.92,
+      0.1,
+      loft(
+        [
+          { at: BB, width: 0.062, depth: 0.05 },
+          { at: add(seatTube(0.19), SEAT_AHEAD, 0.007), width: 0.036, depth: 0.034 },
+          { at: seatTube(0.36), width: 0.034, depth: 0.036 },
+          { at: seatTube(0.508), width: 0.033, depth: 0.042 },
+        ],
+        { power: 2.6, around: 22, smooth: 6 },
+      ),
     ),
   );
   frame.add(paint, cylinderX(0.037, -0.044, 0.044, 32), BB);
@@ -461,25 +491,37 @@ export function buildBike(): Bike {
 
   // Dropped seat stays and chainstays, both sides.
   frame.pair(paint, (side) =>
-    loft(
-      [
-        station(side * 0.012, seatTube(0.34).y, seatTube(0.34).z - 0.004, 0.016, 0.024),
-        station(side * 0.04, 0.565, -0.152, 0.014, 0.022),
-        station(side * 0.059, 0.468, -0.288, 0.013, 0.019),
-        station(side * 0.067, REAR_AXLE.y + 0.012, REAR_AXLE.z + 0.008, 0.012, 0.016),
-      ],
-      { smooth: 6, around: 14, power: 2.4 },
+    wind(
+      'frame',
+      0.08,
+      0.92,
+      0.085,
+      loft(
+        [
+          station(side * 0.012, seatTube(0.34).y, seatTube(0.34).z - 0.004, 0.016, 0.024),
+          station(side * 0.04, 0.565, -0.152, 0.014, 0.022),
+          station(side * 0.059, 0.468, -0.288, 0.013, 0.019),
+          station(side * 0.067, REAR_AXLE.y + 0.012, REAR_AXLE.z + 0.008, 0.012, 0.016),
+        ],
+        { smooth: 6, around: 14, power: 2.4 },
+      ),
     ),
   );
   frame.pair(paint, (side) =>
-    loft(
-      [
-        station(side * 0.033, BB.y, -0.012, 0.015, 0.032),
-        station(side * 0.039, BB.y + 0.008, -0.105, 0.014, 0.03),
-        station(side * 0.06, BB.y + 0.048, -0.3, 0.014, 0.025),
-        station(side * 0.0685, REAR_AXLE.y - 0.002, REAR_AXLE.z + 0.006, 0.012, 0.022),
-      ],
-      { smooth: 6, around: 14, power: 2.6 },
+    wind(
+      'frame',
+      0.34,
+      0.88,
+      0.085,
+      loft(
+        [
+          station(side * 0.033, BB.y, -0.012, 0.015, 0.032),
+          station(side * 0.039, BB.y + 0.008, -0.105, 0.014, 0.03),
+          station(side * 0.06, BB.y + 0.048, -0.3, 0.014, 0.025),
+          station(side * 0.0685, REAR_AXLE.y - 0.002, REAR_AXLE.z + 0.006, 0.012, 0.022),
+        ],
+        { smooth: 6, around: 14, power: 2.6 },
+      ),
     ),
   );
   frame.pair(paint, (side) => cylinderX(0.017, side * 0.0625, side * 0.0745, 20).translate(0, REAR_AXLE.y, REAR_AXLE.z));
@@ -496,7 +538,7 @@ export function buildBike(): Bike {
     blade(0.11, side * 0.057, 0.06, 0.024),
     blade(0.035, side * 0.039, 0.07, 0.034),
   ];
-  fork.add(paint, loft([...half(1), blade(0, 0, 0.076, 0.04), ...half(-1).reverse()], { side: AHEAD, smooth: 6, around: 18, power: 2.7 }));
+  fork.add(paint, wind('fork', 0.07, 0.93, 0.1, loft([...half(1), blade(0, 0, 0.076, 0.04), ...half(-1).reverse()], { side: AHEAD, smooth: 6, around: 18, power: 2.7 })));
   fork.pair(paint, (side) => cylinderX(0.0125, side * 0.05, side * 0.0625, 20).translate(0, FRONT_AXLE.y, FRONT_AXLE.z));
 
   // ----- cockpit -----
@@ -704,7 +746,7 @@ export function buildBike(): Bike {
   const root = new Group();
   root.name = 'backroad-ff';
   root.add(frameGroup, ...PARTS.map((name) => parts[name].group), frontWheel, axle);
-  return { root, parts, frontWheel, axle, materials: Object.values(materials) };
+  return { root, parts, frontWheel, axle, windings, materials: Object.values(materials) };
 }
 
 // Where a point of the bike ends up when the bike is pitched about its x axis and its front dropout sits at `dropout`.

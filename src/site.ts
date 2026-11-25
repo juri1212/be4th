@@ -40,6 +40,10 @@ export const SITE_LINKS: NavLink[] = [
 // the four shades: a day with at least levels[i] reaches shade i + 1.
 export const ACTIVITY = { hourWeight: 10, levels: [1, 10, 20, 30] } as const;
 
+// The garage's Christmas theme. While this is true the bike wears fairy lights, and the page has a switch for them.
+// Set it to false after the season: lights and switch are then left out of the build altogether.
+export const CHRISTMAS: boolean = true;
+
 export const BUILD = __BUILD__;
 
 export const absoluteUrl = (path: string) => new URL(path, SITE.url).href;

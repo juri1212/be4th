@@ -1,0 +1,33 @@
+// The crayons every drawing behind the doors is coloured with.
+export const INK = '#3b2417';
+
+export const C = {
+  white: '#ffffff',
+  paper: '#fff8e8',
+  sky: '#cdeaf5',
+  dusk: '#fbdcb4',
+  night: '#3b4c97',
+  grass: '#a5d678',
+  leaf: '#5fae57',
+  sand: '#f5d795',
+  snow: '#f2f8ff',
+  wood: '#c98a55',
+  brown: '#9a5f38',
+  bark: '#6b4129',
+  red: '#e8503a',
+  orange: '#f58f35',
+  yellow: '#ffd452',
+  gold: '#f5b52b',
+  teal: '#36a79c',
+  water: '#6fc1e6',
+  blue: '#3f80d2',
+  navy: '#33427f',
+  purple: '#9163bd',
+  pink: '#f6a3b7',
+  stone: '#d8d3cb',
+  grey: '#a3a7b4',
+  slate: '#62687c',
+  skin: '#fbd3ac',
+  tan: '#e3a878',
+  umber: '#a56a43',
+} as const;

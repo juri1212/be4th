@@ -631,7 +631,7 @@
 }
 
 .advent-window {
-  --width: min(30rem, 100vw - 40px);
+  --width: min(33rem, 100vw - 40px);
   --surround: clamp(10px, 2.4vw, 16px);
   --led: #f4ffd2;
   --led-halo: #cfe88a;
@@ -714,6 +714,27 @@
   font-size: 0.9375rem;
   font-weight: 600;
   color: #7a3f0c;
+}
+
+/* A child's drawing, put up in the window. Where the screen is low it makes room for the text. */
+.advent-drawing {
+  flex: none;
+  width: min(100%, max(15rem, (100svh - 36rem) * 1.15));
+  aspect-ratio: 3 / 2;
+  margin: 18px auto 0;
+  padding: 7px;
+  border-radius: 4px;
+  background: #fffaf0;
+  box-shadow: 0 3px 12px rgb(120 58 8 / 0.35);
+  rotate: -1.2deg;
+}
+
+.advent-drawing__art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 3px;
+  overflow: hidden;
 }
 
 .advent-window__text h2 {
@@ -885,6 +906,29 @@
   }
 }
 
+@media (max-height: 820px) and (min-width: 600px) {
+  .advent-window__text {
+    padding: 24px 36px;
+  }
+
+  .advent-drawing {
+    margin-top: 12px;
+  }
+
+  .advent-window__text h2 {
+    padding-top: 18px;
+    font-size: 2.75rem;
+  }
+
+  .advent-window__fact {
+    margin-top: 14px;
+  }
+
+  .advent-window__sources {
+    padding: 14px 0 16px;
+  }
+}
+
 /* Small phones, low windows and phones held sideways: keep as much of the text as possible in view. */
 @media (max-width: 360px), (max-height: 700px) {
   .advent-window__room {
@@ -923,8 +967,32 @@
     max-height: calc(100svh - 70px);
   }
 
+  /* The drawing hangs beside the text. */
   .advent-window__text {
+    display: grid;
+    grid-template-columns: 15rem 1fr;
+    grid-template-rows: auto auto auto auto 1fr;
+    column-gap: 28px;
     padding: 18px 28px;
+  }
+
+  .advent-window__text > * {
+    grid-column: 2;
+  }
+
+  .advent-window__day {
+    grid-column: 1 / -1;
+  }
+
+  .advent-drawing {
+    grid-area: 2 / 1 / -1 / 2;
+    align-self: start;
+    width: 100%;
+    margin-top: 16px;
+  }
+
+  .advent-window__close {
+    justify-self: start;
   }
 
   .advent-window__text h2 {

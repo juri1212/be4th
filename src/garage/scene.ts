@@ -115,7 +115,8 @@ interface Fitted {
   liftPath: CatmullRomCurve3;
 }
 
-export async function createGarage(canvas: HTMLCanvasElement, events: GarageEvents): Promise<Garage> {
+// The scene opens by day or, with `startAtNight`, at night: the lights don't fade there first.
+export async function createGarage(canvas: HTMLCanvasElement, events: GarageEvents, startAtNight: boolean): Promise<Garage> {
   mark('code');
   const renderer = new WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
   renderer.outputColorSpace = SRGBColorSpace;
@@ -295,8 +296,8 @@ export async function createGarage(canvas: HTMLCanvasElement, events: GarageEven
   // 0 right after the visitor hands the camera back, rising to 1 as it rejoins the sequence.
   let rejoin = 1;
   // 0 by day, 1 at night, and in between while the lights change.
-  let night = 0;
-  let nightGoal = 0;
+  let night = startAtNight ? 1 : 0;
+  let nightGoal = night;
   // The same for the fairy lights: 0 off, 1 on.
   let christmas = 0;
   let christmasGoal = 0;

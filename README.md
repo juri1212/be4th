@@ -35,6 +35,10 @@ The last stage of that, `scripts/models/pack-911.mjs`, is what keeps the file sm
 
 How the page loads is measured rather than guessed: `npm run measure`, after a build, opens it in headless Chrome with a cold cache, once as a desktop and once as a phone on 4G, and reports the bytes received and the time until the sequence starts playing. `npm run measure -- --log "<what changed>"` appends the result to `docs/garage-loading.md`, which has a section for every change to the loading so far.
 
+## The Advent calendar
+
+`/adventskalender/` is Bocholt's town hall with 24 doors, in German. A door can be opened from its day in December, by the visitor's own clock, until the end of the month. Which doors have been opened is kept in local storage under `be4th:adventskalender:<year>` (`src/advent/calendar.ts`). What is behind them, with the sources shown below each fact, is in `src/advent/facts.ts`, and where each number hangs on the facade in `src/advent/townhall.ts`. On the dev server, `?tag=2026-12-05` shows the calendar on that day.
+
 ## Activity data
 
 ```sh

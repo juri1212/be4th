@@ -48,7 +48,7 @@ function headTags(head: Head): string {
   tags.push(
     `<meta property="og:type" content="${head.type}" />`,
     `<meta property="og:site_name" content="${SITE.name}" />`,
-    `<meta property="og:locale" content="en_US" />`,
+    `<meta property="og:locale" content="${head.locale ?? 'en_US'}" />`,
     `<meta property="og:title" content="${escape(head.title)}" />`,
     `<meta property="og:description" content="${escape(head.description)}" />`,
     `<meta name="twitter:card" content="summary_large_image" />`,

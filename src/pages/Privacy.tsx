@@ -31,10 +31,15 @@ export default function Privacy() {
           the European Commission has issued an adequacy decision (Art. 45 GDPR).
         </p>
 
-        <h2>3. Cookies, tracking and fonts</h2>
+        <h2>3. Cookies, tracking, storage and fonts</h2>
         <p>
-          This site sets no cookies, stores nothing on your device and uses no tracking or third-party analytics services. Fonts are
-          served with the site itself; no connections are made to third parties such as Google Fonts or CDNs.
+          This site sets no cookies and uses no tracking or third-party analytics services. Fonts are served with the site itself; no
+          connections are made to third parties such as Google Fonts or CDNs.
+        </p>
+        <p>
+          The only thing it stores on your device is which doors of the <a href="/adventskalender/">Advent calendar</a> you have opened.
+          This is saved in your browser’s local storage when you open a door, because the calendar you are using needs it (§ 25 (2) no. 2
+          TDDDG). It is never sent anywhere, and you can remove it at any time by clearing this site’s data in your browser.
         </p>
 
         <h2>4. Contact by email</h2>

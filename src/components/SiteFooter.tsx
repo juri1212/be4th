@@ -34,6 +34,9 @@ export default function SiteFooter() {
             <a href="/#activity">Activity</a>
             <a href="/blog/">Writing</a>
             <a href="/garage/">Loading up</a>
+            <a href="/adventskalender/" lang="de">
+              Adventskalender
+            </a>
           </div>
           <div>
             <h2>Legal</h2>

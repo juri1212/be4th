@@ -4,7 +4,7 @@ import { SITE, absoluteUrl } from './site';
 import type { Head, Post, Project } from './types';
 
 // Every page of the site. The build prerenders each path; the browser resolves the same table to hydrate.
-export const PATHS = ['/', '/blog/', ...POSTS.map(postUrl), '/garage/', '/imprint/', '/privacy/', '/404.html'];
+export const PATHS = ['/', '/blog/', ...POSTS.map(postUrl), '/garage/', '/adventskalender/', '/imprint/', '/privacy/', '/404.html'];
 
 // Each page is its own chunk, so the blog doesn't download the ride and the home page doesn't download posts.
 const PAGES = {
@@ -12,6 +12,7 @@ const PAGES = {
   blog: () => import('./pages/Blog'),
   post: () => import('./pages/Post'),
   garage: () => import('./pages/Garage'),
+  adventskalender: () => import('./pages/Adventskalender'),
   imprint: () => import('./pages/Imprint'),
   privacy: () => import('./pages/Privacy'),
   'not-found': () => import('./pages/NotFound'),
@@ -24,6 +25,7 @@ const PAGE_FILES: Record<PageName, string> = {
   blog: 'Blog',
   post: 'Post',
   garage: 'Garage',
+  adventskalender: 'Adventskalender',
   imprint: 'Imprint',
   privacy: 'Privacy',
   'not-found': 'NotFound',
@@ -41,6 +43,7 @@ export function resolve(pathname: string): Route {
   if (path === '/' || path === '/index.html') return { page: 'home', path: '/' };
   if (path === '/blog/') return { page: 'blog', path };
   if (path === '/garage/') return { page: 'garage', path };
+  if (path === '/adventskalender/') return { page: 'adventskalender', path };
   if (path === '/imprint/') return { page: 'imprint', path };
   if (path === '/privacy/') return { page: 'privacy', path };
   const post = POSTS.find((item) => postUrl(item) === path);
@@ -122,6 +125,13 @@ export function headFor(route: LoadedRoute): Head {
         ...base,
         title: `Loading up · ${SITE.name}`,
         description: 'A 3D walkthrough of how a gravel bike travels on a 911: front wheel off, fork onto a vacuum-cup rack on the roof.',
+      };
+    case 'adventskalender':
+      return {
+        ...base,
+        locale: 'de_DE',
+        title: `Adventskalender · ${SITE.name}`,
+        description: 'Das Bocholter Rathaus als Adventskalender: 24 Türchen mit unnützem Wissen aus Geschichte und Sport.',
       };
     case 'imprint':
       return { ...base, title: `Imprint · ${SITE.name}`, description: `Legal notice and provider identification for ${SITE.name}.` };
